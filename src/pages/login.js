@@ -1,34 +1,48 @@
 'use client'
 
-import { useState } from 'react' 
-import axios from 'axios';
+import AuthSessionStatus from '../components/AuthSessionStatus'
+import InputError from '../components/InputError'
+import { useEffect, useState } from 'react' 
+import { useAuth } from '../hooks/auth'
+import { useRouter } from 'next/router'
 // import { csrf } from '../../helper/csrf';
 
-export default function SignIn() {
+export default function Login() {
+    const router = useRouter()
+    const { login } = useAuth({
+        redirectIfAuthenticated: '/dashboard',
+    })
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    // const [shouldRemember, setShouldRemember] = useState(false)
+    const [errors, setErrors] = useState([])
+    const [status, setStatus] = useState(null)
+
+    useEffect(() => {
+        if (router.query.reset?.length > 0 && errors.length === 0) {
+            setStatus(atob(router.query.reset))
+        } else {
+            setStatus(null)
+        }
+    })
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            // Get the CSRF token from the meta tag
-            // const csrfToken = await csrf();
-            const response = await axios.post(`${process.env.API_URL}/login`, { email, password }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    // 'X-CSRF-TOKEN': csrfToken,
-                }
-                // withC
-            })
-            console.log(response)
-        } catch(err) {
-            console.log(err)
-        }
+        login({
+            email,
+            password,
+            // remember: shouldRemember,
+            setErrors,
+            setStatus,
+        })
     }
 
     return (
         <div className='flex items-center justify-center h-screen bg-gray-100'>
             <div className="bg-white p-8 rounded shadow-md">
+                <AuthSessionStatus className="mb-4" status={status} />
                 <h2 className="text-2xl font-bold mb-6">Login</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
@@ -41,6 +55,7 @@ export default function SignIn() {
                             value={email}
                             onChange={(e) => { setEmail(e.target.value) }}
                         />
+                        <InputError messages={errors.email} className="mt-2" />
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
@@ -52,6 +67,7 @@ export default function SignIn() {
                             value={password}
                             onChange={(e) => { setPassword(e.target.value) }}
                         />
+                        <InputError messages={errors.password} className="mt-2" />
                     </div>
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                         Sign In

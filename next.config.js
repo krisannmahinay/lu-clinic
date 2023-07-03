@@ -5,16 +5,8 @@
 // }
 
 module.exports = {
-    async rewrites() {
-        return [
-            {
-                source: '/pages/api/:path*',
-                destination: `http://localhost/api/:path*`
-            }
-        ]
-    },
     env: {
-        API_URL: 'http://localhost/api',
+        API_URL: 'http://localhost',
         CSRF: 'http://localhost/sanctum/csrf-cookie'
     }
 }
