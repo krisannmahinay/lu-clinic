@@ -1,67 +1,114 @@
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import axios from '../lib/axios';
-import { useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
-export const useAuth = ({middleware, redirectIfAuthenticated} = {}) => {
-    const router = useRouter()
 
-    const { data: user, error, mutate } = useSWR('/api/user', () => 
-        axios
-            .get('/api/user')
-            .then(res => res.data)
-            .catch(err => {
-                if(err.response.status !== 409) throw error
-
-                router.push('/verify-email')
-            }),
-    )
-
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
-
-    const login = async({ setErrors, setStatus, ...props}) => {
-        await csrf()
-
-        setErrors([])
-        setStatus(null)
-
-        axios
-            .post('/login', props)
-            .then(() => mutate())
-            .catch(err => {
-                if (err.response.status !== 422) throw error
-
-                setErrors(err.response.data.errors)
-            })
+export const GetUsers = ({path} = {}) => {
+    const fetcher = async (url) => {
+        try {
+            const res = await axios.get(url)
+            return res.data
+        } catch(err) {
+            console.log(err)
+        }
     }
+
+    const { data: user, error, mutate } = useSWR(`${path}`, fetcher)
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/logout').then(() => mutate())
+            await axios.post('/api/logout').then(() => mutate())
         }
-
         window.location.pathname = '/login'
     }
 
-    useEffect(() => {
-        if (middleware === 'guest' && redirectIfAuthenticated && user)
-            router.push(redirectIfAuthenticated)
-        if (
-            window.location.pathname === '/verify-email' &&
-            user?.email_verified_at
-        )
-            router.push(redirectIfAuthenticated)
-        if (middleware === 'auth' && error) logout()
-    }, [user, error])
+    return { user, logout }
+}
+
+export const useAuth = ({middleware, redirectIfAuthenticated} = {}) => {
+    const router = useRouter()
+    // const [isLoggedIn, setIsLoggedIn] = useState(false)
+    // const Axios = axios()
+
+    
+    // console.log(path)
+    // const { data: user, error, mutate } = useSWR('/api/user', () => 
+    //     axios
+    //         .get('/api/user')
+    //         .then((res => res.data))
+    //         .catch(err => {
+    //             console.log(err)
+    //             // if(err.response.status !== 409) throw error
+
+    //             // router.push('/verify-email')
+
+    //             // if (err.response.status !== 422) throw error
+
+    //             // setErrors(err.response.data.errors)
+    //         })
+    // )
+
+    // const fetcher = (url) => axios.get(url).then((res)=>res.data)
+    
+    
+    const csrf = () => axios.get('/sanctum/csrf-cookie')
+
+    const login = async({ setLoginErrors, setErrors, setStatus, ...props}) => {
+        await csrf()
+        
+        setErrors([])
+        setStatus(null)
+        setLoginErrors("")
+
+        axios
+            .post('/api/login', props)
+            .then((res) => {
+                const { token, loggedIn } = res.data
+                Cookies.set('token', token)
+                Cookies.set('loggedIn', loggedIn)
+                window.location.pathname = '/dashboard'
+            })
+            .catch(err => {
+                if(err.response.status === 400) {
+                    setLoginErrors(err.response.data.message)
+                    
+                    // let errList = ``;
+                    // let fields = Object.keys(err.response.data)
+                    // fields.forEach((field) => {
+                    //     let errorArr = err.response.data[field]
+                    //     errList = errorArr
+                    // })
+                    // // console.log(errList)
+                }  
+            })
+    }
+
+    
+
+    // useEffect(() => {
+    //     if (middleware === 'guest' && redirectIfAuthenticated && user) {
+    //         router.push(redirectIfAuthenticated)
+    //     }
+    //         // console.log(user)
+    //     // if (
+    //     //     window.location.pathname === '/verify-email' &&
+    //     //     user?.email_verified_at
+    //     // )
+    //     //     router.push(redirectIfAuthenticated)
+    //     if (middleware === 'auth' && error) logout()
+    //     // console.log(user)
+    // }, [user, error])
 
     return {
-        user,
+        // user,
         // register,
         login,
         // forgotPassword,
         // resetPassword,
         // resendEmailVerification,
-        logout,
+        // logout
     }
 
     // const register = async({setErrors, ...props}) => {
