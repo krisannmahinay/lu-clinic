@@ -1,5 +1,10 @@
 import 'tailwindcss/tailwind.css'
+import { useRouter } from 'next/router'
 
-const App = ({Component, pageProps}) => <Component {...pageProps}/>
+export default function App ({Component, pageProps}) {
+    const router = useRouter()
+    return <Component key={router.asPath}  {...pageProps}/>
+}
 
-export default App
+
+// export default App
