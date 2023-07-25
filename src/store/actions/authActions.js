@@ -14,11 +14,43 @@ export const userLogin = createAsyncThunk(
             const { data } = await axios.post(
                 `${process.env.API_URL}/login`, props, config
             ) 
-            console.log(data.token)
+            // console.log(data.token)
             Cookies.set('isLoggedIn', data.loggedIn)
             Cookies.set('token', data.token)
             return data
         } catch(err) {
+            if (err.response && err.response.data.message) {
+                return rejectWithValue(err.response.data.message)
+            } else {
+                return rejectWithValue(err.message)
+            }
+        }
+    }
+)
+
+export const userGrants = createAsyncThunk(
+    'auth/userModules',
+    async (moduleId, {getState, rejectWithValue}) => {
+        // console.log(moduleId)
+        try {
+            const token = getState().auth.userToken
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const data = await axios.get(
+                `${process.env.API_URL}/grants`,{
+                    params: {moduleId:moduleId},
+                    ...config
+                } 
+            )
+            // console.log(data)
+            return data.data
+            // console.log()
+        } catch(err) {
+            // console.log(err)
             if (err.response && err.response.data.message) {
                 return rejectWithValue(err.response.data.message)
             } else {

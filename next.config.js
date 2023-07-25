@@ -6,7 +6,7 @@
 
 module.exports = {
     env: {
-        API_URL: 'http://localhost',
+        API_URL: 'http://localhost/api',
         CSRF: 'http://localhost/sanctum/csrf-cookie'
     }
 }
