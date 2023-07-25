@@ -1,9 +1,25 @@
 {
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
   "env": {
     "browser": true,
     "node": true,
     "es6": true,
     "commonjs": true
   },
-  "extends": "next/core-web-vitals"
+  "extends": ["next/core-web-vitals", "eslint:recommended"],
+  "plugins": ["import"],
+  "allowAnonymousFunction": true,
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@", "./src"] // Replace './src' with the path to your 'src' folder
+        ],
+        "extensions": [".js"]
+      }
+    }
+  }
 }
