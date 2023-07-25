@@ -1,9 +1,16 @@
+import { useEffect } from 'react'
 import AppLayout from '../components/Layouts/AppLayout'
 import Head from 'next/head'
+import store from '../store/store'
+// import { withAuth } from '../util/session'
+
 
 const Dashboard = () => {
+    const moduleId = "home";
+
     return (
         <AppLayout
+            moduleId={moduleId}
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                     Dashboard

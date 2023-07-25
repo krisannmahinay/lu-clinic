@@ -1,56 +1,74 @@
 'use client'
 
-import AuthSessionStatus from '../components/AuthSessionStatus'
 // import InputError from '../components/InputError'
 import GuestLayout from '../components/Layouts/GuestLayout'
-import AlertError from '../components/AlertError'
+// import AlertError from '../components/AlertError'
 import { useEffect, useState } from 'react' 
-import { useAuth } from '../hooks/auth'
+// import { useAuth } from '../hooks/auth'
+import AlertError from '../components/AlertError'
 import { useRouter } from 'next/router'
-// import { csrf } from '../../helper/csrf';
+import { useDispatch, useSelector } from 'react-redux'
+import { userLogin } from '../store/actions/authActions'
+import SystemError from '../components/SystemError'
+import Cookies from 'js-cookie'
 
 export default function Login() {
+    // const isLoggedIn = Cookies.get('isLoggedIn')
     const router = useRouter()
-    const { login } = useAuth({
-        middleware: 'auth',
-        redirectIfAuthenticated: '/dashboard',
-    })
+    const { loading, userInfo, error, success, isLoggedIn } = useSelector((state) => state.auth)
+    // const { loading, userInfo, error, success, userToken } = store.getState().auth
+    const dispatch = useDispatch()
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     // const [shouldRemember, setShouldRemember] = useState(false)
-    const [errors, setErrors] = useState([])
-    const [loginErrors, setLoginErrors] = useState("")
-    const [status, setStatus] = useState(null)
-    const [alert, setAlert] = useState(false)
+    // const [errors, setErrors] = useState([])
+    // const [loginErrors, setLoginErrors] = useState("")
+    // const [status, setStatus] = useState(null)
+    // const [alert, setAlert] = useState(false)
 
-    // useEffect(() => {
-    //     if (router.query.reset?.length > 0 && errors.length === 0) {
-    //         setStatus(atob(router.query.reset))
+
+
+    // console.log(loading)
+    // console.log(isLoggedIn)
+
+    if(isLoggedIn) {
+        router.push('/dashboard')
+    } 
+    
+
+
+    
+
+    // console.log(store.getState().auth)
+
+    // if(success) {
+    //     if(!isLoggedIn) {
+    //         return <SystemError />
     //     } else {
-    //         setStatus(null)
+    //         router.push('/dashboard')
     //     }
-    // })
+    // } 
+    // console.log(isLoggedIn)
+    // if(!isLoggedIn) {
+    //     return <SystemError />
+    // }
+    
+    // else {
+    //     // console.log(error)
+    //     return <SystemError />
+    // }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        login({
-            email,
-            password,
-            // remember: shouldRemember,
-            setErrors,
-            setStatus,
-            setLoginErrors
-        })
+        dispatch(userLogin({email, password}))
     }
 
     return (
         <GuestLayout>
             <div className='flex items-center justify-center h-screen bg-gray-100'>
-                {loginErrors && (<AlertError initState={false} message={loginErrors}/>)}
+                {error && (<AlertError initState={false} message={error}/>)}
                 <div className="bg-white p-8 rounded shadow-md">
-                    <AuthSessionStatus className="mb-4" status={status} />
                     <h2 className="text-2xl font-bold mb-6">Login</h2>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
@@ -76,7 +94,7 @@ export default function Login() {
                             />
                         </div>
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                            Sign In
+                            {/* {loading ? 'Loading' : 'Login'} */} Login
                         </button>
                     </form>
                 </div>
