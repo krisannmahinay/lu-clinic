@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { userLogin } from '../actions/authActions'
+import { userLogin, userGrants } from '../actions/authActions'
 import Cookies from 'js-cookie';
 import Router from 'next/router';
 
@@ -17,6 +17,7 @@ const initialState = {
     error: null,
     success: false,
     isLoggedIn: false,
+    module: null
 }
 
 
@@ -39,8 +40,8 @@ const authSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // login user
         builder
+            // user login
             .addCase(userLogin.pending, (state) => {
                 state.error = null,
                 state.loading = false
@@ -58,6 +59,23 @@ const authSlice = createSlice({
                 state.isLoggedIn = false
                 state.error = action.payload
             })
+
+            // catch user modules
+            .addCase(userGrants.pending, (state) => {
+                state.error = null,
+                state.loading = false
+            })
+            .addCase(userGrants.fulfilled, (state, action) => {
+                // console.log(action.payload)
+                state.loading = false
+                state.success = true
+                state.module = action.payload
+            })
+            .addCase(userGrants.rejected, (state, action) => {
+                state.loading = false
+                state.error = action.payload
+            })
+            
     }
 })
 
