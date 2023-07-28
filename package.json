@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev && generate-pages",
     "build": "next build",
     "start": "next start",
+    "generate-pages": "node pages.js",
     "lint": "next lint"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "cookie": "^0.5.0",
     "eslint": "8.43.0",
     "eslint-config-next": "13.4.7",
+    "glob": "^10.3.3",
     "js-cookie": "^3.0.5",
     "next": "13.4.7",
     "next-auth": "^4.22.1",
