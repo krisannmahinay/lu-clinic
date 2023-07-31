@@ -11,9 +11,6 @@ import getConfig from "next/config"
 const { publicRuntimeConfig } = getConfig();
 const { pwa } = publicRuntimeConfig || {};
 
-
-
-
 export default function App ({Component, pageProps}) {
     const { store, persistor } = makeStore()
 
