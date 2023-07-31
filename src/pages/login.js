@@ -1,22 +1,18 @@
-'use client'
-
 // import InputError from '../components/InputError'
-import GuestLayout from '../components/Layouts/GuestLayout'
-// import AlertError from '../components/AlertError'
-import { useEffect, useState } from 'react' 
-// import { useAuth } from '../hooks/auth'
-import AlertError from '../components/AlertError'
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { userLogin } from '../store/actions/authActions'
-import SystemError from '../components/SystemError'
 import Cookies from 'js-cookie'
+
+import GuestLayout from '@/components/Layouts/GuestLayout'
+import AlertError from '@/components/AlertError'
+import { userLogin } from '@/store/actions/authActions'
+import SystemError from '@/components/SystemError'
 
 export default function Login() {
     // const isLoggedIn = Cookies.get('isLoggedIn')
     const router = useRouter()
     const { loading, userInfo, error, success, isLoggedIn } = useSelector((state) => state.auth)
-    // const { loading, userInfo, error, success, userToken } = store.getState().auth
     const dispatch = useDispatch()
 
     const [email, setEmail] = useState('');
@@ -27,37 +23,11 @@ export default function Login() {
     // const [status, setStatus] = useState(null)
     // const [alert, setAlert] = useState(false)
 
-
-
-    // console.log(loading)
-    // console.log(isLoggedIn)
+    // console.log(error)
 
     if(isLoggedIn) {
         router.push('/dashboard')
     } 
-    
-
-
-    
-
-    // console.log(store.getState().auth)
-
-    // if(success) {
-    //     if(!isLoggedIn) {
-    //         return <SystemError />
-    //     } else {
-    //         router.push('/dashboard')
-    //     }
-    // } 
-    // console.log(isLoggedIn)
-    // if(!isLoggedIn) {
-    //     return <SystemError />
-    // }
-    
-    // else {
-    //     // console.log(error)
-    //     return <SystemError />
-    // }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
