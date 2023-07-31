@@ -6,19 +6,15 @@
   "env": {
     "browser": true,
     "node": true,
-    "es6": true,
-    "commonjs": true
+    "es2020": true
   },
-  "extends": ["next/core-web-vitals", "eslint:recommended"],
+  "extends": ["next/babel", "next/core-web-vitals", "eslint:recommended"],
   "plugins": ["import"],
-  "allowAnonymousFunction": true,
   "settings": {
     "import/resolver": {
       "alias": {
-        "map": [
-          ["@", "./src"] // Replace './src' with the path to your 'src' folder
-        ],
-        "extensions": [".js"]
+        "map": [["@", "./src"]],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
   }
