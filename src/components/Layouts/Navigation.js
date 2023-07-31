@@ -4,20 +4,20 @@ import { useEffect, useState } from 'react'
 
 // stores
 import { useDispatch, useSelector } from 'react-redux'
-import { logout, setModules } from '../../store/reducers/authSlice'
-import { userGrants } from '../../store/actions/authActions'
+import { logout, setModules } from '@/store/reducers/authSlice'
+import { userGrants } from '@/store/actions/authActions'
 
 // components
 import NavLink from '../Navlink'
-import Dropdown from '../Dropdown'
-import SystemError from '../SystemError'
-import { DropdownButton } from '../DropdownLink'
-import ResponsiveNavLink, { ResponsiveNavButton } from '../ResponsiveNavLink'
-import Module from '../Module'
-// import ApplicationLogo from '@/components/ApplicationLogo'
+import Module from '@/components/Module'
+import Dropdown from '@/components/Dropdown'
+import SystemError from '@/components/SystemError'
+import { DropdownButton } from '@/components/DropdownLink'
+import ApplicationLogo from '@/components/ApplicationLogo'
+import ResponsiveNavLink, 
+{ ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 
-
-const Navigation = ({ user, children, moduleId }) => {
+const Navigation = ({ user, children, moduleId, menuGroup }) => {
     // instance
     const router = useRouter()
     const dispatch = useDispatch()
@@ -31,7 +31,7 @@ const Navigation = ({ user, children, moduleId }) => {
     // GET MODULES
     useEffect(() => {
         dispatch(userGrants(moduleId))
-    }, [])
+    }, [dispatch])
 
     const toggleSidebar = () => { 
         setSidebarOpen(!sidebarOpen) 
@@ -53,9 +53,9 @@ const Navigation = ({ user, children, moduleId }) => {
     return (
         <div className="min-h-screen bg-gray-100">
             <div className="flex h-screen">
-                <nav className="bg-gray-800">
+                <nav className="bg-[#343a40]">
                     {!sidebarOpen && (
-                        <div className="flex items-center justify-between p-6">
+                        <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 border-b-2 border-b-gray-500">
                             <button className="text-white focus:outline-none" onClick={toggleSidebar}>
                                 <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M4 5h12a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 4h12a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 4h12a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"></path>
@@ -65,8 +65,9 @@ const Navigation = ({ user, children, moduleId }) => {
                     )}
                 </nav>
 
-                <div className={`w-64 bg-gray-800 sticky top-0 left-0 ${sidebarOpen ? 'block' : 'hidden'}`}>
-                    <div className="flex items-center justify-between p-6 ">
+                <div className={`w-64 bg-[#343a40] sticky top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 ${sidebarOpen ? 'block' : '-translate-x-full hidden'}`}>
+                    {/* <div className="flex items-center justify-between p-6 border-l-slate-400"> */}
+                    <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 mb-2 border-b-2 border-b-gray-500">
                         <div className="flex items-center">
                             <h1 className={`text-white text-2xl font-bold ${sidebarOpen ? 'block' : 'hidden'}`}>Logo</h1>
                         </div>
@@ -79,7 +80,7 @@ const Navigation = ({ user, children, moduleId }) => {
                     </div>
 
                     {/* <!-- Sidebar content --> */}
-                    <Module data={module}/>
+                    <Module data={module} menuGroup={menuGroup}/>
 
                     
                         {/* <div className="hover:bg-gray-900 flex items-center justify-between p-6 cursor-pointer" onClick={toggleAccordion}>
@@ -123,18 +124,10 @@ const Navigation = ({ user, children, moduleId }) => {
                                     {/* Logo */}
                                     <div className="flex-shrink-0 flex items-center">
                                         <Link href="/dashboard">
-                                            {/* <ApplicationLogo className="block h-10 w-auto fill-current text-gray-600" /> */}
+                                            <ApplicationLogo className="block h-10 w-auto fill-current text-gray-600" />
                                         </Link>
                                     </div>
 
-                                    {/* Navigation Links */}
-                                    <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                        <NavLink
-                                            href="/dashboard"
-                                            active={router.pathname === '/dashboard'}>
-                                            Dashboard
-                                        </NavLink>
-                                    </div>
                                 </div>
 
                                 {/* Settings Dropdown */}
