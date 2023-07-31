@@ -8,7 +8,7 @@ const userToken = Cookies.get('token')
     ? Cookies.get('token') 
     : null;
 
-// console.log(userToken)
+console.log(userToken)
 
 const initialState = {
     loading: false,
@@ -44,10 +44,11 @@ const authSlice = createSlice({
             // user login
             .addCase(userLogin.pending, (state) => {
                 state.error = null,
-                state.loading = false
+                state.loading = true
                 state.isLoggedIn = false
             })
             .addCase(userLogin.fulfilled, (state, action) => {
+                // console.log(action.payload)
                 state.loading = false
                 state.success = true
                 state.userInfo = action.payload
@@ -58,7 +59,7 @@ const authSlice = createSlice({
                 state.loading = false
                 state.isLoggedIn = false
                 state.error = action.payload
-            })
+            }) 
 
             // catch user modules
             .addCase(userGrants.pending, (state) => {

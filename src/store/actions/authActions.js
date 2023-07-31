@@ -14,11 +14,12 @@ export const userLogin = createAsyncThunk(
             const { data } = await axios.post(
                 `${process.env.API_URL}/login`, props, config
             ) 
-            // console.log(data.token)
+            
             Cookies.set('isLoggedIn', data.loggedIn)
             Cookies.set('token', data.token)
             return data
         } catch(err) {
+            console.log(err)
             if (err.response && err.response.data.message) {
                 return rejectWithValue(err.response.data.message)
             } else {
@@ -48,9 +49,7 @@ export const userGrants = createAsyncThunk(
             )
             // console.log(data)
             return data.data
-            // console.log()
         } catch(err) {
-            // console.log(err)
             if (err.response && err.response.data.message) {
                 return rejectWithValue(err.response.data.message)
             } else {
