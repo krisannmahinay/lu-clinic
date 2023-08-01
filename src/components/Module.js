@@ -29,9 +29,8 @@ const Module = ({data, menuGroup}) => {
 
                         <NavLink 
                             key={item.permission.moduleId}
-                            href={`/${item.permission.moduleId}`} 
-                            active={router.pathname === `/${item.permission.moduleId}`}>
-                            <div className="hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-3 cursor-pointer text-[#c2c7d0] rounded-lg">
+                            href={`/${item.permission.moduleId}`}>
+                            <div className={`${router.pathname === `/${item.permission.moduleId}` ? 'bg-[#5e6064] flex px-3 py-3 cursor-pointer text-[#fff] rounded-lg' : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-3 cursor-pointer text-[#c2c7d0] rounded-lg' }`}>
                                 <svg className="" dangerouslySetInnerHTML={{__html: item.module.icon}} style={{ width: '2rem', height: '2rem', marginRight: '1em'}}></svg>{item.module.name}
                             </div>
                         </NavLink>

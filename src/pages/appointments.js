@@ -2,10 +2,23 @@ import { useEffect } from 'react'
 
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import Transaction from '@/components/Transaction';
+import Pagination from '@/components/Pagination';
+import Table from '@/components/Table';
 
 const Appointment = () => {
     const moduleId = "appointments";
     const menuGroup = "dashboard";
+
+    const appointmentData = [{
+        patient_id: "P-23-001",
+        patient_name: "John Smith",
+        visit_type: "OPD",
+        appointment_type: "Online Appointment",
+        birth_date: "October 24 1990",
+        age: 30
+    }]
+
 
     return (
         <AppLayout
@@ -20,14 +33,23 @@ const Appointment = () => {
                 <title>Laravel - Appointments</title>
             </Head>
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 bg-white border-b border-gray-200">
-                            <h3>Youre logged in!</h3>
-                        </div>
-                    </div>
+            <div className='p-8'>
+                <div className="px-2 mb-4">
+                    <span class="text-xl font-medium uppercase text-[#90949a]">Patient Details</span>
                 </div>
+                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <Table data={appointmentData}/>
+                </div>
+
+                <div className="mt-8">
+                    <Pagination />
+                </div>
+            </div>
+
+            <hr/>
+
+            <div className='px-8 mt-7'>
+                <Transaction />
             </div>
         </AppLayout>
     )
