@@ -9,45 +9,49 @@ const Module = ({data, menuGroup}) => {
     
     const router = useRouter()
     const [menus, setMenus] = useState([])
+    const [isExpanded, setIsExpanded] = useState(false)
     
     useEffect(() => {
         if(data && data.module) {
-            const filteredMenus = data.module.filter((item) => item.permission !== null && item.menuGroup === menuGroup)
+            const filteredMenus = data.module.filter((item) => item.permission !== null && item.module !== null && item.menu_group === menuGroup)
             setMenus(filteredMenus)
         }
     }, [data, menuGroup])
 
     
-
+    const toggleAccordion = (module) => {
+        if(module === 'settings') {
+            setIsExpanded((prevIsExpanded) => !prevIsExpanded)
+        }
+    }
+    
     return (
         <>
             {menus.map((item, index) => (
-                // console.log(item.module.name)
+                // console.log(item)
                 <nav className="bg-[#343a40]">
                     <ul className="py-0.5 px-2 ">
-                        
-
                         <NavLink 
-                            key={item.permission.moduleId}
-                            href={`/${item.permission.moduleId}`}>
-                            <div className={`${router.pathname === `/${item.permission.moduleId}` ? 'bg-[#5e6064] flex px-3 py-3 cursor-pointer text-[#fff] rounded-lg' : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-3 cursor-pointer text-[#c2c7d0] rounded-lg' }`}>
-                                <svg className="" dangerouslySetInnerHTML={{__html: item.module.icon}} style={{ width: '2rem', height: '2rem', marginRight: '1em'}}></svg>{item.module.name}
+                            shallow
+                            key={item.permission.module_id}
+                            href={`/${item.permission.module_id}`}>
+                            
+                            <div
+                                className={`${router.pathname === `/${item.permission.module_id}` 
+                                        ? 'bg-[#5e6064] flex px-3 py-2 cursor-pointer text-[#fff] rounded-lg' 
+                                        : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                        ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
+                                <svg 
+                                    className="" 
+                                    dangerouslySetInnerHTML={{__html: item.module.icon}} 
+                                    style={{ width: '1.7rem', height: '1.6rem', marginRight: '5px'}}>
+                                </svg>
+                                {item.module.name}
                             </div>
+                            
                         </NavLink>
-                    </ul>
                         
-                    {/* <span className=" text-white focus:outline-none "
-                        >
-                    {isExpanded ? (
-                        <svg className="h-6 w-6 fill-current transform rotate-90" xmlns="http://www.w3.org  /2000/svg" viewBox="0 0 24 24">
-                            <path className="heroicon-ui" d="M6.71 19.41l-1.42-1.42L11.59 12 5.29 5.71l1.42-1.42L14 12l-7.71 7.71z"/>
-                        </svg>
-                    ) : (
-                        <svg className="h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path className="heroicon-ui" d="M4.28 6.28l1.44-1.44 6 6 .72.686-.72.72-6 6-1.44-1.44L9.585 12 4.28 6.697z" />
-                        </svg>
-                    )}
-                    </span> */}
+                    </ul>
                 </nav>
             ))}
         </>
