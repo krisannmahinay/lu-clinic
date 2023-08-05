@@ -18,7 +18,27 @@ export const authApi = createApi({
             query: () => ({
                 url: '/user',
                 method: 'GET'
-            })
+            }),
+            provides: ['entities'],
+            // keep the unused data in the cache
+            keepUnusedData: true,
+            // refetch data when component mounts
+            refetchOnMount: true,
+            // render time, before trigger the refetch
+            staleTime: 60,
+            // data duration before it cached after the last refetch
+            cacheTime: 300,
+            // prevent from cache being cleared
+            keepAllData: true,
+            
+            // selectFromResult: (result) => result.data,
+            // transformResponse: (response) => {
+            //     console.log(response)
+                // const filteredData = response.data.filter((item) => item !== null)
+                // const uniqueData = [...new Set(filteredData)]
+
+                // return uniqueData
+            // }
         })
     })
 })
