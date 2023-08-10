@@ -1,12 +1,14 @@
 import { useState, Fragment } from "react"
 
 
-const NavTab = ({tabsData, tables}) => {
+const NavTab = ({tabsData, modal, tables, userId}) => {
     const [activeTab, setActiveTab] = useState(1)
 
     const handleTabClick = (tabIndex) => {
         setActiveTab(tabIndex)
     }
+
+    console.log(userId)
 
     return (
         <>
@@ -27,7 +29,29 @@ const NavTab = ({tabsData, tables}) => {
                     {tabsData.map((tab, index) => (
                         <Fragment key={index}>
                             {activeTab === index + 1 && (
-                                <div className="tab-content p-4">{tab.content}</div>
+                               <div className="tab-content p-2">
+                                    {modal && Array.isArray(tab.content) ? (
+                                        <ul className="space-y-4 max-h-52 overflow-y-auto divide-y">
+                                            {tab.content.map((item) => (
+                                                // console.log(item)
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-4 p-4 ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-5 h-5"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            defaultChecked={item.grant.identity_id === userId}
+                                                        />
+                                                        <p className="text-lg text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ): (
+                                        <div className="text-lg text-gray-500">{tab.content}</div>
+                                    )}
+                               </div>
                             )}
                         </Fragment>
                     ))}
@@ -35,20 +59,22 @@ const NavTab = ({tabsData, tables}) => {
             </div>
 
             <hr className="py-8"/>
-            <div>
-                {tabsData.map((tab, index) => (
-                        tab.table && (
-                            <Fragment key={index}>
-                                {activeTab === index + 1 && (
-                                    <div className="px-2 mb-4">
-                                        <span class="text-xl font-medium uppercase text-[#90949a]">{tab.tableTitle}</span>
-                                    </div>
-                                )}
-                                {activeTab === index + 1 && tab.tableContent}
-                            </Fragment>
-                        )
-                    ))}
-            </div>
+            {tables && (
+                <div>
+                    {tabsData.map((tab, index) => (
+                            tab.table && (
+                                <Fragment key={index}>
+                                    {activeTab === index + 1 && (
+                                        <div className="px-2 mb-4">
+                                            <span class="text-xl font-medium uppercase text-[#90949a]">{tab.tableTitle}</span>
+                                        </div>
+                                    )}
+                                    {activeTab === index + 1 && tab.tableContent}
+                                </Fragment>
+                            )
+                        ))}
+                </div>
+            )}
         </>
     )
 }
