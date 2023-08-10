@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
 
 export const authApi = createApi({
     reducerPath: 'authApi',
@@ -19,7 +20,7 @@ export const authApi = createApi({
                 url: '/user',
                 method: 'GET'
             }),
-            provides: ['entities'],
+            provides: ['users'],
             // keep the unused data in the cache
             keepUnusedData: true,
             // refetch data when component mounts
