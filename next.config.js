@@ -1,33 +1,25 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')
-// const runtimeCaching = require('next-pwa/cache')  
-//  ({ 
-//     
-// })
+// const getConfig = require('next/config')
 
-// const nextConfig = {
-// }
+const runtimeCaching = require('next-pwa/cache')  
+const withPWA = require('next-pwa')
 
 module.exports = withPWA({
+    pwa: {
+        dest: 'public',
+        disable: process.env.NODE_ENV === 'development',
+        register: true,
+        // scope: '/',
+        // sw: 'service-worker.js',
+        // dynamicStartUrl: false,
+    },
+    reactStrictMode: true,
     env: {
         API_URL: 'http://localhost/api'
     },
-
-    pwa: {
-        dest: 'public',
-        register: true,
-        skipWaiting: true, 
-        // scope: './',
-        // sw: './src/public/service-worker.js',
-        // dynamicStartUrl: false,
-        // runtimeCaching,
-        disable: process.env.NODE_ENV === 'development',
-
-    },
     publicRuntimeConfig: {
         pwa: {
-          manifest: "/manifest.json", 
+            manifest: "/manifest.json", 
         },
     },
-    reactStrictMode: true,
-}) 
+})
