@@ -7,7 +7,6 @@ export const authApi = createApi({
          baseUrl: process.env.API_URL,
          prepareHeaders: (headers, {getState}) => {
             const token = getState().auth.userToken
-            // console.log(token)
             if(token) {
                 headers.set('authorization', `Bearer ${token}`)
                 return headers
@@ -20,7 +19,6 @@ export const authApi = createApi({
                 url: '/user',
                 method: 'GET'
             }),
-            provides: ['users'],
             // keep the unused data in the cache
             keepUnusedData: true,
             // refetch data when component mounts
@@ -31,17 +29,13 @@ export const authApi = createApi({
             cacheTime: 300,
             // prevent from cache being cleared
             keepAllData: true,
+            refetchOnFocus: true,
+            refetchOnReconnect: true,
+            // refetchIntervalInBackground: 60000,
             
-            // selectFromResult: (result) => result.data,
-            // transformResponse: (response) => {
-            //     console.log(response)
-                // const filteredData = response.data.filter((item) => item !== null)
-                // const uniqueData = [...new Set(filteredData)]
-
-                // return uniqueData
-            // }
         })
     })
 })
 
 export const { useGetUserDetailsQuery } = authApi
+// export const { authApi }

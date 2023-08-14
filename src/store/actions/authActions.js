@@ -2,6 +2,8 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { useGetUserDetailsQuery } from '@/service/authService'
+import { authApi } from '@/service/authService'
 
 export const userLogin = createAsyncThunk(
     'auth/userLogin',
@@ -19,7 +21,6 @@ export const userLogin = createAsyncThunk(
             Cookies.set('token', data.token)
             return data
         } catch(err) {
-            console.log(err)
             if (err.response && err.response.data.message) {
                 return rejectWithValue(err.response.data.message)
             } else {

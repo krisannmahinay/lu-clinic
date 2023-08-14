@@ -1,18 +1,27 @@
 import 'tailwindcss/tailwind.css'
-import { useEffect } from 'react'; 
+import Head from 'next/head'
+import getConfig from "next/config"
+import { useEffect, useState } from 'react'; 
 import { useRouter } from 'next/router'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStore } from '@/store/store'
-import Head from 'next/head'
-import getConfig from "next/config"
+import Loading from '@/components/Loading'
 
 const { publicRuntimeConfig } = getConfig();
 const { pwa } = publicRuntimeConfig || {};
 
 export default function App ({Component, pageProps}) {
     const { store, persistor } = makeStore()
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Simulate a 2-second loading delay
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000); // Adjust the delay time as needed
+      }, []);
 
     return (
         <>
@@ -26,8 +35,9 @@ export default function App ({Component, pageProps}) {
                 )}
             </Head>
             <Provider store={store}>
-                <PersistGate loading={null} persistor={persistor}>
-                    <Component {...pageProps}/>
+                <PersistGate loading={<Loading />} persistor={persistor}>
+                    {/* <Component {...pageProps}/> */}
+                    {isLoading ? <Loading /> : <Component {...pageProps} />}
                 </PersistGate>
             </Provider>
         </>
