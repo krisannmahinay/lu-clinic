@@ -1,14 +1,30 @@
-import { useState, Fragment } from "react"
+import { useState, Fragment, useEffect } from "react"
 
 
-const NavTab = ({tabsData, modal, tables, userId}) => {
+const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
     const [activeTab, setActiveTab] = useState(1)
+    const [checkedItem, setCheckedItem] = useState([])
+
+    // useEffect(() => {
+    //     onCheckedData(checkedItem)
+    // }, [checkedItem, onCheckedData])
 
     const handleTabClick = (tabIndex) => {
-        setActiveTab(tabIndex)
+        setActiveTab(tabIndex)      
     }
 
-    console.log(userId)
+    const handleCheckbox = (moduleId) => {
+        if(checkedItem.includes(moduleId)) {
+            setCheckedItem(checkedItem.filter((checked) => checked !== moduleId))
+            onCheckedData([...checkedItem])
+            
+        } else {
+            setCheckedItem([...checkedItem, moduleId])
+                
+            onCheckedData([...checkedItem])
+        }
+    }
+    // console.log(userId[0])
 
     return (
         <>
@@ -17,6 +33,7 @@ const NavTab = ({tabsData, modal, tables, userId}) => {
                     <div className="flex justify-items-center">
                         {tabsData.map((tab, index) => (
                             <button
+                                key={index}
                                 onClick={() => handleTabClick(index + 1)}
                                 className={`px-4 py-2 ${
                                     activeTab === index + 1 ? 'bg-white' : 'bg-gray-200'
@@ -31,9 +48,9 @@ const NavTab = ({tabsData, modal, tables, userId}) => {
                             {activeTab === index + 1 && (
                                <div className="tab-content p-2">
                                     {modal && Array.isArray(tab.content) ? (
-                                        <ul className="space-y-4 max-h-52 overflow-y-auto divide-y">
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
                                             {tab.content.map((item) => (
-                                                // console.log(item)
+                                                
                                                 <li key={item.module_id}>
                                                     <div className="flex items-center space-x-4 p-4 ">
                                                         <input
@@ -41,7 +58,8 @@ const NavTab = ({tabsData, modal, tables, userId}) => {
                                                             className="w-5 h-5"
                                                             name={`grant_${item.module_id}`}
                                                             value={item.module_id}
-                                                            defaultChecked={item.grant.identity_id === userId}
+                                                            checked={checkedItem.includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
                                                         />
                                                         <p className="text-lg text-gray-500">{item.name}</p>
                                                     </div>
