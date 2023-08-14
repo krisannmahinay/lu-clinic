@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 const SystemError = ({message}) => {
     const router = useRouter()
     const handleClick = () => {
-        router.back()
+        router.push('/')
         // console.log(router.pathname)
     }
 

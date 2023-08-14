@@ -6,14 +6,22 @@ import Cookies from 'js-cookie'
 
 import GuestLayout from '@/components/Layouts/GuestLayout'
 import AlertError from '@/components/AlertError'
+import Card from '@/components/Card'
+import Form from '@/components/Form'
 import { userLogin } from '@/store/actions/authActions'
 import SystemError from '@/components/SystemError'
 
 export default function Login() {
     // const isLoggedIn = Cookies.get('isLoggedIn')
     const router = useRouter()
-    const { loading, userInfo, error, success, isLoggedIn } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
+    const { loading, userInfo, error, success, isLoggedIn } = useSelector((state) => state.auth)
+    // const useData = useSelector((state) => state.auth)
+    // const [ loginData, setLoginData ] = useState(useData)
+
+    // useEffect(() => {
+    //     setLoginData(useData)
+    // }, [useData])
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,16 +31,19 @@ export default function Login() {
     // const [status, setStatus] = useState(null)
     // const [alert, setAlert] = useState(false)
 
-    // console.log(error)
+    // console.log(isLoggedIn)
 
-    if(isLoggedIn) {
-        router.push('/dashboard')
-    } 
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         dispatch(userLogin({email, password}))
     }
+
+    // if(isLoggedIn) {
+    //     router.push('/dashboard')
+    // } 
+
 
     return (
         <GuestLayout>
@@ -40,6 +51,8 @@ export default function Login() {
                 {error && (<AlertError initState={false} message={error}/>)}
                 <div className="bg-white p-8 rounded shadow-md">
                     <h2 className="text-2xl font-bold mb-6">Login</h2>
+                    
+
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
@@ -50,6 +63,7 @@ export default function Login() {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => { setEmail(e.target.value) }}
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -61,10 +75,12 @@ export default function Login() {
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => { setPassword(e.target.value) }}
+                                required
                             />
                         </div>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                            {/* {loading ? 'Loading' : 'Login'} */} Login
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                            type="submit">
+                            {/* {loading ? 'Loading' : 'Login'} */}  Login
                         </button>
                     </form>
                 </div>

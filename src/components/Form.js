@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react"
+import { useCreateUserBatchMutation } from '@/service/settingService'
 
 
-const Form = ({initialFields = []}) => {
+
+const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
     // const [formData, setFormData] = useState({})
     const [formData, setFormData] = useState([])
     const [idCounter, setIdCounter] = useState(0)
+    const [createUserBatch, { isLoading, isError, error }] = useCreateUserBatchMutation();
+
 
     useEffect(() => {
         setFormData([{ id: 0, fields: initialFields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {}) }])
@@ -36,7 +40,21 @@ const Form = ({initialFields = []}) => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log(formData)
+        // console.log(formData ?? {})
+
+        // console.log(e.target.value)
+
+        createUserBatch(formData)
+            .unwrap()
+            .then(response => {
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        
+        
+    // const userData = userList?.userList ?? []
     }
 
     const renderForm = (row, rowIndex) => {
@@ -125,21 +143,23 @@ const Form = ({initialFields = []}) => {
         <>
             <div className="tab-content p-4">
                 <form onSubmit={handleSubmit}>
-                    <div className="flex justify-items-start">
-                        <button type="button" onClick={handleAddRow} className="bg-green-500 hover:bg-green-600 text-white ml-2 mb-4 mr-2 px-4 py-2 focus:outline-none flex items-center space-x-2 rounded">
-                            {/* <span>ADD</span> */}
-                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </button>
+                    {addUserBtn && (
+                        <div className="flex justify-items-start">
+                            <button type="button" onClick={handleAddRow} className="bg-green-500 hover:bg-green-600 text-white ml-2 mb-4 mr-2 px-4 py-2 focus:outline-none flex items-center space-x-2 rounded">
+                                {/* <span>ADD</span> */}
+                                <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
 
-                        <button className="bg-sky-500 hover:bg-sky-600 text-white mb-4 mr-2 px-4 py-2 focus:outline-none flex items-center space-x-2 rounded">
-                            <span>CREATE</span> 
-                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
-                            </svg>
-                        </button>
-                    </div>
+                            <button className="bg-sky-500 hover:bg-sky-600 text-white mb-4 mr-2 px-4 py-2 focus:outline-none flex items-center space-x-2 rounded">
+                                <span>CREATE</span> 
+                                <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
 
                     {formData.map((row, rowIndex) => (
                         <div key={row.id} className="flex justify-between">
@@ -158,7 +178,11 @@ const Form = ({initialFields = []}) => {
                         </div>
                     ))}
 
-                    
+                    {loginBtn && (
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            Login
+                        </button>
+                    )}
                 </form>
             </div>
         </>

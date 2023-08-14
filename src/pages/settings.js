@@ -6,19 +6,18 @@ import { useGetUserListQuery, useGetPermissionListQuery, useGetModuleListQuery }
 import AppLayout from '@/components/Layouts/AppLayout'
 import Table from '@/components/Table'
 import Form from '@/components/Form'
-import Card from '@/components/Card'
-import Error from '@/components/Error'
-import SkeletonScreen from '@/components/SkeletonScreen'
+import Card from '@/components/Card'    
 import AlertError from '@/components/AlertError'
+import withAuth from './withAuth'
+
 
 const Setting = () => {
-    // const columnCount = 3
-    // const rowCount = 5
 
     const moduleId = "settings"
     const menuGroup = "settings"
-
-    const [tableHeader, setTableHeader] = useState([])
+    
+    const [ modalId, setModalId ] = useState("") 
+    const [ tableHeader, setTableHeader ] = useState([])
     const { data: userList, isLoading: userListLoading, isError: userErr, error, isSuccess: userSuccess } = useGetUserListQuery()
     const { data: permission, isLoading: permissionListLoading, isError: permissionErr } = useGetPermissionListQuery()
     const { data: moduleList} = useGetModuleListQuery()
@@ -38,14 +37,9 @@ const Setting = () => {
         }
     }, [userSuccess, userData])
 
-    // if(isError) {
-    //     return (
-    //         <Error>
-    //             {error.data}
-    //         </Error>
-    //     )
-    // }
-
+    const handleOpenModal = (data) => {
+        setModalId(data)
+    }
     
 
 
@@ -65,32 +59,7 @@ const Setting = () => {
         // }
     ]
 
-    // console.log(moduleData)
-
-    // Data for nav tabs
-    const permissionTab = [
-        {
-            label: 'Dashboard', 
-            content: "Content for Tab 1 goes here", 
-            table:true,
-            tableTitle: "Users",
-            tableContent: ""
-        },
-        {
-            label: 'Inventory', 
-            content: "Content for Tab 2 goes here",
-            table: false,
-            tableTitle: "",
-            tableContent: ""
-        },
-        {
-            label: 'Settings', 
-            content: "Content for Tab 3 goes here",
-            table: false,
-            tableTitle: "",
-            tableContent: ""
-        }
-    ]
+    // console.log(moduleList)
 
     return (
         <AppLayout
@@ -109,7 +78,10 @@ const Setting = () => {
                 {/* <AlertError message={error}/> */}
 
                 <Card title="Create User">
-                    <Form initialFields={userRegistration}/>
+                    <Form 
+                        initialFields={userRegistration}
+                        addUserBtn={true}
+                    />
                 </Card>
 
                 <Table 
@@ -119,6 +91,7 @@ const Setting = () => {
                     module={moduleData} 
                     tableHeader={tableHeader}
                     isLoading={userListLoading}
+                    onOpenModal={handleOpenModal}
                     />
             </div>
 
@@ -126,4 +99,4 @@ const Setting = () => {
     )
 }
 
-export default Setting
+export default withAuth(Setting)

@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import withAuth from './withAuth'
+
 
 const Dianosis = () => {
     const moduleId = "diagnosis";
@@ -30,4 +32,4 @@ const Dianosis = () => {
     )
 }
 
-export default Dianosis
+export default withAuth(Dianosis)

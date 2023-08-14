@@ -5,6 +5,8 @@ import AppLayout from '@/components/Layouts/AppLayout'
 import Transaction from '@/components/Transaction';
 import Pagination from '@/components/Pagination';
 import Table from '@/components/Table';
+import withAuth from './withAuth'
+
 
 const Appointment = () => {
     const moduleId = "appointments";
@@ -37,9 +39,8 @@ const Appointment = () => {
                 <div className="px-2 mb-4">
                     <span class="text-xl font-medium uppercase text-[#90949a]">Patient Details</span>
                 </div>
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <Table data={appointmentData}/>
-                </div>
+
+                <Table data={appointmentData}/>
 
                 <div className="mt-8">
                     <Pagination />
@@ -55,4 +56,4 @@ const Appointment = () => {
     )
 }
 
-export default Appointment
+export default withAuth(Appointment)

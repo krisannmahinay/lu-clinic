@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logout, setModules } from '@/store/reducers/authSlice'
 import { userGrants } from '@/store/actions/authActions'
 
+import withAuth from '@/pages/withAuth'
+
 // components
 import NavLink from '../Navlink'
 import Module from '@/components/Module'
@@ -17,38 +19,30 @@ import ApplicationLogo from '@/components/ApplicationLogo'
 import ResponsiveNavLink, 
 { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 
-const Navigation = ({ user, children, moduleId, menuGroup }) => {
-    // instance
+const Navigation = ({ ...props }) => {
+    // props: user, children, moduleId, menuGroup
+    
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
     const [sidebarOpen, setSidebarOpen] = useState(true)
-    const [isExpanded, setIsExpanded] = useState(false)
+    const [notificationCount, setNotificationCount] = useState(7);
 
     // state from store
-    const { module } = useSelector((state) => state.auth)
+    const { module, isLoggedIn } = useSelector((state) => state.auth)
 
     // GET MODULES
     useEffect(() => {
-        dispatch(userGrants(moduleId))
-    }, [dispatch])
+        dispatch(userGrants(props.moduleId))
+    }, [dispatch, props.moduleId])
 
     const toggleSidebar = () => { 
         setSidebarOpen(!sidebarOpen) 
-    }
-    const toggleAccordion = () => {
-        setIsExpanded(!isExpanded)
     }
     
     const handleLogout = () => {
         dispatch(logout())
     }
-
-    if(module == null) {
-        <SystemError />
-    }
-
-    // console.log(module)
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -80,39 +74,8 @@ const Navigation = ({ user, children, moduleId, menuGroup }) => {
                     </div>
 
                     {/* <!-- Sidebar content --> */}
-                    <Module data={module} menuGroup={menuGroup}/>
-
+                    <Module data={module} menuGroup={props.menuGroup}/>
                     
-                        {/* <div className="hover:bg-gray-900 flex items-center justify-between p-6 cursor-pointer" onClick={toggleAccordion}>
-                            <h1 className="text-white text-xl font-bold">Sidebar</h1>
-                            <span className=" text-white focus:outline-none "
-                                >
-                            {isExpanded ? (
-                                <svg className="h-6 w-6 fill-current transform rotate-90" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path className="heroicon-ui" d="M6.71 19.41l-1.42-1.42L11.59 12 5.29 5.71l1.42-1.42L14 12l-7.71 7.71z"/>
-                                </svg>
-                            ) : (
-                                <svg className="h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path className="heroicon-ui" d="M4.28 6.28l1.44-1.44 6 6 .72.686-.72.72-6 6-1.44-1.44L9.585 12 4.28 6.697z" />
-                                </svg>
-                            )}
-                            </span>
-                        </div>
-                        {isExpanded && (
-                            <div className="bg-gray-700 px-4 py-2">
-                            <ul>
-                                <li className="ml-5 mb-2">
-                                    <a className="text-gray-300 hover:text-white">Home</a>
-                                </li>
-                                <li className="ml-5 mb-2">
-                                    <a className="text-gray-300 hover:text-white">About</a>
-                                </li>
-                                <li className="ml-5 mb-2">
-                                    <a className="text-gray-300 hover:text-white">Contact</a>
-                                </li>
-                            </ul>
-                            </div>
-                        )} */}
                 </div>
 
                 {/* <!-- Main content --> */}
@@ -138,7 +101,25 @@ const Navigation = ({ user, children, moduleId, menuGroup }) => {
                                         width="48"
                                         trigger={
                                             <button className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
-                                                <div>{user?.data.name}</div>
+                                                <div className="mr-5">
+                                                    <svg
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-8 w-8 text-gray-600">
+                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5" />
+                                                    </svg>
+
+
+                                                    {notificationCount > 0 && (
+                                                    <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
+                                                        {notificationCount}
+                                                    </div>
+                                                    )}
+                                                </div>
+                                                <div>{props.user?.data.name}</div>
                                                 <div className="ml-1">
                                                     <svg
                                                         className="fill-current h-4 w-4"
@@ -225,10 +206,10 @@ const Navigation = ({ user, children, moduleId, menuGroup }) => {
 
                                         <div className="ml-3">
                                             <div className="font-medium text-base text-gray-800">
-                                                {user?.name}
+                                                {props.user?.name}
                                             </div>
                                             <div className="font-medium text-sm text-gray-500">
-                                                {user?.email}
+                                                {props.user?.email}
                                             </div>
                                         </div>
                                     </div>
@@ -243,7 +224,7 @@ const Navigation = ({ user, children, moduleId, menuGroup }) => {
                             </div>
                         )}
                     </nav>
-                    <main>{children}</main>
+                    <main>{props.children}</main>
                 </div>
             </div>
         </div>  
