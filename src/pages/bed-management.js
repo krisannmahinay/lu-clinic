@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import withAuth from './withAuth'
+
 
 const BedManagement = () => {
     const moduleId = "bed-management";
@@ -31,4 +33,4 @@ const BedManagement = () => {
     )
 }
 
-export default BedManagement
+export default withAuth(BedManagement)

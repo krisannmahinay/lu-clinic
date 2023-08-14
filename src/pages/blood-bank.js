@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import withAuth from './withAuth'
+
 
 const BloodBank = () => {
     const moduleId = "blood-banks"
@@ -32,4 +34,4 @@ const BloodBank = () => {
     )
 }
 
-export default BloodBank
+export default withAuth(BloodBank)

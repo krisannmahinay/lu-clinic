@@ -2,8 +2,10 @@ import { useEffect } from 'react'
 import Head from 'next/head'
 
 import AppLayout from '@/components/Layouts/AppLayout'
+import withAuth from './withAuth'
 
-const Enquiries = () => {
+
+const Inventory = () => {
     const moduleId = "inventory";
 
     return (
@@ -32,4 +34,4 @@ const Enquiries = () => {
     )
 }
 
-export default Enquiries
+export default withAuth(Inventory)
