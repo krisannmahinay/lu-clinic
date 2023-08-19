@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react"
 import { useCreateUserBatchMutation } from '@/service/settingService'
+import AlertError from "./AlertError"
 
 
 
-const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
+const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
     // const [formData, setFormData] = useState({})
     const [formData, setFormData] = useState([])
     const [idCounter, setIdCounter] = useState(0)
-    const [createUserBatch, { isLoading, isError, error }] = useCreateUserBatchMutation();
+    const [alertType, setAlertType] = useState("")
+    const [isOpen, setIsOpen] = useState(false)
+    const [message, setMessage] = useState([])
+    const [createUserBatch, { isLoading, isError, error, isSuccess }] = useCreateUserBatchMutation();
 
 
     useEffect(() => {
@@ -22,6 +26,13 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
                 index === rowIndex ? { ...row, fields: {...row.fields, [fieldName]: fieldValue }} : row 
             )
         )
+    }
+
+    // console.log(isSuccess)
+
+    const handleAlertClose = () => {
+        setMessage([])
+        setIsOpen(false)
     }
 
     const handleAddRow = () => {
@@ -47,15 +58,28 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
         createUserBatch(formData)
             .unwrap()
             .then(response => {
-                console.log(response)
+                if(response.status === "success") {
+                    setAlertType("sucess")
+                    setMessage(response.message)
+                    setIsOpen(true)
+                    setFormData([])
+                    onSucess(1)
+                }
             })
             .catch(error => {
-                console.log(error)
+                // console.log(error)
+                if(error.status === 500) {
+                    setAlertType("error")
+                    setMessage("You have inputted duplicate email")
+                    setIsOpen(true)
+                }
             })
         
         
     // const userData = userList?.userList ?? []
     }
+
+    // console.log(success)
 
     const renderForm = (row, rowIndex) => {
         // console.log(row)
@@ -64,7 +88,7 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
             <div key={field.name} className="w-full px-2 mb-4">
                 {field.type === "text" && (
                     <>
-                        <label htmlFor={field.name} className="block text-gray-600 mb-2">
+                        <label htmlFor={field.name} className="block text-sm text-gray-600 mb-2 uppercase">
                             {field.label}
                         </label>
                         <input
@@ -81,7 +105,7 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
 
                 {field.type === "password" && (
                     <>
-                        <label htmlFor={field.name} className="block text-gray-600 mb-2">
+                        <label htmlFor={field.name} className="block text-sm text-gray-600 mb-2 uppercase">
                             {field.label}
                         </label>
                         <input
@@ -100,7 +124,7 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
 
                 {field.type === 'email' && (
                     <>
-                        <label htmlFor={field.name} className="block text-gray-600 mb-2">
+                        <label htmlFor={field.name} className="block text-sm text-gray-600 mb-2 uppercase">
                             {field.label}
                         </label>
                         <input
@@ -118,7 +142,7 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
 
                 {field.type === 'dropdown' && (
                     <>
-                        <label htmlFor={field.name} className="block text-gray-600 mb-2">{field.label}:</label>
+                        <label htmlFor={field.name} className="block text-sm text-gray-600 mb-2 uppercase">{field.label}:</label>
                         <select
                             name={field.name}
                             value={row.fields[field.name]}
@@ -141,6 +165,21 @@ const Form = ({initialFields = [], loginBtn, addUserBtn}) => {
 
     return (
         <>
+        {isOpen && (
+            <AlertError 
+                alertType={alertType}
+                isOpen={alertType !== null ? true : false}
+                onClose={handleAlertClose}
+                message={message} 
+                
+                // isOpen={alertType !== null ? true : false}
+                // isOpen={responseCode!== null}
+                // type={statusMessage} 
+                // alertType={alertType}
+                // code={responseCode} 
+            />
+        )}
+        
             <div className="tab-content p-4">
                 <form onSubmit={handleSubmit}>
                     {addUserBtn && (
