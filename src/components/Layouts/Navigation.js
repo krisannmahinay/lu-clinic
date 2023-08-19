@@ -18,10 +18,11 @@ import { DropdownButton } from '@/components/DropdownLink'
 import ApplicationLogo from '@/components/ApplicationLogo'
 import ResponsiveNavLink, 
 { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
+import SkeletonSidebarScreen from '../SkeletonSidbarScreen'
 
 const Navigation = ({ ...props }) => {
     // props: user, children, moduleId, menuGroup
-    
+    // const isLoading = true
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
@@ -59,7 +60,7 @@ const Navigation = ({ ...props }) => {
                     )}
                 </nav>
 
-                <div className={`w-64 bg-[#343a40] sticky top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 ${sidebarOpen ? 'block' : '-translate-x-full hidden'}`}>
+                <div className={`w-64 bg-[#343a40] fixed h-full top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 ${sidebarOpen ? 'block' : '-translate-x-full hidden h-ful'}`}>
                     {/* <div className="flex items-center justify-between p-6 border-l-slate-400"> */}
                     <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 mb-2 border-b-2 border-b-gray-500">
                         <div className="flex items-center">
@@ -74,12 +75,17 @@ const Navigation = ({ ...props }) => {
                     </div>
 
                     {/* <!-- Sidebar content --> */}
-                    <Module data={module} menuGroup={props.menuGroup}/>
+                    {props.isLoading ? (
+                        <SkeletonSidebarScreen />
+                    ) : (
+                        <Module data={module} menuGroup={props.menuGroup}/>
+                    )}
+
                     
                 </div>
 
                 {/* <!-- Main content --> */}
-                <div className="flex-grow bg-gray-100">
+                <div className={`flex-grow bg-gray-100 ${sidebarOpen ? 'ml-64' : 'w-full'}`}>
                     <nav className="bg-white border-b border-gray-100">
                         <div className="mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between h-16">

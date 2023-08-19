@@ -9,12 +9,12 @@ import Navigation from '@/components/Layouts/Navigation'
 
 
 
-const AppLayout = ({ header, children, moduleId, menuGroup }) => {
+const AppLayout = ({ header, children, moduleId, menuGroup, isLoading }) => {
     const router = useRouter()
     const dispatch = useDispatch()
     const [loadingTime, setLoadingTime] = useState(false)
     const [userData, setUserData] = useState(null)
-    const { data, isLoading, success } = useGetUserDetailsQuery()
+    const { data, success } = useGetUserDetailsQuery()
 
     // const { data, isLoggedIn, loading, success } = useSelector((state) => state.auth)
     // const data = useSelector((state) => state.auth)
@@ -22,7 +22,7 @@ const AppLayout = ({ header, children, moduleId, menuGroup }) => {
 
     
     // console.log(data)
-    return <Navigation user={data} menuGroup={menuGroup} moduleId={moduleId} children={children}/>
+    return <Navigation user={data} menuGroup={menuGroup} isLoading={isLoading} moduleId={moduleId} children={children}/>
 }
 
 export default AppLayout

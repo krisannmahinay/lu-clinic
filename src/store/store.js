@@ -9,6 +9,7 @@ import thunk from 'redux-thunk';
 const persistConfig = {
     key: 'root',
     storage,
+    whitelist: ['auth']
 };
 
 const persisAuthReducer = persistReducer(persistConfig, authReducer)
@@ -18,7 +19,7 @@ export const makeStore = () => {
     reducer: {
         auth: persisAuthReducer,
         [authApi.reducerPath]: authApi.reducer,
-        [settingApi.reducerPath]: settingApi.reducer,
+        [settingApi.reducerPath]: settingApi.reducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(
       thunk, 

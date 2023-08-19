@@ -2,10 +2,8 @@ import 'tailwindcss/tailwind.css'
 import Head from 'next/head'
 import getConfig from "next/config"
 import { useEffect, useState } from 'react'; 
-import { useRouter } from 'next/router'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
-import { useDispatch, useSelector } from 'react-redux'
 import { makeStore } from '@/store/store'
 import Loading from '@/components/Loading'
 
@@ -20,7 +18,7 @@ export default function App ({Component, pageProps}) {
         // Simulate a 2-second loading delay
         setTimeout(() => {
           setIsLoading(false);
-        }, 1000); // Adjust the delay time as needed
+        }, 500); // Adjust the delay time as needed
       }, []);
 
     return (
