@@ -30,7 +30,7 @@ const Module = ({data, menuGroup}) => {
             {menus.map((item, index) => (
                 // console.log(item)
                 <nav className="bg-[#343a40]">
-                    <ul className="py-0.5 px-2 ">
+                    <ul className="mx-2 my-2 px-2 ">
                         {item.module.type === 'sub' ? (
                             <>
                                 {menuGroup === 'settings' && (
@@ -41,13 +41,13 @@ const Module = ({data, menuGroup}) => {
                                         
                                         <div
                                             className={`${router.pathname === `/settings/${item.permission.module_id}` 
-                                                    ? 'bg-[#5e6064] flex px-3 py-2 cursor-pointer text-[#fff] rounded-lg' 
-                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                                    ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
+                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
                                                     ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
                                             <svg 
                                                 className="" 
                                                 dangerouslySetInnerHTML={{__html: item.module.icon}} 
-                                                style={{ width: '1.7rem', height: '1.6rem', marginRight: '5px'}}>
+                                                style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
                                             </svg>
                                             {item.module.name}
                                         </div>
@@ -63,13 +63,13 @@ const Module = ({data, menuGroup}) => {
                                         
                                         <div
                                             className={`${router.pathname === `/settings/${item.permission.module_id}` 
-                                                    ? 'bg-[#5e6064] flex px-3 py-2 cursor-pointer text-[#fff] rounded-lg' 
-                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                                    ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
+                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
                                                     ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
                                             <svg 
                                                 className="" 
                                                 dangerouslySetInnerHTML={{__html: item.module.icon}} 
-                                                style={{ width: '1.7rem', height: '1.6rem', marginRight: '5px'}}>
+                                                style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
                                             </svg>
                                             {item.module.name}
                                         </div>
@@ -85,13 +85,13 @@ const Module = ({data, menuGroup}) => {
                                     
                                     <div
                                         className={`${router.pathname === `/${item.permission.module_id}` 
-                                                ? 'bg-[#5e6064] flex px-3 py-2 cursor-pointer text-[#fff] rounded-lg' 
-                                                : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-3 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                                ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
+                                                : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
                                                 ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
                                         <svg 
                                             className="" 
                                             dangerouslySetInnerHTML={{__html: item.module.icon}} 
-                                            style={{ width: '1.7rem', height: '1.6rem', marginRight: '5px'}}>
+                                            style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
                                         </svg>
                                         {item.module.name}
                                     </div>
