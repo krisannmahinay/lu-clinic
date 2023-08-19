@@ -17,30 +17,24 @@ export const settingApi = createApi({
 
     endpoints: (builder) => ({
         getUserList: builder.query({
-            query: () => ({
-                url: '/user-list',
-                method: 'GET'
-            }),
-            provides: ['users'],
-            // keep the unused data in the cache
+            query: (args) => {
+                const { keywords, items, page } = args
+                return {
+                    url: '/user-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at'
+                    }
+                }
+            },
             keepUnusedData: true,
-            // refetch data when component mounts
             refetchOnMount: true,
-            // render time, before trigger the refetch
             staleTime: 60,
-            // data duration before it cached after the last refetch
             cacheTime: 300,
-            // prevent from cache being cleared
-            keepAllData: true,
-            
-            // selectFromResult: (result) => result.data,
-            // transformResponse: (response) => {
-            //     console.log(response)
-                // const filteredData = response.data.filter((item) => item !== null)
-                // const uniqueData = [...new Set(filteredData)]
-
-                // return uniqueData
-            // }
+            keepAllData: true
         }),
         getPermissionList: builder.query({
             query: () => ({
