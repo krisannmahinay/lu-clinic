@@ -8,8 +8,11 @@ const userToken = Cookies.get('token')
     ? Cookies.get('token') 
     : null;
 
+const isLoggedIn = Cookies.get('isLoggedIn') 
+    ? Cookies.get('isLoggedIn') 
+    : null;
 
-// console.log(userToken)
+console.log(userToken)
 
 const initialState = {
     loading: false,
@@ -18,7 +21,8 @@ const initialState = {
     userToken,
     error: null,
     success: false,
-    isLoggedIn: false,
+    // isLoggedIn: false,
+    isLoggedIn,
     module: null
 }
 
@@ -50,18 +54,17 @@ const authSlice = createSlice({
                 state.isLoggedIn = false
             })
             .addCase(userLogin.fulfilled, (state, action) => {
-                // console.log(action)
+                // console.log(state.isLoggedIn)
                 state.loading = false
-                if(action.payload.userInfo !== "") {
-                    state.success = true
-                    state.userInfo = action.payload
-                    state.userToken = action.payload.token,
-                    state.isLoggedIn = action.payload.loggedIn
-                }
+                state.success = false
+                state.userInfo = action.payload,
+                state.userToken = action.payload.token
+                // if(action.payload.userInfo !== "") {
+                    
+                //     state.isLoggedIn = action.payload.loggedIn
+                // }
+                Router.push('/dashboard')
 
-                if(state.isLoggedIn === true) {
-                    Router.push('/dashboard')
-                }
             })
             .addCase(userLogin.rejected, (state, action) => {
                 state.loading = false
