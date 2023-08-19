@@ -47,7 +47,7 @@ export default function Login() {
 
     return (
         <GuestLayout>
-            <div className='flex items-center justify-center h-screen bg-gray-100'>
+            <div className='flex items-center justify-center h-[80vh] '>
                 {error && (<AlertError initState={false} message={error}/>)}
                 <div className="bg-white p-8 rounded shadow-md">
                     <h2 className="text-2xl font-bold mb-6">Login</h2>

@@ -1,13 +1,21 @@
 import { useEffect } from 'react'
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import { 
+    useGetUserListQuery, 
+    useGetPermissionListQuery, 
+    useGetModuleListQuery } 
+from '@/service/settingService'
 import withAuth from './withAuth'
 
 const Dashboard = () => {
     const moduleId = "dashboard";
+    const { isLoading: moduleListLoading} = useGetModuleListQuery()
 
     return (
         <AppLayout
+            isLoading={moduleListLoading}
+        
             moduleId={moduleId}
             menuGroup={moduleId}
             header={
