@@ -1,5 +1,6 @@
 import { useState, Fragment, useEffect } from "react"
 
+import CustomCKEditor from "./CustomCKEditor"
 
 const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
     const [activeTab, setActiveTab] = useState(1)
@@ -47,7 +48,9 @@ const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
                         <Fragment key={index}>
                             {activeTab === index + 1 && (
                                <div className="tab-content p-2">
-                                    {modal && Array.isArray(tab.content) ? (
+                                    {tab.ckeditor && activeTab ? (
+                                        <CustomCKEditor  {...tab.ckeditorProps} />
+                                    ) :  modal && Array.isArray(tab.content) ? (
                                         <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
                                             {tab.content.map((item) => (
                                                 
@@ -66,7 +69,7 @@ const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
                                                 </li>
                                             ))}
                                         </ul>
-                                    ): (
+                                    ) : (
                                         <div className="text-lg text-gray-500">{tab.content}</div>
                                     )}
                                </div>
