@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage'
 import authReducer from './reducers/authSlice'
 import { authApi } from '../service/authService'
 import { settingApi } from '../service/settingService'
+import { loginApi } from '../service/loginService'
 import thunk from 'redux-thunk';
 
 const persistConfig = {
@@ -19,12 +20,14 @@ export const makeStore = () => {
     reducer: {
         auth: persisAuthReducer,
         [authApi.reducerPath]: authApi.reducer,
-        [settingApi.reducerPath]: settingApi.reducer
+        [settingApi.reducerPath]: settingApi.reducer,
+        [loginApi.reducerPath]: loginApi.reducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(
       thunk, 
       authApi.middleware,
-      settingApi.middleware
+      settingApi.middleware,
+      loginApi.middleware,
     ) 
   })
   const persistor = persistStore(store)

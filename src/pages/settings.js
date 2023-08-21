@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { 
     useGetUserListQuery, 
@@ -12,11 +13,10 @@ import AppLayout from '@/components/Layouts/AppLayout'
 import Table from '@/components/Table'
 import Form from '@/components/Form'
 import Card from '@/components/Card'    
-import AlertError from '@/components/AlertError'
+import Alert from '@/components/Alert'
 import withAuth from './withAuth'
 import Pagination from '@/components/Pagination'
 import SearchItemPage from '@/components/SearchItemPage'
-
 
 const Setting = () => {
 
@@ -107,7 +107,7 @@ const Setting = () => {
             </Head>
 
             <div className="p-8">
-                {/* <AlertError message={error}/> */}
+                {/* <Alert message={error}/> */}
 
                 <Card title="Create User">
                     <Form 
@@ -141,6 +141,7 @@ const Setting = () => {
                     onPageChange={(newPage) => handleNewPage(newPage)}
                 />
             </div>
+
 
         </AppLayout>
     )

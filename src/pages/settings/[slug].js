@@ -1,17 +1,26 @@
+import Head from 'next/head'
+import { useState, useEffect } from "react"
+import { useRouter } from "next/router"
 import AppLayout from "@/components/Layouts/AppLayout"
 import NavTab from "@/components/NavTab"
-import Head from 'next/head'
-import { useRouter } from "node_modules/next/router"
-
+// import CKEditor from "@/components/CKEditor5"
 
 const SubModule = () => {
+    
     const router = useRouter()
     const { slug } = router.query
     const menuGroup = "settings"
 
+    const [editorData, setEditorData] = useState("");
+    // const [editorLoaded, setEditorLoaded] = useState(false)
+
+    // useEffect(() => {
+    //     setEditorLoaded(true);
+    // }, [])
+
+
     const chargesData = [
-        {
-            label: 'Charges', 
+        {label: 'Charges', 
             content: "Content for Tab 1 goes here", 
             table:true,
             tableTitle: "Users",
@@ -143,6 +152,49 @@ const SubModule = () => {
         }
     ]
 
+    const systemData = [
+        {
+            label: 'Home', 
+            content: "",
+            ckeditor: true,
+            ckeditorProps: {
+                onChange: (data) => setEditorData(data),
+                // editorLoaded: editorLoaded   
+            },
+            table:true,
+            tableTitle: "",
+            tableContent: ""
+        },
+        {
+            label: 'About Us', 
+            content: "Content for Tab 1 goes here", 
+            table:false,
+            tableTitle: "",
+            tableContent: ""
+        },
+        {
+            label: 'Services', 
+            content: "Content for Tab 1 goes here", 
+            table:false,
+            tableTitle: "",
+            tableContent: ""
+        },
+        {
+            label: 'Doctors', 
+            content: "Content for Tab 1 goes here", 
+            table:false,
+            tableTitle: "",
+            tableContent: ""
+        },
+        {
+            label: 'Contact Us', 
+            content: "Content for Tab 1 goes here", 
+            table:false,
+            tableTitle: "",
+            tableContent: ""
+        },
+    ]
+
     return (
         <AppLayout
             moduleId={slug}
@@ -157,7 +209,10 @@ const SubModule = () => {
             </Head>
             <div className="p-8">
                 {slug === 'system' && (
-                    <h1>Slug ID: {slug}</h1>
+                    <>
+                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">System Configuration</div>
+                        <NavTab tabsData={systemData}/>
+                    </>
                 )}
 
                 {slug === 'charges' && (

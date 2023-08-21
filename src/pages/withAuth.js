@@ -1,26 +1,31 @@
 import SystemError from '@/components/SystemError'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useLoginMutation } from '@/service/loginService'
+import { useGetUserDetailsQuery } from '@/service/authService'
+import { useGetModuleListQuery } from '@/service/settingService'
 
 const withAuth = (WrappedContent) => {
     return (props) => {
-        const { data, loading, isLoggedIn, success } = useSelector((state) => state.auth)
-        // const { loading, success, isLoggedIn } = data
-        const router = useRouter()
+        // const [login, { isLoading, isError, error, isSuccess }] = useLoginMutation()
+        // const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
+        
+        // const moduleData = moduleList?.moduleList ?? []
+        const {status, isSuccess} = useGetUserDetailsQuery()
+        // const router = useRouter()
 
-
-        // console.log(data)
-        // if(!isLoggedIn) {
-        //     router.push('/login')
-
-        //     if(!success) {
-        //         return <SystemError />
-        //     }
+        // console.log(moduleData)
+        // // console.log(data)
+        if(status === "fulfilled") {
+            if(!isSuccess) {
+                return <SystemError />
+            }
+        }
+        
+        // if(!isError) {
         // }
         
         return <WrappedContent {...props}/>
-            
     }
 }
 
