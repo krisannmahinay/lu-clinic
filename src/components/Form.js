@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useCreateUserBatchMutation } from '@/service/settingService'
-import AlertError from "./AlertError"
+import Alert from "./Alert"
 
 
 
@@ -8,9 +8,10 @@ const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
     // const [formData, setFormData] = useState({})
     const [formData, setFormData] = useState([])
     const [idCounter, setIdCounter] = useState(0)
+    
     const [alertType, setAlertType] = useState("")
-    const [isOpen, setIsOpen] = useState(false)
-    const [message, setMessage] = useState([])
+    const [alertOpen, setAlertOpen] = useState(false)
+    const [alertMessage, setAlertMessage] = useState([])
     const [createUserBatch, { isLoading, isError, error, isSuccess }] = useCreateUserBatchMutation();
 
 
@@ -31,8 +32,8 @@ const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
     // console.log(isSuccess)
 
     const handleAlertClose = () => {
-        setMessage([])
-        setIsOpen(false)
+        setAlertMessage([])
+        setAlertOpen(false)
     }
 
     const handleAddRow = () => {
@@ -60,8 +61,8 @@ const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
             .then(response => {
                 if(response.status === "success") {
                     setAlertType("sucess")
-                    setMessage(response.message)
-                    setIsOpen(true)
+                    setAlertMessage(response.message)
+                    setAlertOpen(true)
                     setFormData([])
                     onSucess(1)
                 }
@@ -70,8 +71,8 @@ const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
                 // console.log(error)
                 if(error.status === 500) {
                     setAlertType("error")
-                    setMessage("You have inputted duplicate email")
-                    setIsOpen(true)
+                    setAlertMessage("You have inputted duplicate email")
+                    setAlertOpen(true)
                 }
             })
         
@@ -165,12 +166,12 @@ const Form = ({initialFields = [], loginBtn, addUserBtn, onSucess}) => {
 
     return (
         <>
-        {isOpen && (
-            <AlertError 
+        {alertOpen && (
+            <Alert 
                 alertType={alertType}
                 isOpen={alertType !== null ? true : false}
                 onClose={handleAlertClose}
-                message={message} 
+                message={alertMessage} 
                 
                 // isOpen={alertType !== null ? true : false}
                 // isOpen={responseCode!== null}
