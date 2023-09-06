@@ -33,10 +33,13 @@ const Alert = ({ isOpen: propIsOpen, message, alertType, onClose}) => {
   const { color, icon } = alertDetails[alertType] || {}
   const closeDuration = 3000
 
+
   useEffect(() => {
     if(propIsOpen) {
       setIsRendered(true)
-      const autoClose = setTimeout( closeDuration)
+      const autoClose = setTimeout(() => {
+          close()
+      }, closeDuration)
       return () => clearTimeout(autoClose)
     }
   }, [propIsOpen])
@@ -55,6 +58,7 @@ const Alert = ({ isOpen: propIsOpen, message, alertType, onClose}) => {
     return null
   }
 
+  // console.log(propIsOpen)
 
   return (
       <Transition
@@ -73,9 +77,11 @@ const Alert = ({ isOpen: propIsOpen, message, alertType, onClose}) => {
               <span className="inline-block w-5 h-5 mr-3">{icon}</span>
               <span className="inline-block align-middle mr-8" dangerouslySetInnerHTML={{ __html: message }} />
             </div>
-            <button className="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onClick={close}>
-              <span>×</span>
-            </button>
+              {propIsOpen && (
+                <button className="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onClick={close}>
+                  <span>×</span>
+                </button>
+              )}
           </div>
       </Transition>
   )
