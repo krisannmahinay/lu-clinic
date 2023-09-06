@@ -48,29 +48,29 @@ const authSlice = createSlice({
     extraReducers: (builder) => {
         builder
             // user login
-            .addCase(userLogin.pending, (state) => {
-                state.error = null,
-                state.loading = true
-                state.isLoggedIn = false
-            })
-            .addCase(userLogin.fulfilled, (state, action) => {
-                // console.log(state.isLoggedIn)
-                state.loading = false
-                state.success = false
-                state.userInfo = action.payload,
-                state.userToken = action.payload.token
-                // if(action.payload.userInfo !== "") {
+            // .addCase(userLogin.pending, (state) => {
+            //     state.error = null,
+            //     state.loading = true
+            //     state.isLoggedIn = false
+            // })
+            // .addCase(userLogin.fulfilled, (state, action) => {
+            //     // console.log(state.isLoggedIn)
+            //     state.loading = false
+            //     state.success = false
+            //     state.userInfo = action.payload,
+            //     state.userToken = action.payload.token
+            //     // if(action.payload.userInfo !== "") {
                     
-                //     state.isLoggedIn = action.payload.loggedIn
-                // }
-                Router.push('/dashboard')
+            //     //     state.isLoggedIn = action.payload.loggedIn
+            //     // }
+            //     Router.push('/dashboard')
 
-            })
-            .addCase(userLogin.rejected, (state, action) => {
-                state.loading = false
-                state.isLoggedIn = false
-                state.error = action.payload
-            }) 
+            // })
+            // .addCase(userLogin.rejected, (state, action) => {
+            //     state.loading = false
+            //     state.isLoggedIn = false
+            //     state.error = action.payload
+            // }) 
 
             // catch user modules
             .addCase(userGrants.pending, (state) => {

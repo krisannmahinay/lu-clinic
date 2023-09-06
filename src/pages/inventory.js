@@ -3,13 +3,24 @@ import Head from 'next/head'
 
 import AppLayout from '@/components/Layouts/AppLayout'
 import withAuth from './withAuth'
+import Cookies from 'js-cookie'
+import { 
+    useGetUserListQuery, 
+    useGetPermissionListQuery, 
+    useGetModuleListQuery } 
+from '@/service/settingService'
 
 
 const Inventory = () => {
-    const moduleId = "inventory";
+    const moduleId = "inventory"
+    const authToken = Cookies.get('token') 
+    const { isLoading: moduleListLoading, refetch: refetchModules, isError } = useGetModuleListQuery({},{
+        enabled: !!authToken
+    })
 
     return (
         <AppLayout
+            isLoading={moduleListLoading}
             moduleId={moduleId}
             menuGroup={moduleId}
             header={

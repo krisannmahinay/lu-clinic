@@ -18,7 +18,7 @@ const persisAuthReducer = persistReducer(persistConfig, authReducer)
 export const makeStore = () => {
   const store = configureStore({
     reducer: {
-        auth: persisAuthReducer,
+        // auth: persisAuthReducer,
         [authApi.reducerPath]: authApi.reducer,
         [settingApi.reducerPath]: settingApi.reducer,
         [loginApi.reducerPath]: loginApi.reducer
