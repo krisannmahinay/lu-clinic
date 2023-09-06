@@ -10,15 +10,13 @@ class MyDocument extends Document {
         return (
             <Html>
                 <Head>
-                <link href="https://cdnjs.cloudflare.com/ajax/libs/suneditor/2.41.3/css/suneditor.min.css" rel="stylesheet"/>
 
-                
                 </Head>
 
                 <body>
+                    
                     <Main />
                     <NextScript />
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/suneditor/2.41.3/suneditor.min.js"></script>
 
                 </body>
             </Html>
