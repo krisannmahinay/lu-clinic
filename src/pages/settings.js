@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, } from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import { 
@@ -7,7 +7,7 @@ import {
     useGetModuleListQuery 
 } from '@/service/settingService'
 
-import { useSearchQuery } from "@/service/searchService"
+import { useGetUserById } from "@/service/authService"
 
 import AppLayout from '@/components/Layouts/AppLayout'
 import Table from '@/components/Table'
@@ -17,6 +17,7 @@ import Alert from '@/components/Alert'
 import withAuth from './withAuth'
 import Pagination from '@/components/Pagination'
 import SearchItemPage from '@/components/SearchItemPage'
+import Modal from '@/components/Modal'
 
 const Setting = () => {
 
@@ -25,9 +26,14 @@ const Setting = () => {
     const [ modalId, setModalId ] = useState("") 
     const [ tableHeader, setTableHeader ] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
-
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const [alertType, setAlertType] = useState("")
+    const [alertMessage, setAlertMessage] = useState([])
+
+    const [refetchData, setRefetchData] = useState(false)
     // const [totalPages, setTotalPages] = useState(0)
     // const [perPage, setPerPage] = useState(0)
     
@@ -50,6 +56,7 @@ const Setting = () => {
         if(userSuccess && Array.isArray(userData) && userData.length > 0) {
             const headers = Object.keys(userData[0])
             setTableHeader(headers)
+            // setItemsPerPage(prev => prev + 1)
         }
     }, [userSuccess, userData])
 
@@ -59,12 +66,14 @@ const Setting = () => {
         setSearchQuery(q)
     }
 
-    const handleOpenModal = (data) => {
-        setModalId(data)
-    }
+    // const handleOpenModal = (data) => {
+    //     setModalId(data)
+    // }
 
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
+        // setRefetchData(true)
+        // setItemsPerPage(prev => prev + 1)
     }
 
     const handleCurrentPage = (page) => {
@@ -73,6 +82,30 @@ const Setting = () => {
 
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
+    }
+
+    const handleExportToPDF = () => {
+        
+    }
+
+    const handleAlertClose = () => {
+        setAlertType("")
+        setAlertMessage([])
+    }
+
+    const handleAlert = (data) => {
+        // setAlertType(data)
+        console.log(data)
+    }
+
+    const closeModal = () => {
+        // setSelectedRows([])
+        setIsModalOpen(false)
+    }
+
+    const handleRefetch = () => {
+        // setRefetchData(true)
+        setItemsPerPage(prev => prev + 1)
     }
 
     const userRegistration = [
@@ -107,31 +140,56 @@ const Setting = () => {
             </Head>
 
             <div className="p-8">
-                {/* <Alert message={error}/> */}
-
-                <Card title="Create User">
+                {/* <Card title="Create User">
                     <Form 
                         initialFields={userRegistration}
                         addUserBtn={true}
-                        onSucess={(page) => handleNewPage(page)}
+                        onSucess={handleRefetch}
                     />
-                </Card>
+                </Card> */}
+                
+                {alertMessage &&
+                    <Alert 
+                        alertType={alertType}
+                        isOpen={alertType !== ""}
+                        onClose={handleAlertClose}
+                        message={alertMessage} 
+                    /> 
+                }
+
+                <Modal 
+                    // title={title}
+                    slug={moduleId} 
+                    isOpen={isModalOpen} 
+                    onClose={closeModal}
+                    initialFields={userRegistration}
+                    addUserBtn={true}
+                    openId={modalId}
+                    onSuccess={handleRefetch}
+                    onSetAlertType={(data) => setAlertType(data)}
+                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                    // permission={permission} 
+                    // selectedRowId={selectedRows}
+                />
 
                 <SearchItemPage
+                    onExportToPDF={handleExportToPDF}
                     onChangeItemPage={(item) => handleItemsPerPageChange(item)}
                     onCurrentPage={(page) => handleCurrentPage(page)}
                     // onSearchResults={(results) => handleSearchResults(results)}
                     onSearch={(q) => handleSearch(q)}
+                    onAddClicked={() => setIsModalOpen(true)}
                 />
 
                 <Table 
                     title="User List" 
                     user={userData} 
+                    action={true}
                     permission={permissionData} 
                     module={moduleData} 
                     tableHeader={tableHeader}
                     isLoading={userListLoading}
-                    onOpenModal={handleOpenModal}
+                    onOpenModal={(id) => setModalId(id)}
                 />
 
                 <Pagination 
