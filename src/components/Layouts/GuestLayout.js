@@ -28,7 +28,9 @@ const GuestLayout = ({ children }) => {
                                 <a href="#" className="text-sm uppercase rounded-full hover:text-blue-700 hover:bg-white px-4 py-2">Contact Us</a>
                             </nav>
 
-                            <a href="/login" className="text-sm uppercase bg-white text-blue-500 hover:text-blue-700 py-4 px-8 rounded-full font-medium transition duration-300">Login</a>
+                            <Link href="/login" className="text-sm uppercase bg-white text-blue-500 hover:text-blue-700 py-4 px-8 rounded-full font-medium transition duration-300">
+                                Login
+                            </Link>
                         </div>
                     </div>
                 </header>
