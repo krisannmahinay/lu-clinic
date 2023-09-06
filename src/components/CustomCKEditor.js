@@ -1,11 +1,17 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
 
-const CustomCKEditor = ({ onChange, editorLoaded, name, value }) => {
+const CustomCKEditor = ({ onChange, name, value }) => {
+    
+    const [editorLoaded, setEditorLoaded] = useState(false)
     const editorRef = useRef({})
 
     useEffect(() => {
-        editorRef.current.CKEditor = require('@ckeditor/ckeditor5-react').CKEditor
-        editorRef.current.ClassicEditor = require('@ckeditor/ckeditor5-build-classic')
+        async function loadEditor() {
+            editorRef.current.CKEditor = require('@ckeditor/ckeditor5-react').CKEditor
+            editorRef.current.ClassicEditor = require('@ckeditor/ckeditor5-build-classic')
+            setEditorLoaded(true)
+        }
+        loadEditor()
     }, [])
 
     
@@ -15,7 +21,7 @@ const CustomCKEditor = ({ onChange, editorLoaded, name, value }) => {
     
     return (
         <>
-            {editorRef.current.CKEditor && editorRef.current.ClassicEditor && (
+            {editorLoaded && editorRef.current.CKEditor && editorRef.current.ClassicEditor && (
                 <editorRef.current.CKEditor
                     editor={editorRef.current.ClassicEditor}
                     data={value}
