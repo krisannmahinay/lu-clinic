@@ -33,14 +33,14 @@ const Module = ({data, menuGroup}) => {
                     <ul className="mx-2 my-2 px-2 ">
                         {item.module.type === 'sub' ? (
                             <>
-                                {menuGroup === 'settings' && (
+                                {menuGroup === 'patients' && (
                                     <NavLink 
                                         shallow
                                         key={item.permission.module_id}
-                                        href={`/settings/${item.permission.module_id}`}>
+                                        href={`/patients/${item.permission.module_id}`}>
                                         
                                         <div
-                                            className={`${router.pathname === `/settings/${item.permission.module_id}` 
+                                            className={`${router.asPath === `/patients/${item.permission.module_id}` 
                                                     ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
                                                     : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
                                                     ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
@@ -50,6 +50,29 @@ const Module = ({data, menuGroup}) => {
                                                 style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
                                             </svg>
                                             {item.module.name}
+                                            {/* {console.log(router.asPath)} */}
+                                        </div>
+                                    </NavLink>
+                                )}
+
+                                {menuGroup === 'settings' && (
+                                    <NavLink 
+                                        shallow
+                                        key={item.permission.module_id}
+                                        href={`/settings/${item.permission.module_id}`}>
+                                        
+                                        <div
+                                            className={`${router.asPath === `/settings/${item.permission.module_id}` 
+                                                    ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
+                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                                    ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
+                                            <svg 
+                                                className="" 
+                                                dangerouslySetInnerHTML={{__html: item.module.icon}} 
+                                                style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
+                                            </svg>
+                                            {item.module.name}
+                                            {/* {console.log(router.asPath)} */}
                                         </div>
                                     </NavLink>
                                 )}
@@ -58,11 +81,10 @@ const Module = ({data, menuGroup}) => {
                                     <NavLink 
                                         shallow
                                         key={item.permission.module_id}
-                                        // href={`/${item.permission.module_id}`}
                                         href={`/inventory/${item.permission.module_id}`}>
                                         
                                         <div
-                                            className={`${router.pathname === `/settings/${item.permission.module_id}` 
+                                            className={`${router.pathname === `/inventory/${item.permission.module_id}` 
                                                     ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
                                                     : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
                                                     ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
