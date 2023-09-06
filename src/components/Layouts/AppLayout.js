@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useGetUserDetailsQuery } from '@/service/authService'
 // import { fetchUserDetails } from '@/store/actions/authActions'
+import { useLoginMutation } from '@/service/loginService'
+import Cookies from 'js-cookie'
 
 // components
 import Navigation from '@/components/Layouts/Navigation'
@@ -14,15 +16,10 @@ const AppLayout = ({ header, children, moduleId, menuGroup, isLoading }) => {
     const dispatch = useDispatch()
     const [loadingTime, setLoadingTime] = useState(false)
     const [userData, setUserData] = useState(null)
-    const { data, success } = useGetUserDetailsQuery()
-
-    // const { data, isLoggedIn, loading, success } = useSelector((state) => state.auth)
-    // const data = useSelector((state) => state.auth)
-    // const data = useSelector((state) => state.auth.userDetails)
-
+    const [refetchAttempts, setRefetchAttempts] = useState(0)
     
-    // console.log(data)
-    return <Navigation user={data} menuGroup={menuGroup} isLoading={isLoading} moduleId={moduleId} children={children}/>
+
+    return <Navigation menuGroup={menuGroup} isLoading={isLoading} moduleId={moduleId} children={children}/>
 }
 
 export default AppLayout

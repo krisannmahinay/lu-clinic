@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import Cookies from 'js-cookie'
 
 
 export const authApi = createApi({
@@ -6,7 +7,8 @@ export const authApi = createApi({
     baseQuery: fetchBaseQuery({
          baseUrl: process.env.API_URL,
          prepareHeaders: (headers, {getState}) => {
-            const token = getState().auth.userToken
+            // const token = getState().auth.userToken
+            const token = Cookies.get('token')
             if(token) {
                 headers.set('authorization', `Bearer ${token}`)
                 return headers
@@ -15,27 +17,75 @@ export const authApi = createApi({
     }),
     endpoints: (builder) => ({
         getUserDetails: builder.query({
+            query: () => {
+                const session = Cookies.get('session');
+                return {
+                    url: '/user',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session 
+                    }
+                }
+            }
+        }),
+
+        getUserModules: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session');
+                const { moduleId } = args
+                return {
+                    url: '/grants',
+                    method: 'GET',
+                    params: {
+                        moduleId: moduleId,
+                        selectedDB: session 
+                    }
+                }
+            }
+        }),
+
+        getUserById: builder.query({
+            query: (args) => {
+                const { id } = args
+                return {
+                    url: '/user-by-id',
+                    method: 'GET',
+                    params: {
+                        id: id 
+                    }
+                }
+            }
+        }),
+
+        grantUserModule: builder.mutation({
+            query: dataArray => {
+                console.log(dataArray)
+                const session = Cookies.get('session')
+                return {
+                    url: '/grant-user-modules',
+                    method: 'POST',
+                    body: {
+                        data: dataArray,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        logout: builder.mutation({
             query: () => ({
-                url: '/user',
-                method: 'GET'
-            }),
-            // keep the unused data in the cache
-            keepUnusedData: true,
-            // refetch data when component mounts
-            refetchOnMount: true,
-            // render time, before trigger the refetch
-            staleTime: 60,
-            // data duration before it cached after the last refetch
-            cacheTime: 300,
-            // prevent from cache being cleared
-            keepAllData: true,
-            refetchOnFocus: true,
-            refetchOnReconnect: true,
-            // refetchIntervalInBackground: 60000,
-            
+                url: "/logout",
+                method: "POST"
+            })
         })
     })
 })
 
-export const { useGetUserDetailsQuery } = authApi
+export const { 
+    useGetUserDetailsQuery, 
+    useGetUserByIdQuery, 
+    useLogoutMutation, 
+    useGetUserModulesQuery ,
+    useGrantUserModuleMutation
+} = authApi
 // export const { authApi }

@@ -1,5 +1,8 @@
 import Link from 'next/link'
 
+import withAuth from '@/pages/withAuth'
+
+
 const ResponsiveNavLink = ({ active = false, children, ...props }) => (
     <Link
         {...props}
@@ -19,4 +22,4 @@ export const ResponsiveNavButton = props => (
     />
 )
 
-export default ResponsiveNavLink
+export default withAuth(ResponsiveNavLink)

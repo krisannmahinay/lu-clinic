@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
+import Cookies from 'js-cookie'
 import { 
     useGetUserListQuery, 
     useGetPermissionListQuery, 
@@ -9,13 +10,28 @@ from '@/service/settingService'
 import withAuth from './withAuth'
 
 const Dashboard = () => {
-    const moduleId = "dashboard";
-    const { isLoading: moduleListLoading} = useGetModuleListQuery()
+    const moduleId = "dashboard"
+    const authToken = Cookies.get('token') 
+    const { isLoading: moduleListLoading, refetch: refetchModules, isError, isSuccess } = useGetModuleListQuery({},{
+        enabled: !!authToken
+    })
+    // const data = useGetModuleListQuery({},{
+    //     enabled: !!authToken
+    // })
+
+    // useEffect(() => {
+    //     if(isError && refetchAttempts < MAX_REFETCH_ATTEMPTS) {
+    //         setRefetchAttempts(prevAttempts => prevAttempts + 1)
+    //         refetchModules()
+    //     }
+    // }, [authToken, refetchModules, refetchAttempts])
+
+    console.log(isSuccess)
+
 
     return (
         <AppLayout
             isLoading={moduleListLoading}
-        
             moduleId={moduleId}
             menuGroup={moduleId}
             header={

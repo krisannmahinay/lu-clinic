@@ -1,5 +1,6 @@
 import { useState, Fragment, useEffect } from "react"
 
+import CustomCKEditor from "./CustomCKEditor"
 
 const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
     const [activeTab, setActiveTab] = useState(1)
@@ -16,12 +17,12 @@ const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
     const handleCheckbox = (moduleId) => {
         if(checkedItem.includes(moduleId)) {
             setCheckedItem(checkedItem.filter((checked) => checked !== moduleId))
-            onCheckedData([...checkedItem])
+            // onCheckedData([...checkedItem])
             
         } else {
             setCheckedItem([...checkedItem, moduleId])
                 
-            onCheckedData([...checkedItem])
+            // onCheckedData([...checkedItem])
         }
     }
     // console.log(userId[0])
@@ -47,7 +48,7 @@ const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
                         <Fragment key={index}>
                             {activeTab === index + 1 && (
                                <div className="tab-content p-2">
-                                    {modal && Array.isArray(tab.content) ? (
+                                    {modal && Array.isArray(tab.content) && (
                                         <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
                                             {tab.content.map((item) => (
                                                 
@@ -66,9 +67,45 @@ const NavTab = ({tabsData, modal, tables, userId, onClose, onCheckedData}) => {
                                                 </li>
                                             ))}
                                         </ul>
-                                    ): (
+                                    )}
+
+                                    {tab.content !== "" && (
                                         <div className="text-lg text-gray-500">{tab.content}</div>
                                     )}
+
+                                    {tab.ckeditor && (
+                                        <>
+                                            <CustomCKEditor {...tab.ckeditorProps}/>
+                                            {tab.ckeditorProps}
+                                            <button>
+                                                Save
+                                            </button>
+                                        </>
+                                    )}
+
+
+                                    {/* { modal && Array.isArray(tab.content) ? (
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
+                                            {tab.content.map((item) => (
+                                                
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-4 p-4 ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-5 h-5"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            checked={checkedItem.includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
+                                                        />
+                                                        <p className="text-lg text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <div className="text-lg text-gray-500">{tab.content}</div>
+                                    )} */}
                                </div>
                             )}
                         </Fragment>

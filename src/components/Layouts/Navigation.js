@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
+import Cookies from 'js-cookie'
 // stores
 import { useDispatch, useSelector } from 'react-redux'
-import { logout, setModules } from '@/store/reducers/authSlice'
-import { userGrants } from '@/store/actions/authActions'
-
+// import { logout, setModules } from '@/store/reducers/authSlice'
+// import { userGrants } from '@/store/actions/authActions'
+import { useLogoutMutation, useGetUserModulesQuery, useGetUserDetailsQuery } from '@/service/authService'
 import withAuth from '@/pages/withAuth'
 
 // components
@@ -22,33 +23,45 @@ import SkeletonSidebarScreen from '../SkeletonSidbarScreen'
 
 const Navigation = ({ ...props }) => {
     // props: user, children, moduleId, menuGroup
-    // const isLoading = true
+    const screenLoading = true
+    const MAX_REFETCH_ATTEMPTS = 3
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [notificationCount, setNotificationCount] = useState(7);
+    const authToken = Cookies.get('token') 
+    const [refetchAttempts, setRefetchAttempts] = useState(0)
 
-    // state from store
-    const { module, isLoggedIn } = useSelector((state) => state.auth)
-
-    // GET MODULES
-    useEffect(() => {
-        dispatch(userGrants(props.moduleId))
-    }, [dispatch, props.moduleId])
+    
+    const [logout, { isLoading, isError, error, isSuccess }] = useLogoutMutation()
+    const { data: module, isLoading: moduleIsLoading, isError: moduleIsError, refetch: refetchUserModules } = useGetUserModulesQuery({
+        moduleId: props.moduleId
+    })
+    
+    const { data: data, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
     const toggleSidebar = () => { 
         setSidebarOpen(!sidebarOpen) 
     }
     
-    const handleLogout = () => {
-        dispatch(logout())
+    const handleLogout = async () => {
+        try {
+            await logout()
+
+            Cookies.remove('token')
+            router.replace('/')
+        } catch (err) {
+            console.log(err)
+        }
+        
     }
 
     return (
+        
         <div className="min-h-screen bg-gray-100">
-            <div className="flex h-screen">
-                <nav className="bg-[#343a40]">
+            <div className="h-screen flex flex-row justify-start overflow-hidden">
+                <aside className="bg-[#343a40] transition-transform ease-out duration-300">
                     {!sidebarOpen && (
                         <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 border-b-2 border-b-gray-500">
                             <button className="text-white focus:outline-none" onClick={toggleSidebar}>
@@ -58,9 +71,9 @@ const Navigation = ({ ...props }) => {
                             </button>
                         </div>
                     )}
-                </nav>
+                </aside>
 
-                <div className={`w-64 bg-[#343a40] fixed h-full top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 ${sidebarOpen ? 'block' : '-translate-x-full hidden h-ful'}`}>
+                <aside className={`w-64 bg-[#343a40] fixed h-full top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     {/* <div className="flex items-center justify-between p-6 border-l-slate-400"> */}
                     <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 mb-2 border-b-2 border-b-gray-500">
                         <div className="flex items-center">
@@ -82,10 +95,12 @@ const Navigation = ({ ...props }) => {
                     )}
 
                     
-                </div>
+                </aside>
 
                 {/* <!-- Main content --> */}
                 <div className={`flex-grow bg-gray-100 ${sidebarOpen ? 'ml-64' : 'w-full'}`}>
+                {/* <div className="flex-grow bg-gray-100 w-full"> */}
+                {/* <div className="bg-gray-100 transition-width duration-300 w-full"> */}
                     <nav className="bg-white border-b border-gray-100">
                         <div className="mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between h-16">
@@ -125,7 +140,7 @@ const Navigation = ({ ...props }) => {
                                                     </div>
                                                     )}
                                                 </div>
-                                                <div>{props.user?.data.name}</div>
+                                                <div>{data?.data.name}</div>
                                                 <div className="ml-1">
                                                     <svg
                                                         className="fill-current h-4 w-4"
@@ -212,10 +227,10 @@ const Navigation = ({ ...props }) => {
 
                                         <div className="ml-3">
                                             <div className="font-medium text-base text-gray-800">
-                                                {props.user?.name}
+                                                {data?.name}
                                             </div>
                                             <div className="font-medium text-sm text-gray-500">
-                                                {props.user?.email}
+                                                {data?.email}
                                             </div>
                                         </div>
                                     </div>
@@ -237,4 +252,4 @@ const Navigation = ({ ...props }) => {
     )
 }
 
-export default Navigation
+export default withAuth(Navigation)
