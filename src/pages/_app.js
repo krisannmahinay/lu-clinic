@@ -1,4 +1,5 @@
 import 'tailwindcss/tailwind.css'
+import 'public/assets/css/style.css'
 import Head from 'next/head'
 import getConfig from "next/config"
 import { useEffect, useState } from 'react'; 
@@ -33,10 +34,10 @@ export default function App ({Component, pageProps}) {
                 )}
             </Head>
             <Provider store={store}>
-                <PersistGate loading={<Loading />} persistor={persistor}>
+                {/* <PersistGate loading={<Loading />} persistor={persistor}> */}
                     {/* <Component {...pageProps}/> */}
                     {isLoading ? <Loading /> : <Component {...pageProps} />}
-                </PersistGate>
+                {/* </PersistGate> */}
             </Provider>
         </>
     )
