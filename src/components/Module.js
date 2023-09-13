@@ -25,9 +25,23 @@ const Module = ({data, menuGroup}) => {
         }
     }
     
+
+    
+
+    
     return (
         <>
-            {menus.map((item, index) => (
+            {menus.map((item, index) => {
+                const isMainRouteActive = router.asPath === `/patients/${item.permission.module_id}`;
+                const isPatientSpecificRouteActive = router.asPath.startsWith(`/patients/${item.permission.module_id}/`);
+                const isActive = isMainRouteActive || isPatientSpecificRouteActive;
+            
+                const baseClasses = 'flex px-2 py-2 cursor-pointer rounded-lg';
+                const activeClasses = 'bg-[#5e6064] text-[#fff]';
+                const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#c2c7d0] text-[#c2c7d0]';
+                const subModuleClasses = item.module.type === 'sub' ? 'pl-9' : '';
+
+                return (
                 // console.log(item)
                 <nav className="bg-[#343a40]">
                     <ul className="mx-2 my-2 px-2 ">
@@ -38,12 +52,7 @@ const Module = ({data, menuGroup}) => {
                                         shallow
                                         key={item.permission.module_id}
                                         href={`/patients/${item.permission.module_id}`}>
-                                        
-                                        <div
-                                            className={`${router.asPath === `/patients/${item.permission.module_id}` 
-                                                    ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
-                                                    : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
-                                                    ${item.module.type === 'sub' ? 'pl-9' : ''}`}>
+                                        <div className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
                                             <svg 
                                                 className="" 
                                                 dangerouslySetInnerHTML={{__html: item.module.icon}} 
@@ -123,7 +132,10 @@ const Module = ({data, menuGroup}) => {
                         )}
                     </ul>
                 </nav>
-            ))}
+                )
+            }
+            
+            )}
         </>
     )
 }
