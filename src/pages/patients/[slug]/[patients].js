@@ -8,6 +8,15 @@ import Table from '@/components/Table'
 import Pagination from '@/components/Pagination'
 import SearchItemPage from '@/components/SearchItemPage'
 import HealthMonitor from '@/components/HealthMonitor'
+import ReactImageZoom from 'react-image-zoom'
+import ImagingResult from '@/components/ImagingResult'
+import Prescription from '@/components/Prescription'
+import AsyncSelect from 'react-select/async'
+import Select from 'react-select'
+
+import { useGetICDDataQuery } from '@/service/icdService'
+import { useGetCountryDataQuery } from '@/service/countryService'
+import { useGetProvinceDataQuery, useGetMunicipalityDataQuery, useGetBarangayDataQuery } from '@/service/psgcService'
 
 
 const soapData = [
@@ -93,6 +102,7 @@ const dummyData = [
 
 const labResults = [
     {
+        user_id: "",
         test_name: "Hemoglobin",
         result: 12,
         normal_range: "11.0 - 16.0",
@@ -101,6 +111,7 @@ const labResults = [
     },
     
     {
+        user_id: "",
         test_name: "RBC",
         result: "3.3",
         normal_range: "3.5-5.50",
@@ -108,6 +119,28 @@ const labResults = [
         date_examination: "06 Aug 2023 09:00AM"
     }
 ]
+
+const imagingResults = [
+    {
+        imaging_type: "XRAY",
+        imaging_src: "https://i.imgur.com/Ci2wzcv.jpg",
+        date_examination: "06 Aug 2023 09:00AM"
+    },
+]
+
+const prescriptionData = [
+    {
+        headerText: "Clinic Name",
+        footerText: "Clinic Adrress Location"
+    }
+]
+
+const icdDataHeaders = [
+    "icd_codes",
+    "name"
+]
+
+// console.log(icdDataHeaders)
 
 
 const SubModule = () => {
@@ -119,20 +152,106 @@ const SubModule = () => {
     const [tableHeader, setTableHeader] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
-    const [searchQuery, setSearchQuery] = useState("")
 
+    // monitoring sheets
     const [displayedHour, setDisplayedHour] = useState('')
     const [hour, setHour] = useState('')
     const [respiratoryRate, setRespiratoryRate] = useState('')
     const [pulseRate, setPulseRate] = useState('')
     const [temperature, setTemperature] = useState('')
-    
     const [checkedItem, setCheckedItem] = useState([])
+    
+    const [initialOptions, setInitialOptions] = useState([]) 
 
-    
-    
+    // prescription
     const [leftItems, setLeftItems] = useState(dummyData)
     const [rightItems, setRightItems] = useState([])
+    const [searchQuery, setSearchQuery] = useState("")
+
+    // patient information and consent
+    const [selectedProvince, setSelectedProvince] = useState(null)
+    const [selectedMunicipal, setSelectedMunicipal] = useState(null)
+    const [selectedBarangay, setSelectedBarangay] = useState(null)
+    const [selectedCountry, setSelectedCountry] = useState(null)
+    const [provinceCode, setProvinceCode] = useState(null)
+    const [municipalCode, setMunicipalCode] = useState(null)
+
+    const { data: countryData } = useGetCountryDataQuery()
+    const { data: provinceData } = useGetProvinceDataQuery()
+    const { data: municipalityData } = useGetMunicipalityDataQuery({provinceCode: provinceCode}, {enabled: !!provinceCode})
+    const { data: barangayData } = useGetBarangayDataQuery({municipalCode: municipalCode}, {enabled: !!municipalCode})
+
+    useEffect(() => {
+        if (provinceData) {
+            const options = provinceData.map(item => ({
+                value: item.code,
+                label: item.name
+            }))
+            setInitialOptions(options)
+        }
+    }, [provinceData])
+
+
+    const filterProvinceData = provinceData ?? []
+    const loadProvince = (inputValue, callback) => {
+        // Simulate an async search with a timeout. Replace this with your actual API call.
+        setTimeout(() => {
+            const filteredData = filterProvinceData.filter(item => 
+                item.name.toLowerCase().includes(inputValue.toLowerCase())
+            )
+
+            const options = filteredData.map(item => ({
+                value: item.code,
+                label: item.name
+            }))
+            callback(options)
+        }, 1000)
+    }
+
+    const handleProvinceChange = (selectedOption) => {
+        setSelectedProvince(selectedOption?.label)
+        setProvinceCode(selectedOption?.value)
+    }
+
+    const handleMunicipalityChange = (selectedOption) => {
+        setSelectedMunicipal(selectedOption?.label)
+        setMunicipalCode(selectedOption?.value)
+    }
+
+    const handleBarangayChange = (selectedOption) => {
+        setSelectedBarangay(selectedOption?.label)
+    }
+
+    const handleCountryChange = (selectedOption) => {
+        setSelectedCountry(selectedOption?.label)
+    }
+    
+    // console.log(provinceData.name)
+
+    // icd codes
+    const { data: icdResultData, isLoading, isError, error, isSuccess } = useGetICDDataQuery({
+        keywords: searchQuery
+    }, {
+        enabled: !!searchQuery
+    })
+    
+    // console.log(icdResultData)
+    
+    // const userData = userList?.userList ?? []
+    
+    const icdData = (icdResultData && icdResultData[3]) ? icdResultData[3] : []
+
+    const mappedIcdData = icdData.map(entry => {
+        return icdDataHeaders.reduce((obj, header, index) => {
+            obj[header] = entry[index]
+            return obj
+        }, {})
+    })
+
+
+    const handleICDSearch = (e) => {
+        setSearchQuery(e.target.value)
+    }
     
     const moveItemToRight = (id) => {
         const item = leftItems.find(item => item.id === id)
@@ -144,6 +263,23 @@ const SubModule = () => {
         const item = rightItems.find(item => item.id === id)
         setRightItems(prev => prev.filter(item => item.id !== id))
         setLeftItems(prev => [...prev, item])
+    }
+
+    const customDropdown = {
+        control: (provided) => ({
+            ...provided,
+            // border: '1px solid gray',
+            padding: '0.1em',
+            boxShadow: 'none',
+            '&:hover': {
+              borderColor: 'gray',
+              border: '1px solid gray'
+            },
+          }),
+          input: (provided) => ({
+            ...provided,
+            inputOutline: 'none',
+          }),
     }
 
     // console.log(soapData)
@@ -282,6 +418,10 @@ const SubModule = () => {
                                 onClick={() => setActiveTab('tab6')}
                                 className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab6' ? 'bg-white':'bg-gray-200'}`}>Monitoring Sheets
                             </button>
+                            <button 
+                                onClick={() => setActiveTab('tab7')}
+                                className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab7' ? 'bg-white':'bg-gray-200'}`}>ICD Codes
+                            </button>
                         </div>
                         
                         <div className="tab-content p-8 max-h-[70vh] overflow-y-auto scroll-custom">
@@ -306,251 +446,294 @@ const SubModule = () => {
                                         </div>
                                     </div>
 
-
+                                    
                                     <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                                        
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">LAST NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">LAST NAME</label>
                                             <input type="text" placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">GIVEN NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">GIVEN NAME</label>
                                             <input type="text" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">MIDDLE NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">MIDDLE NAME</label>
                                             <input type="text" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">WARD/RM/BED/SERVICE</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">WARD/RM/BED/SERVICE</label>
                                             <input type="text" placeholder="Enter warm/rm/bed/service" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
-                                        <div className="flex flex-col sm:w-1/6">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">No</label>
-                                            <input type="text" placeholder="Enter no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">COUNTRY</label>
+                                            <Select 
+                                                options={countryData?.map(country => ({ value: country.name, label: country.name }))}
+                                                onChange={handleCountryChange}
+                                                isSearchable={true}
+                                                isClearable={true}
+                                                placeholder="Select a country..."
+                                                classNamePrefix="react-select"
+                                                styles={customDropdown} 
+                                            />
+                                            {/* <input type="text" placeholder="Enter country" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" /> */}
                                         </div>
-                                        <div className="flex flex-col w-full sm:w-2/3">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">STREET</label>
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">PROVINCE</label>
+                                            <AsyncSelect 
+                                                cacheOptions
+                                                loadOptions={loadProvince}
+                                                defaultOptions={initialOptions}
+                                                onChange={handleProvinceChange}
+                                                isSearchable={true}
+                                                isClearable={true}
+                                                placeholder="Select a province..."
+                                                classNamePrefix="react-select"
+                                                styles={customDropdown} 
+                                            />
+                                        </div>
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">STATE/MUNICIPALITY</label>
+                                            <Select 
+                                                options={municipalityData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                onChange={handleMunicipalityChange}
+                                                isSearchable={true}
+                                                isClearable={true}
+                                                placeholder="Select a state..."
+                                                classNamePrefix="react-select"
+                                                styles={customDropdown} 
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">BARANGAY</label>
+                                            <Select 
+                                                options={barangayData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                onChange={handleBarangayChange}
+                                                isSearchable={true}
+                                                isClearable={true}
+                                                placeholder="Select a barangay..."
+                                                classNamePrefix="react-select"
+                                                styles={customDropdown} 
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">STREET</label>
                                             <input type="text" placeholder="Enter street" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
-                                        <div className="flex flex-col w-full sm:w-1/3">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">BARANGAY</label>
-                                            <input type="text" placeholder="Enter barangay" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">No/blk/lot</label>
+                                            <input type="text" placeholder="Enter no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
-                                        <div className="flex flex-col w-full sm:w-1/3">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">STATE/PROVINCE</label>
-                                            <input type="text" placeholder="Enter state/province" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                        </div>
-                                        <div className="flex flex-col w-full sm:w-1/3">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">COUNTRY</label>
-                                            <input type="text" placeholder="Enter country" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                        </div>
-                                        <div className="flex flex-col w-full sm:w-1/2">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TEL no./CP no.</label>
+                                        
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL no./CP no.</label>
                                             <input type="text" placeholder="Enter tel no./cp no." className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
-                                        <div className="flex flex-col w-full sm:w-1/4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Sex</label>
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Sex</label>
                                             <input type="text" placeholder="Enter sex" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
-                                        <div className="flex flex-col w-full sm:w-1/4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Civil Status</label>
+                                        <div className="flex flex-col w-full">
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Civil Status</label>
                                             <input type="text" placeholder="Enter civil status" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
                                     
                                     <div className="flex gap-4 mb-2">
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Birthday</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Birthday</label>
                                             <input type="date" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">age</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">age</label>
                                             <input type="text" placeholder="Enter age" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">birth place</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">birth place</label>
                                             <input type="text" placeholder="Enter birth-place" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">nationality</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">nationality</label>
                                             <input type="text" placeholder="Enter nationality" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">religion</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">religion</label>
                                             <input type="text" placeholder="Enter religion" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">occupation</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">occupation</label>
                                             <input type="text" placeholder="Enter occupation" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">EMPLOYER (Type of Business)</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">EMPLOYER (Type of Business)</label>
                                             <input type="text" placeholder="Enter employer" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADDRESS</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TEL NO/CP NO</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
                                             <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">FATHERS NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">FATHERS NAME</label>
                                             <input type="text" placeholder="Enter fathers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADDRESS</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TEL NO/CP NO</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
                                             <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">MOTHERS (Maiden) NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">MOTHERS (Maiden) NAME</label>
                                             <input type="text" placeholder="Enter mothers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADDRESS</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TEL NO/CP NO</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
                                             <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-4 mb-2">
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">SPOUSE NAME</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">SPOUSE NAME</label>
                                             <input type="text" placeholder="Enter spouse name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADDRESS</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TEL NO/CP NO</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
                                             <input type="text" placeholder="Enter number" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Admission</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admission</label>
                                             <input type="date" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">discharge</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">discharge</label>
                                             <input type="date" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">TOTAL NO. OF DAY</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TOTAL NO. OF DAY</label>
                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADMITTING PHYSICIAN</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Admitting Clerk</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admitting Clerk</label>
                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ADMITTING PHYSICIAN</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Type of Admission</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Type of Admission</label>
                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Referred by (Physician/ Health Facility)</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Referred by (Physician/ Health Facility)</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Data furnished by</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Data furnished by</label>
                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Address of Informant</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Address of Informant</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Relation to Patient</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Relation to Patient</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Admission Diagnosis</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admission Diagnosis</label>
                                             <textarea type="text" placeholder="Enter Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"/>
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Discharge Diagnosis</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Discharge Diagnosis</label>
                                             <textarea type="text" placeholder="Enter Principal Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none mb-4"/>
                                             <textarea type="text" placeholder="Enter Other Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">ICD/RUV Code</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ICD/RUV Code</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Principal Operation/Procedures</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Principal Operation/Procedures</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Other Operation's or Procedures</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Other Operation's or Procedures</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Accident/injuries/poisoning</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Accident/injuries/poisoning</label>
                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                     </div>
 
                                     <div className="flex  gap-4 mb-2">
                                         <div className="flex flex-col w-full mb-4">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Disposition</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Disposition</label>
                                             <ul className="">
                                                 {dispositionData.map((item) => (
                                                     
@@ -794,30 +977,71 @@ const SubModule = () => {
                                 
                             )}
                             {activeTab === 'tab4' && (
-                                
-                                <h1>tab4</h1>
+                                <>
+                                    <ImagingResult imageType="XRAY" data={imagingResults}/>
+                                </>
                             )}
                             {activeTab === 'tab5' && (
-                                
-                                <h1>tab3</h1>
+                                <div>
+                                    {/* <button>GeneratePDF</button> */}
+                                    {/* <Prescription data={prescriptionData}/> */}
+                                    <Prescription />
+                                </div>
+                                // <div className="border p-4">
+                                //     <div className="flex justify-between">
+                                //         <img src="/path-to-logo.png" alt="Hospital Logo" className="h-16 w-16"/>
+                                //         <div>
+                                //             <h1 className="text-xl font-bold">Hospital Name</h1>
+                                //             <p>Address</p>
+                                //             <p>Contact Number</p>
+                                //         </div>
+                                //     </div>
+                                    
+                                //     <div className="my-4">
+                                //         <p>Name: _____________________________ Date: ____________</p>
+                                //         <p>Age and Gender: _____________________________</p>
+                                //     </div>
+                                    
+                                //     <h2 className="text-center font-bold text-xl">REQUEST FORM</h2>
+                                    
+                                //     <table className="w-full mt-4 border">
+                                //         {/* // ... Your table rows and columns with checkboxes and data ... */}
+                                //     </table>
+                                    
+                                //     {/* // ... The rest of your components such as X-ray, ULTRASOUND, etc... */}
+                                    
+                                //     <div className="mt-4">
+                                //         <h3>INSTRUCTIONS</h3>
+                                //         <ul>
+                                //             <li>data from textarea</li>
+                                //             <li>data2 from textarea</li>
+                                //             <li>data3 from textarea</li>
+                                //         </ul>
+                                //     </div>
+                                    
+                                //     <div className="mt-4">
+                                //         <p>PRC No: ________________</p>
+                                //         <p>PTR No: ________________</p>
+                                //     </div>
+                                // </div>
                             )}
                             {activeTab === 'tab6' && (
                                 <>
                                     <div className="flex flex-col gap-4 mb-2 sm:flex-row">
                                         <div className="flex flex-col w-2/5">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Hour</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Hour</label>
                                             <input type="time" placeholder="Enter hour" value={displayedHour} step="3600" onChange={handleHourChange} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-2/5">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Respiratory Rate</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Respiratory Rate</label>
                                             <input type="text" placeholder="Enter RR" value={respiratoryRate} onChange={e => setRespiratoryRate(e.target.value)} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-2/5">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Pulse Rate</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Pulse Rate</label>
                                             <input type="text" placeholder="Enter PR" value={pulseRate} onChange={e => setPulseRate(e.target.value)} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         <div className="flex flex-col w-2/5">
-                                            <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Temperature</label>
+                                            <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Temperature</label>
                                             <input type="text" placeholder="Enter T" value={temperature} onChange={e => setTemperature(e.target.value)} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                                         </div>
                                         
@@ -826,6 +1050,28 @@ const SubModule = () => {
                                     </div>
                                     <HealthMonitor data={chartData}/>
                                 </>
+                            )}
+
+                            {activeTab === 'tab7' && (
+                                <div>
+                                    <h1>ICD Codes</h1>
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        // onChange={e => setSearchQuery(e.target.value)}
+                                        onChange={handleICDSearch}
+                                        className="border border-gray-300 w-full px-3 py-2 focus:outline-none flex-grow pl-10"
+                                        placeholder="Search..."
+                                    />
+                                    
+                                    <Table 
+                                        title="Patient List" 
+                                        action={false}
+                                        slug={slug}
+                                        tableHeader={icdDataHeaders}
+                                        user={mappedIcdData} 
+                                    />
+                                </div>
                             )}
                         </div>
                     </div>
