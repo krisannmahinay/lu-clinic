@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useSearchQuery } from "@/service/searchService"
 
 const SearchItemPage = ({onChangeItemPage, onCurrentPage, onSearchResults, onSearch, onExportToPDF, onAddClicked}) => {
     const searchModel = "users"
