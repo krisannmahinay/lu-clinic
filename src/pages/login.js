@@ -16,7 +16,7 @@ import { useLogoutMutation, useGetUserModulesQuery, useGetUserDetailsQuery } fro
 import { useGetUserListQuery, useGetPermissionListQuery, useGetModuleListQuery } from '@/service/settingService'
 
 const options = [
-    { label: 'Lu Clinic', value: 'db_lu' },
+    { label: 'Lu Clinic', value: 'defaultdb' },
     { label: 'Vital Clinic', value: 'db_vital' }
 ]
 
@@ -61,10 +61,13 @@ export default function Login() {
             if(!res.data && !res.data.token) {
                 throw new Error("Token not found in response")
             }
+
             
             Cookies.set('token', res.data.token)
             Cookies.set('session' ,res.data.session)
+            // Cookies.set('icd_token', res.data.icd_token)
             
+            localStorage.setItem('isLoggedIn', 'true')
             router.push('/dashboard')
         } catch(error) {
             console.log(error)
