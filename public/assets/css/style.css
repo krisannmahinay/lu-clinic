@@ -1,0 +1,19 @@
+/* Custom scrollbar styles */
+.scroll-custom::-webkit-scrollbar {
+    width: 12px; /* Width of vertical scrollbars */
+    height: 12px; /* Height of horizontal scrollbars */
+}
+
+.scroll-custom::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-md; /* Tailwind styles for scrollbar thumb */
+}
+
+.scroll-custom::-webkit-scrollbar-track {
+    @apply bg-gray-200; /* Tailwind styles for scrollbar track */
+}
+
+/* Firefox specific scrollbar styling */
+.scroll-custom {
+    scrollbar-width: thin; /* or 'auto' or 'none' if you don't want a scrollbar */
+    scrollbar-color: rgba(128, 128, 128, 1) rgba(240, 240, 240, 1); /* thumb and track color */
+}
