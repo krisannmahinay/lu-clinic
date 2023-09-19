@@ -27,7 +27,7 @@
     "next-auth": "^4.22.1",
     "next-config": "^0.1.0",
     "next-images": "^1.8.5",
-    "next-pwa": "^5.5.4",
+    "next-pwa": "^5.6.0",
     "next-redux-wrapper": "^8.1.0",
     "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.7",
