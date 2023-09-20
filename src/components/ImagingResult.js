@@ -55,6 +55,7 @@ const ImagingResult = ({ imageType, data }) => {
 
     return (
         <div>
+
             <h2 className="text-xl font-bold mb-4">{imageType} Results</h2>
             <p className="text-gray-600 mb-4">Examined on: {result.date_examination}</p>
             <div className="border p-4">
