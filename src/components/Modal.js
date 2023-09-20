@@ -1,8 +1,10 @@
 import React,{ useImperativeHandle, forwardRef, useState, useRef, useEffect  } from "react"
 import NavTab from "./NavTab"
+import { useDispatch } from 'react-redux'
 import Form from "./Form"
 
-import { useGrantUserModuleMutation } from "@/service/authService"
+import { useGrantUserModuleMutation, useGetUserByIdQuery } from "@/service/authService"
+import { authApi } from "@/service/authService"
 
 const Modal = ({
         isOpen, 
@@ -19,6 +21,7 @@ const Modal = ({
         ...props
     }) => {
     const formRef = useRef(null)
+    const dispatch = useDispatch()
     const [checkedItem, setCheckedItem] = useState([])
     const [activeTab, setActiveTab] = useState('tab1')
     const [navTab, setNavTab] = useState([])
@@ -26,8 +29,10 @@ const Modal = ({
     const [openModalId, setOpenModalId] = useState("")
     
     const [grantUserModule, { isLoading, isError, error, isSuccess }] = useGrantUserModuleMutation()
+    const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
+        user_id: openId
+    })
     
-    // const { data: user } = useGetUserByIdQuery({id:selectedRowId})
     const groupModules = module
         ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
         .reduce((groups, module) => {
@@ -45,8 +50,8 @@ const Modal = ({
         }, {})
         
     const handleCheckbox = (moduleId) => {
-        const correspondingModule = Object.values(groupModules).flat().find(mod => mod.module_id === moduleId);
-        const { menu_group } = correspondingModule.grant || {};
+        const correspondingModule = Object.values(groupModules).flat().find(mod => mod.module_id === moduleId)
+        const { menu_group } = correspondingModule.grant || {}
         
         setCheckedItem(prevItems => {
             // Make a copy of the current items
@@ -55,10 +60,10 @@ const Modal = ({
             
             if (currentGroupItems.includes(moduleId)) {
                 // If moduleId is already present, remove it
-                updatedItems[menu_group] = currentGroupItems.filter(item => item !== moduleId);
+                updatedItems[menu_group] = currentGroupItems.filter(item => item !== moduleId)
             } else {
                 // Add moduleId to the menu_group
-                updatedItems[menu_group] = [...currentGroupItems, moduleId];
+                updatedItems[menu_group] = [...currentGroupItems, moduleId]
             }
     
             return updatedItems
@@ -66,10 +71,18 @@ const Modal = ({
     }
 
     
-    // console.log(groupModules)
-    const dashboard = groupModules?.dashboard || []
+    
+    const userData = userDetails?.user[0] ?? []
+    console.log(userData.roles)
+    
+    const excludeDashboard = ["dashboard"]
+    const dashboard = (groupModules?.dashboard || []).filter(module => !excludeDashboard.includes(module.module_id))
+    
+    // const dashboard = groupModules?.dashboard || []
     // const inventory = groupModules?.inventory || []
-    const patients = groupModules?.patients || []
+    const excludePatient = ["dashboard", "patients"]
+    const patients = (groupModules?.patients || []).filter(module => !excludePatient.includes(module.module_id))
+    // const patients = groupModules?.patients || []
     const excluceInventory = ["inventory"]
     const inventory = (groupModules?.inventory || []).filter(module => !excluceInventory.includes(module.module_id))
 
@@ -85,6 +98,7 @@ const Modal = ({
     const handleClose = () => {
         onClose()
         setCheckedItem([])
+        // dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
     }
 
     // const handleSetAlertType = (data) => {
@@ -96,6 +110,7 @@ const Modal = ({
             handleClose(),
             onSetAlertType(data)
         )
+
     }
 
     const moduleClose = () => {
@@ -179,10 +194,12 @@ const Modal = ({
                                             onClick={() => setActiveTab('tab2')}
                                             className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Inventory
                                         </button>
-                                        <button 
-                                            onClick={() => setActiveTab('tab3')}
-                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Settings
-                                        </button>
+                                        {userData.roles === "x" && (
+                                            <button 
+                                                onClick={() => setActiveTab('tab3')}
+                                                className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Settings
+                                            </button>
+                                        )}
                                         <button 
                                             onClick={() => setActiveTab('tab4')}
                                             className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab4' ? 'bg-white':'bg-gray-200'}`}>Patients
@@ -193,7 +210,6 @@ const Modal = ({
                                         {activeTab === 'tab1' && (
                                             <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
                                                 {dashboard.map((item) => (
-                                                    
                                                     <li key={item.module_id}>
                                                         <div className="flex items-center space-x-3 p-2 ">
                                                             <input

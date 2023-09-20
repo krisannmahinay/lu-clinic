@@ -4,6 +4,7 @@ import Cookies from 'js-cookie'
 
 export const authApi = createApi({
     reducerPath: 'authApi',
+    tagTypes: ['UserDetails'],
     baseQuery: fetchBaseQuery({
          baseUrl: process.env.API_URL,
          prepareHeaders: (headers, {getState}) => {
@@ -18,12 +19,12 @@ export const authApi = createApi({
     endpoints: (builder) => ({
         getUserDetails: builder.query({
             query: () => {
-                const session = Cookies.get('session');
+                const session = Cookies.get('session')
                 return {
                     url: '/user',
                     method: 'GET',
                     params: {
-                        selectedDB: session 
+                        selectedDB: session
                     }
                 }
             }
@@ -31,8 +32,8 @@ export const authApi = createApi({
 
         getUserModules: builder.query({
             query: (args) => {
-                const session = Cookies.get('session');
                 const { moduleId } = args
+                const session = Cookies.get('session')
                 return {
                     url: '/grants',
                     method: 'GET',
@@ -46,20 +47,25 @@ export const authApi = createApi({
 
         getUserById: builder.query({
             query: (args) => {
-                const { id } = args
+                const { user_id } = args
+                const session = Cookies.get('session')
                 return {
                     url: '/user-by-id',
                     method: 'GET',
                     params: {
-                        id: id 
+                        selectedDB: session,
+                        user_id: user_id
+                        
                     }
                 }
-            }
+            },
+            providesTags: (result, error, args) => [
+                { type: 'UserDetails', id: 'LIST' }
+            ]
         }),
 
         grantUserModule: builder.mutation({
             query: dataArray => {
-                console.log(dataArray)
                 const session = Cookies.get('session')
                 return {
                     url: '/grant-user-modules',

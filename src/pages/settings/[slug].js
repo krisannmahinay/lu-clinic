@@ -5,8 +5,10 @@ import AppLayout from "@/components/Layouts/AppLayout"
 import NavTab from "@/components/NavTab"
 import CustomCKEditor from '@/components/CustomCKEditor'
 import SearchItemPage from '@/components/SearchItemPage'
+import { useGetUserDetailsQuery } from '@/service/authService'
 import Table from '@/components/Table'
 import Modal from '@/components/Modal'
+import Accordion from '@/components/Accordion'
 // import CKEditor from "@/components/CKEditor5"
 // import Cus
 
@@ -101,12 +103,19 @@ const SubModule = () => {
     const router = useRouter()
     const { slug } = router.query
     const menuGroup = "settings"
+    
+    const { data: data, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
     const [activeTab, setActiveTab] = useState('tab1')
     const [editorData, setEditorData] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
+
+    
+    const userDetails = data?.data ?? []
+
+    console.log(userDetails.roles)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
     
@@ -854,6 +863,19 @@ const SubModule = () => {
                             </div>
                         </div>
                     </>
+                )}
+
+                {slug === "doh-report" && (
+                    
+                    <div>
+                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">DOH Annual Health Facility Statistical Report</div>
+                    
+                        <div className="max-h-[70vh] overflow-y-auto scroll-custom">
+                            <Accordion title="General Information">
+                                <p>Testing Accordion 1</p>
+                            </Accordion>
+                        </div>
+                    </div>
                 )}
             </div>
         </AppLayout>

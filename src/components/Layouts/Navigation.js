@@ -20,11 +20,10 @@ import ApplicationLogo from '@/components/ApplicationLogo'
 import ResponsiveNavLink, 
 { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 import SkeletonSidebarScreen from '../SkeletonSidbarScreen'
+import ProfilePicture from '../ProfilePicture'
 
 const Navigation = ({ ...props }) => {
     // props: user, children, moduleId, menuGroup
-    const screenLoading = true
-    const MAX_REFETCH_ATTEMPTS = 3
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
@@ -39,16 +38,20 @@ const Navigation = ({ ...props }) => {
         moduleId: props.moduleId
     })
     
-    const { data: data, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+    const { data: userData, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
     const toggleSidebar = () => { 
         setSidebarOpen(!sidebarOpen) 
     }
+
+    const userDetails = userData?.data[0] ?? []
+    // console.log(userDetails)
     
     const handleLogout = async () => {
         try {
             await logout()
 
+            localStorage.removeItem('isLoggedIn')
             Cookies.remove('token')
             router.replace('/')
         } catch (err) {
@@ -56,6 +59,8 @@ const Navigation = ({ ...props }) => {
         }
         
     }
+
+    const imgSrc = "https://i.imgur.com/bqRsTjB.png"
 
     return (
         
@@ -77,7 +82,7 @@ const Navigation = ({ ...props }) => {
                     {/* <div className="flex items-center justify-between p-6 border-l-slate-400"> */}
                     <div className="flex justify-between mx-auto px-4 sm:px-6 lg:px-8 h-16 mb-2 border-b-2 border-b-gray-500">
                         <div className="flex items-center">
-                            <h1 className={`text-white text-2xl font-bold ${sidebarOpen ? 'block' : 'hidden'}`}>Logo</h1>
+                            <h1 className={`text-white text-2xl font-small ${sidebarOpen ? 'block' : 'hidden'}`}>Qhealth</h1>
                         </div>
 
                         <button className="text-white focus:outline-none" onClick={toggleSidebar}>
@@ -101,14 +106,14 @@ const Navigation = ({ ...props }) => {
                 <div className={`flex-grow bg-gray-100 ${sidebarOpen ? 'ml-64' : 'w-full'}`}>
                 {/* <div className="flex-grow bg-gray-100 w-full"> */}
                 {/* <div className="bg-gray-100 transition-width duration-300 w-full"> */}
-                    <nav className="bg-white border-b border-gray-100">
+                    <nav className="bg-[#15803d] border-b border-gray-100">
                         <div className="mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between h-16">
                                 <div className="flex">
                                     {/* Logo */}
-                                    <div className="flex-shrink-0 flex items-center">
-                                        <Link href="/dashboard">
-                                            <ApplicationLogo className="block h-10 w-auto fill-current text-gray-600" />
+                                    <div className="flex-shrink-0 flex items-center w-full">
+                                        <Link href="/">
+                                            <ApplicationLogo image={imgSrc} className="block h-10 w-auto fill-current text-white" />
                                         </Link>
                                     </div>
 
@@ -121,29 +126,41 @@ const Navigation = ({ ...props }) => {
                                         align="right"
                                         width="48"
                                         trigger={
-                                            <button className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
-                                                <div className="mr-5">
-                                                    <svg
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.5"
-                                                        viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-8 w-8 text-gray-600">
-                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5" />
-                                                    </svg>
+                                            <div className="mr-5">
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.5"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-8 w-8 text-white cursor-pointer">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5" />
+                                                </svg>
 
 
-                                                    {notificationCount > 0 && (
-                                                    <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
-                                                        {notificationCount}
-                                                    </div>
-                                                    )}
+                                                {notificationCount > 0 && (
+                                                <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
+                                                    {notificationCount}
                                                 </div>
-                                                <div>{data?.data.name}</div>
+                                                )}
+                                            </div>
+                                        }>
+                                        {/* Authentication */}
+                                        <DropdownButton onClick={handleLogout}>
+                                            Logout
+                                        </DropdownButton>
+                                    </Dropdown>
+                                            
+                                    <Dropdown
+                                        align="right"
+                                        width="48"
+                                        trigger={
+                                            <button className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
+                                                <div><ProfilePicture width={35} height={35} font={16} userDetails={userDetails}/></div>
+                                                <div className='ml-2 text-white'>{userDetails?.identity?.first_name}</div>
                                                 <div className="ml-1">
                                                     <svg
-                                                        className="fill-current h-4 w-4"
+                                                        className="fill-current h-4 w-4 text-white"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         viewBox="0 0 20 20">
                                                         <path
@@ -195,6 +212,7 @@ const Navigation = ({ ...props }) => {
                             </div>
                         </div>
 
+                        
                         {/* Responsive Navigation Menu */}
                         {open && (
                             <div className="block sm:hidden">
@@ -211,7 +229,7 @@ const Navigation = ({ ...props }) => {
                                     <div className="flex items-center px-4">
                                         <div className="flex-shrink-0">
                                             <svg
-                                                className="h-10 w-10 fill-current text-gray-400"
+                                                className="h-10 w-10 fill-current text-white"
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
@@ -226,11 +244,11 @@ const Navigation = ({ ...props }) => {
                                         </div>
 
                                         <div className="ml-3">
-                                            <div className="font-medium text-base text-gray-800">
-                                                {data?.name}
+                                            <div className="font-medium text-base text-white">
+                                                {userDetails?.identity?.first_name}
                                             </div>
-                                            <div className="font-medium text-sm text-gray-500">
-                                                {data?.email}
+                                            <div className="font-medium text-sm text-white">
+                                                {userDetails.email}
                                             </div>
                                         </div>
                                     </div>

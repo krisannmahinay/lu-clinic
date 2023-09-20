@@ -1,8 +1,12 @@
 import Head from 'next/head'
 import Link from 'node_modules/next/link'
 import ApplicationLogo from '../ApplicationLogo'
+import Cookies from 'js-cookie'
 
 const GuestLayout = ({ children }) => {
+    
+    const imgSrc = "https://i.imgur.com/bqRsTjB.png"
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     return (
         <div>
             <Head>
@@ -14,7 +18,7 @@ const GuestLayout = ({ children }) => {
                     <div className="container mx-auto p-4 flex items-center justify-between">
                         <div>
                             <Link href="/">
-                                <ApplicationLogo className="block h-10 w-auto fill-current text-white" />
+                                <ApplicationLogo image={imgSrc} className="block h-10 w-auto fill-current text-white" />
                             </Link>
                         </div>
 
@@ -27,10 +31,16 @@ const GuestLayout = ({ children }) => {
                                 <a href="#" className="text-sm uppercase rounded-full hover:text-blue-700 hover:bg-white px-4 py-2">Doctors</a>
                                 <a href="#" className="text-sm uppercase rounded-full hover:text-blue-700 hover:bg-white px-4 py-2">Contact Us</a>
                             </nav>
-
-                            <Link href="/login" className="text-sm uppercase bg-white text-blue-500 hover:text-blue-700 py-4 px-8 rounded-full font-medium transition duration-300">
-                                Login
-                            </Link>
+                            {isLoggedIn ? (
+                                <Link href="/dashboard" className="text-sm uppercase bg-white text-blue-500 hover:text-blue-700 py-4 px-8 rounded-full font-medium transition duration-300">
+                                    Dashboard
+                                </Link>
+                            ): (
+                                <Link href="/login" className="text-sm uppercase bg-white text-blue-500 hover:text-blue-700 py-4 px-8 rounded-full font-medium transition duration-300">
+                                    Login
+                                </Link>
+                            )}
+                            
                         </div>
                     </div>
                 </header>
@@ -42,7 +52,7 @@ const GuestLayout = ({ children }) => {
 
                 <footer className="bg-gray-200 p-4 mt-8">
                     <div className="container mx-auto">
-                        <p className="text-center text-gray-600">&copy; 2023 Your Website. All rights reserved.</p>
+                        <p className="text-center text-gray-600">&copy; 2023. All rights reserved.</p>
                     </div>
                 </footer>
             </div>
