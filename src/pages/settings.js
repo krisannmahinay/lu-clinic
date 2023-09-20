@@ -7,6 +7,9 @@ import {
     useGetModuleListQuery 
 } from '@/service/settingService'
 
+import { useGetUserDetailsQuery } from '@/service/authService'
+
+
 import { useGetUserById } from "@/service/authService"
 
 import AppLayout from '@/components/Layouts/AppLayout'
@@ -18,6 +21,7 @@ import withAuth from './withAuth'
 import Pagination from '@/components/Pagination'
 import SearchItemPage from '@/components/SearchItemPage'
 import Modal from '@/components/Modal'
+import ProfileInformation from '@/components/ProfileInformation'
 
 const Setting = () => {
 
@@ -47,10 +51,14 @@ const Setting = () => {
         enabled: !!searchQuery
     })
 
+    
+    const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+
     const userData = userList?.userList ?? []
     const pagination = userList?.pagination ?? []
     const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
+    const user = userDetails?.data[0] ?? []
 
     useEffect(() => {
         if(userSuccess && Array.isArray(userData) && userData.length > 0) {
@@ -60,7 +68,7 @@ const Setting = () => {
         }
     }, [userSuccess, userData])
 
-    // console.log(userData)
+    console.log(user)
 
     const handleSearch = (q) => {
         setSearchQuery(q)
@@ -108,6 +116,8 @@ const Setting = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
+
+
     const userRegistration = [
         {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
         {name: 'password', type: 'password', label: 'Password', placeholder: 'Enter password'},
@@ -123,7 +133,7 @@ const Setting = () => {
         }
     ]
 
-    // console.log(moduleList)
+    // console.log(userDetails)
 
     return (
         <AppLayout
@@ -171,33 +181,45 @@ const Setting = () => {
                     // permission={permission} 
                     // selectedRowId={selectedRows}
                 />
+                
+                {(user.roles === "x" || user.roles === "admin" ||  user.roles === "superadmin") && (
+                    <>
+                        <SearchItemPage
+                            onExportToPDF={handleExportToPDF}
+                            onChangeItemPage={(item) => handleItemsPerPageChange(item)}
+                            onCurrentPage={(page) => handleCurrentPage(page)}
+                            // onSearchResults={(results) => handleSearchResults(results)}
+                            onSearch={(q) => handleSearch(q)}
+                            onAddClicked={() => setIsModalOpen(true)}
+                        />
 
-                <SearchItemPage
-                    onExportToPDF={handleExportToPDF}
-                    onChangeItemPage={(item) => handleItemsPerPageChange(item)}
-                    onCurrentPage={(page) => handleCurrentPage(page)}
-                    // onSearchResults={(results) => handleSearchResults(results)}
-                    onSearch={(q) => handleSearch(q)}
-                    onAddClicked={() => setIsModalOpen(true)}
-                />
+                        <Table 
+                            title="User List" 
+                            user={userData} 
+                            action={true}
+                            permission={permissionData} 
+                            module={moduleData} 
+                            tableHeader={tableHeader}
+                            isLoading={userListLoading}
+                            onOpenModal={(id) => setModalId(id)}
+                        />
 
-                <Table 
-                    title="User List" 
-                    user={userData} 
-                    action={true}
-                    permission={permissionData} 
-                    module={moduleData} 
-                    tableHeader={tableHeader}
-                    isLoading={userListLoading}
-                    onOpenModal={(id) => setModalId(id)}
-                />
+                        <Pagination 
+                            currentPage={pagination.currentPage} 
+                            totalPages={pagination.totalPages}
+                            // onPageChange={newPage => setCurrentPage(newPage)}
+                            onPageChange={(newPage) => handleNewPage(newPage)}
+                        />
+                    </>
+                )} 
 
-                <Pagination 
-                    currentPage={pagination.currentPage} 
-                    totalPages={pagination.totalPages}
-                    // onPageChange={newPage => setCurrentPage(newPage)}
-                    onPageChange={(newPage) => handleNewPage(newPage)}
-                />
+                {(user.roles === "nurse" || user.roles === "doctor") && (
+                    <>
+                        <ProfileInformation information={user}/>
+                    </>
+                )} 
+
+                
             </div>
 
 

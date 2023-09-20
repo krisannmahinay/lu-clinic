@@ -1,12 +1,15 @@
 
 import { useState, useEffect } from "react"
 import SkeletonScreen from "./SkeletonScreen"
+import { useDispatch } from 'react-redux'
 import Modal from "./Modal"
 import Alert from "./Alert"
 import Pagination from "./Pagination"
+import { authApi } from "@/service/authService"
 
 const Table = ({title, user, tableHeader, isLoading, permission, module, tab, onOpenModal, onSuccess, action, slug}) => {
     
+    const dispatch = useDispatch()
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [selectedRows, setSelectedRows] = useState([])
     const [openModalId, setOpenModalId] = useState("")
@@ -30,6 +33,8 @@ const Table = ({title, user, tableHeader, isLoading, permission, module, tab, on
         setOpenModalId(userId)
         setIsModalOpen(true)
         onOpenModal(userId)
+        
+        dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
     }
 
     const handleAlertClose = () => {

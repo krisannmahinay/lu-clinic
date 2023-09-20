@@ -88,5 +88,5 @@ export const {
     useGetUserListQuery, 
     useGetPermissionListQuery, 
     useGetModuleListQuery,
-    useCreateUserBatchMutation 
+    useCreateUserBatchMutation
 } = settingApi

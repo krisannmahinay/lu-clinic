@@ -24,6 +24,8 @@ const Module = ({data, menuGroup}) => {
             setIsExpanded((prevIsExpanded) => !prevIsExpanded)
         }
     }
+
+    console.log(router.asPath)
     
     return (
         <>
