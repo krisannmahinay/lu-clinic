@@ -6,16 +6,17 @@ Health Care Management System
 root/
 ├── public/
 ├── src/
-|     ├── app/
-|     ├── components/
-|     ├── lib/
-|     ├── pages/
-|     ├── service/
-|     └── store/
-|           ├── actions
-|           |     └── authActions.js
-|           └── reducers
-|                 └── authSlice.js
+|    ├── app/
+|    ├── components/
+|    ├── lib/
+|    ├── pages/
+|    ├── service/
+|    └── store/
+|          ├── actions
+|          |     └── authActions.js
+|          ├── reducers
+|          |     └── authSlice.js
+|          └── store.js
 ├── .env
 ├── .eslintrc.json
 ├── jsonconfig.json
