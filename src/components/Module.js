@@ -25,7 +25,7 @@ const Module = ({data, menuGroup}) => {
         }
     }
 
-    // console.log(userDetails.roles)
+    console.log(router.asPath)
     
     return (
         <>
