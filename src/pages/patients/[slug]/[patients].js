@@ -275,6 +275,8 @@ const SubModule = () => {
                 <div className="flex items-center py-5">
                     <button onClick={() => router.back()} className="text-sm uppercase shadow-md bg-white text-gray-500 hover:text-gray-700 py-4 px-8 rounded-full font-medium transition duration-300">Back</button>
                     <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">{slug}</div>
+                    
+                    <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">PAT-230818XYA2</div>
                 </div>
 
 
@@ -337,52 +339,23 @@ const SubModule = () => {
                             )}
                             {activeTab === 'tab4' && (
                                 <>
+                                    {/* <div className='flex space-x-3'>
+                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                                            type="submit">
+                                            XRAY
+                                        </button>
+                                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                                            type="submit">
+                                            ULTRASOUND
+                                        </button>
+                                    </div> */}
                                     <ImagingResult imageType="XRAY" data={imagingResults}/>
                                 </>
                             )}
                             {activeTab === 'tab5' && (
                                 <div>
-                                    {/* <button>GeneratePDF</button> */}
-                                    {/* <Prescription data={prescriptionData}/> */}
                                     <Prescription />
                                 </div>
-                                // <div className="border p-4">
-                                //     <div className="flex justify-between">
-                                //         <img src="/path-to-logo.png" alt="Hospital Logo" className="h-16 w-16"/>
-                                //         <div>
-                                //             <h1 className="text-xl font-bold">Hospital Name</h1>
-                                //             <p>Address</p>
-                                //             <p>Contact Number</p>
-                                //         </div>
-                                //     </div>
-                                    
-                                //     <div className="my-4">
-                                //         <p>Name: _____________________________ Date: ____________</p>
-                                //         <p>Age and Gender: _____________________________</p>
-                                //     </div>
-                                    
-                                //     <h2 className="text-center font-bold text-xl">REQUEST FORM</h2>
-                                    
-                                //     <table className="w-full mt-4 border">
-                                //         {/* // ... Your table rows and columns with checkboxes and data ... */}
-                                //     </table>
-                                    
-                                //     {/* // ... The rest of your components such as X-ray, ULTRASOUND, etc... */}
-                                    
-                                //     <div className="mt-4">
-                                //         <h3>INSTRUCTIONS</h3>
-                                //         <ul>
-                                //             <li>data from textarea</li>
-                                //             <li>data2 from textarea</li>
-                                //             <li>data3 from textarea</li>
-                                //         </ul>
-                                //     </div>
-                                    
-                                //     <div className="mt-4">
-                                //         <p>PRC No: ________________</p>
-                                //         <p>PTR No: ________________</p>
-                                //     </div>
-                                // </div>
                             )}
                             {activeTab === 'tab6' && (
                                 <>

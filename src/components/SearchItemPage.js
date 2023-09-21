@@ -1,10 +1,34 @@
 import { useState } from "react"
+import Select from 'react-select'
 
-const SearchItemPage = ({onChangeItemPage, onCurrentPage, onSearchResults, onSearch, onExportToPDF, onAddClicked}) => {
+const recordSelection = [
+    {value: "recent_doctors", label: "Recent Doctors"},
+    {value: "recent_patients", label: "Recent Patients"}
+]
+
+const styleDropdown = {
+    control: (provided) => ({
+        ...provided,
+        // border: '1px solid gray',
+        padding: '0.1em',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'gray',
+          border: '1px solid gray'
+        },
+      }),
+      input: (provided) => ({
+        ...provided,
+        inputOutline: 'none',
+      }),
+}
+
+const SearchItemPage = ({onChangeItemPage, onCurrentPage, onSearchResults, onSearch, onExportToPDF, onAddClicked, action, selectRecords, onSelectedRecords}) => {
     const searchModel = "users"
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [itemsPerPage, setItemsPerPage] = useState(5)
     const [searchQuery, setSearchQuery] = useState("")
+    // const [onSelectedRecords, setOnSelectedRecords] = useState("")
 
     // const { data: searchResults } = useSearchQuery({
     //     keywords: searchQuery, 
@@ -12,6 +36,10 @@ const SearchItemPage = ({onChangeItemPage, onCurrentPage, onSearchResults, onSea
     //     items: itemsPerPage,
     //     page: currentPage
     // });
+
+    const handleRecordSelection = (selectedOption) => {
+        setOnSelectedRecords(selectedOption?.value)
+    }
     
     const handleItemsPerPageChange = (e) => {
         const newItemsPerPage = parseInt(e.target.value)
@@ -59,23 +87,37 @@ const SearchItemPage = ({onChangeItemPage, onCurrentPage, onSearchResults, onSea
                 </div>
             </div>
 
-            <div className="flex">
-                <button onClick={onAddClicked} className="flex items-center ml-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none px-2">
-                    <svg width="20" height="20" className="mr-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Add
-                </button>
+            {selectRecords && (
+                <div>
+                    <Select 
+                        options={recordSelection?.map(record => ({ value: record.value, label: record.label }))}
+                        // onChange={handleRecordSelection}
+                        isSearchable={true}
+                        isClearable={true}
+                        placeholder="Select a records..."
+                        classNamePrefix="react-select"
+                        styles={styleDropdown} 
+                    />
+                </div>
+            )}
 
-                <button onClick={onExportToPDF} className="flex items-center ml-4 bg-red-600 text-white p-2 rounded hover:bg-red-700 focus:outline-none px-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" className="mr-2" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M5 2C3.89543 2 3 2.89543 3 4V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V8L13 2H5ZM5 4H12V10H19V20H5V4ZM13 4V9H19L13 4Z" fill="currentColor"/>
-                    </svg>
-                    Export to PDF
-                </button>
+            {action && (
+                <div className="flex">
+                    <button onClick={onAddClicked} className="flex items-center ml-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none px-2">
+                        <svg width="20" height="20" className="mr-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Add
+                    </button>
 
-                
-            </div>
+                    <button onClick={onExportToPDF} className="flex items-center ml-4 bg-red-600 text-white p-2 rounded hover:bg-red-700 focus:outline-none px-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" className="mr-2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M5 2C3.89543 2 3 2.89543 3 4V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V8L13 2H5ZM5 4H12V10H19V20H5V4ZM13 4V9H19L13 4Z" fill="currentColor"/>
+                        </svg>
+                        Export to PDF
+                    </button>
+                </div>
+            )}
         </div>
     )
 }

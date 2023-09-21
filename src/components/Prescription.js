@@ -23,15 +23,15 @@ const Prescription = () => {
 
     // console.log(pdfBlob)
     // const pdfFileLink = data?.pdfUrl ?? []
-
+    const pdfObjectUrl = pdfBlob instanceof Blob ? URL.createObjectURL(pdfBlob) : null
     const blobToArrayBuffer = async (blob) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
             reader.onloadend = () => resolve(reader.result)
             reader.onerror = reject
             reader.readAsArrayBuffer(blob)
-        });
-    };
+        })
+    }
 
     
 
@@ -106,6 +106,11 @@ const Prescription = () => {
                     onChange={(e) => setFooterText(e.target.value)} 
                 />
             </div> */}
+            <div>
+                <object data={pdfObjectUrl} type="application/pdf" width="100%" height="600px">
+
+                </object>
+            </div>
 
             <button 
                 className="bg-blue-500 text-white p-2 mt-10 rounded"
