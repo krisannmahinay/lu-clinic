@@ -332,7 +332,7 @@ const SubModule = () => {
                                         action={false}
                                         slug={slug}
                                         tableHeader={Object.keys(labResults[0])}
-                                        user={labResults} 
+                                        tableData={labResults} 
                                     />
                                 </>
                                 
@@ -401,7 +401,7 @@ const SubModule = () => {
                                         action={false}
                                         slug={slug}
                                         tableHeader={icdDataHeaders}
-                                        user={mappedIcdData} 
+                                        tableData={mappedIcdData} 
                                     />
                                 </div>
                             )}

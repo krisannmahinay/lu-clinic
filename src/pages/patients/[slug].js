@@ -25,19 +25,31 @@ const SubModule = () => {
 
     const patientData = [
         {
+            time_in: "1440",
             patient_id: "PAT-230818XY2A",
             patient_name: "John Doe",
+            age: 20,
             gender: "Male",
             phone: "092222222222",
-            physician: "Dr Smith"
+            physician: "Dr Smith",
+            ancillary: "None",
+            laboratory_status: "None",
+            imaging_status: "Pending",
+            disposition: "Admission",
         },
         
         {
+            time_in: "1533",
             patient_id: "PAT-230818XYA2",
             patient_name: "John Doe",
+            age: 27,
             gender: "Male",
             phone: "092222222222",
-            physician: "Dr Smith"
+            physician: "Dr Smith",
+            ancillary: "None",
+            laboratory_status: "None",
+            imaging_status: "Pending",
+            disposition: "Admission",
         }
     ]
 
@@ -110,7 +122,7 @@ const SubModule = () => {
                             action={false}
                             slug={slug}
                             tableHeader={Object.keys(patientData[0])}
-                            user={patientData} 
+                            tableData={patientData} 
                         />
 
                         <Pagination 

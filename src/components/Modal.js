@@ -73,7 +73,6 @@ const Modal = ({
     
     
     const userData = userDetails?.user[0] ?? []
-    console.log(userData.roles)
     
     const excludeDashboard = ["dashboard"]
     const dashboard = (groupModules?.dashboard || []).filter(module => !excludeDashboard.includes(module.module_id))
