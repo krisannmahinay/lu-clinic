@@ -16,7 +16,7 @@ import { useLogoutMutation, useGetUserModulesQuery, useGetUserDetailsQuery } fro
 import { useGetUserListQuery, useGetPermissionListQuery, useGetModuleListQuery } from '@/service/settingService'
 
 const options = [
-    { label: 'Lu Clinic', value: 'defaultdb' },
+    { label: 'Lu Clinic', value: 'db_lu' },
     { label: 'Vital Clinic', value: 'db_vital' }
 ]
 

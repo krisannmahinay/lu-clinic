@@ -10,7 +10,7 @@ const Module = ({data, menuGroup}) => {
     const router = useRouter()
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
-    
+    // 
     useEffect(() => {
         if(data && data.module) {
             const uniquePermissions = new Set();
