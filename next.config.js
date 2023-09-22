@@ -13,7 +13,7 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
     reactStrictMode: true,
     env: {
-        API_URL: 'http://localhost/api'
+        API_URL: 'http://128.199.65.169:8000/api'
     },
     publicRuntimeConfig: {
         pwa: {
