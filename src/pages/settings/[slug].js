@@ -338,7 +338,7 @@ const SubModule = () => {
 
                                             <Table 
                                                 title="User List" 
-                                                user={hospitalCharge} 
+                                                tableData={hospitalCharge} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -351,7 +351,7 @@ const SubModule = () => {
                                     {activeTab === 'tab2' && (
                                         <Table 
                                             title="User List" 
-                                            user={hospitalChargeCategory} 
+                                            tableData={hospitalChargeCategory} 
                                             action={false}
                                             // permission={permissionData} 
                                             // module={moduleData} 
@@ -364,7 +364,7 @@ const SubModule = () => {
                                        
                                        <Table 
                                                 title="User List" 
-                                                user={hospitalOPDCharge} 
+                                                tableData={hospitalOPDCharge} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -377,7 +377,7 @@ const SubModule = () => {
                                         
                                         <Table 
                                                 title="User List" 
-                                                user={hospitalEmergencyCharge} 
+                                                tableData={hospitalEmergencyCharge} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -390,7 +390,7 @@ const SubModule = () => {
                                         
                                         <Table 
                                                 title="User List" 
-                                                user={hospitalChargeType} 
+                                                tableData={hospitalChargeType} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -450,7 +450,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={bedStatus} 
+                                                tableData={bedStatus} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -464,7 +464,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={bedList} 
+                                                tableData={bedList} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -478,7 +478,7 @@ const SubModule = () => {
                                        <>
                                             <Table 
                                                 title="User List" 
-                                                user={bedType} 
+                                                tableData={bedType} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -492,7 +492,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={bedGroup} 
+                                                tableData={bedGroup} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -506,7 +506,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={bedFloor} 
+                                                tableData={bedFloor} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -551,7 +551,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={symptomsHead} 
+                                                tableData={symptomsHead} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -565,7 +565,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={symptomsType} 
+                                                tableData={symptomsType} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -667,7 +667,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={panthologyCategory} 
+                                                tableData={panthologyCategory} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -681,7 +681,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={panthologyUnit} 
+                                                tableData={panthologyUnit} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -695,7 +695,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={panthologyParams} 
+                                                tableData={panthologyParams} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -744,7 +744,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={radiologyCategory} 
+                                                tableData={radiologyCategory} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -758,7 +758,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={radiologyUnit} 
+                                                tableData={radiologyUnit} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -772,7 +772,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={radiologyParams} 
+                                                tableData={radiologyParams} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -821,7 +821,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={itemCategory} 
+                                                tableData={itemCategory} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -835,7 +835,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={itemStore} 
+                                                tableData={itemStore} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
@@ -849,7 +849,7 @@ const SubModule = () => {
                                         <>
                                             <Table 
                                                 title="User List" 
-                                                user={itemSupplier} 
+                                                tableData={itemSupplier} 
                                                 action={false}
                                                 // permission={permissionData} 
                                                 // module={moduleData} 
