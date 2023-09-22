@@ -10,7 +10,7 @@ const Module = ({data, menuGroup}) => {
     const router = useRouter()
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
-    
+    // 
     useEffect(() => {
         if(data && data.module) {
             const filteredMenus = data.module.filter((item) => item.permission !== null && item.module !== null && item.menu_group === menuGroup)
