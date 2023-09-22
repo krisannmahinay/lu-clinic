@@ -58,7 +58,7 @@ const Setting = () => {
     const pagination = userList?.pagination ?? []
     const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
-    const user = userDetails?.data[0] ?? []
+    const userInfo = userDetails?.data[0] ?? []
 
     useEffect(() => {
         if(userSuccess && Array.isArray(userData) && userData.length > 0) {
@@ -67,8 +67,6 @@ const Setting = () => {
             // setItemsPerPage(prev => prev + 1)
         }
     }, [userSuccess, userData])
-
-    console.log(user)
 
     const handleSearch = (q) => {
         setSearchQuery(q)
@@ -133,7 +131,7 @@ const Setting = () => {
         }
     ]
 
-    // console.log(userDetails)
+    console.log(userDetails)
 
     return (
         <AppLayout
@@ -182,7 +180,7 @@ const Setting = () => {
                     // selectedRowId={selectedRows}
                 />
                 
-                {(user.roles === "x" || user.roles === "admin" ||  user.roles === "superadmin") && (
+                {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
                     <>
                         <SearchItemPage
                             onExportToPDF={handleExportToPDF}
@@ -195,7 +193,7 @@ const Setting = () => {
 
                         <Table 
                             title="User List" 
-                            user={userData} 
+                            tableData={userData} 
                             action={true}
                             permission={permissionData} 
                             module={moduleData} 
@@ -213,9 +211,9 @@ const Setting = () => {
                     </>
                 )} 
 
-                {(user.roles === "nurse" || user.roles === "doctor") && (
+                {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
                     <>
-                        <ProfileInformation information={user}/>
+                        <ProfileInformation information={userInfo}/>
                     </>
                 )} 
 

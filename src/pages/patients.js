@@ -121,7 +121,7 @@ const Patients = () => {
 
                 <Table 
                     title="User List" 
-                    user={recentDoctorData} 
+                    tableData={recentDoctorData} 
                     tableHeader={Object.keys(recentDoctorData[0])}
                     // isLoading={userListLoading}
                     onOpenModal={(id) => setModalId(id)}
