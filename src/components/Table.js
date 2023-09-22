@@ -7,7 +7,7 @@ import Alert from "./Alert"
 import Pagination from "./Pagination"
 import { authApi } from "@/service/authService"
 
-const Table = ({title, user, tableHeader, isLoading, permission, module, tab, onOpenModal, onSuccess, action, slug}) => {
+const Table = ({title, tableData, tableHeader, isLoading, permission, module, tab, onOpenModal, onSuccess, action, slug}) => {
     
     const dispatch = useDispatch()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -73,7 +73,7 @@ const Table = ({title, user, tableHeader, isLoading, permission, module, tab, on
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                 {isLoading ? (
                     <>
-                        <SkeletonScreen rowCount={user.length} columnCount={tableHeader.length}/> 
+                        <SkeletonScreen rowCount={tableData.length} columnCount={tableHeader.length}/> 
                     </>
                 ) : 
                 
@@ -95,14 +95,14 @@ const Table = ({title, user, tableHeader, isLoading, permission, module, tab, on
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {user.length === 0 ? (
+                            {tableData.length === 0 ? (
                                 <tr>
                                     <td colSpan={tableHeader.length + 1} className="px-6 py-4 text-center">
                                         No records found.
                                     </td>
                                 </tr>
                             ): (
-                                user.map((tblBody, tblBodyIndex) => (
+                                tableData.map((tblBody, tblBodyIndex) => (
                                     // console.log(tblBody)
                                     <tr key={tblBodyIndex}>
     
