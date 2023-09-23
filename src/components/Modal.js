@@ -2,9 +2,51 @@ import React,{ useImperativeHandle, forwardRef, useState, useRef, useEffect  } f
 import NavTab from "./NavTab"
 import { useDispatch } from 'react-redux'
 import Form from "./Form"
+import Select from 'react-select'
 
 import { useGrantUserModuleMutation, useGetUserByIdQuery } from "@/service/authService"
 import { authApi } from "@/service/authService"
+
+const genderOPD = [
+    {value: "male", label: "Male", },
+    {value: "female", label: "Female"},
+]
+
+const physicianOPD = [
+    {id: 1, physician_charge: 1000, user_id: "QOS-P2SXCL134", name: "Dr John Smith"},
+    {id: 2, physician_charge: 1500, user_id: "QOS-P2SXCL135", name: "Dr John Doe"},
+]
+
+const ancillaryOPD = [
+    {id:1, label: "None", value: "none"},
+    {id:2, label: "ECG", value: "ecg"},
+    {id:3, label: "X-RAY", value: "xray"},
+    {id:4, label: "Ultrasound", value: "ultrasound"},
+]
+
+const dispositionOPD = [
+    {id:1, label: "Admission", value: "admission"},
+    {id:2, label: "Discharged", value: "discharged"},
+]
+
+const styleDropdown = {
+    control: (provided) => ({
+        ...provided,
+        // border: '1px solid gray',
+        padding: '0.1em',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'gray',
+          border: '1px solid gray'
+        },
+      }),
+      input: (provided) => ({
+        ...provided,
+        inputOutline: 'none',
+      }),
+}
+
+const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
 const Modal = ({
         isOpen, 
@@ -27,11 +69,25 @@ const Modal = ({
     const [navTab, setNavTab] = useState([])
     const [triggerSubmit, setTriggerSubmit] = useState(false)
     const [openModalId, setOpenModalId] = useState("")
+
+    const [currentTime, setCurrentTime] = useState(new Date())
+    const [savedDate, setSavedDate] = useState(null)
+    const [savedTime, setSavedTime] = useState(null)
+
+    const [doctorCharge, setDoctorCharge] = useState("")
     
     const [grantUserModule, { isLoading, isError, error, isSuccess }] = useGrantUserModuleMutation()
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
         user_id: openId
     })
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+          setCurrentTime(new Date())
+        }, 1000)
+    
+        return () => clearInterval(intervalId)
+    }, [])
     
     const groupModules = module
         ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
@@ -70,6 +126,23 @@ const Modal = ({
         })
     }
 
+    const handleGenderOPD = () => {
+        
+    }
+
+    const handlePhysicianOPD = (selectedOption) => {
+        console.log(selectedOption)
+        setDoctorCharge(selectedOption?.charge)
+    }
+
+    const handleDispositionOPD = () => {
+
+    }
+
+    const handleAncillaryOPD = () => {
+
+    }
+
     
     
     const userData = userDetails?.user[0] ?? []
@@ -97,12 +170,22 @@ const Modal = ({
     const handleClose = () => {
         onClose()
         setCheckedItem([])
+        setDoctorCharge("")
         // dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
     }
 
     // const handleSetAlertType = (data) => {
     //     onSetAlertType(data)
     // }
+
+    const formatDate = (date) => {
+        let options = { day: '2-digit', month: 'short', year: 'numeric' };
+        return new Intl.DateTimeFormat('default', options).format(date);
+    }
+    
+    const formatTime = (date) => {
+        return date.toLocaleTimeString('en-US', { hour12: false });
+    }
 
     const handleCloseModal = (data) => {
         data !== null && (
@@ -116,12 +199,11 @@ const Modal = ({
         onClose()
     }
 
-
     const handleSave = (e) => {
         e.preventDefault()
-        // if(slug === "charges") {
+        if(slug === "out-patient") {
 
-        // }
+        }
         
         if(groupModules) {
             grantUserModule({checkedItem, identity_id:selectedRowId})
@@ -293,16 +375,6 @@ const Modal = ({
                             </div>
                         </>
                     )
-                
-                    // <NavTab 
-                    //     modal={true} 
-                    //     onClose={onClose}
-                    //     tabsData={tabData} 
-                    //     userId={selectedRowId} 
-                    //     onCheckedData={handleCheckedData}
-                    // />
-                    
-
                 }
 
                 {slug === 'charges' && (
@@ -626,7 +698,92 @@ const Modal = ({
                 )}
 
                 {slug === 'out-patient' && (
-                    <h1>sample</h1>
+                    <div className="w-full">
+                        <div className="flex flex-col w-full mb-4">
+                            <label className={labelCss}>DATE | TIME - {formatDate(currentTime)} | {currentTime.toLocaleTimeString()}</label>
+                            {/* <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" /> */}
+                        </div>
+
+                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>LAST NAME</label>
+                                <input type="text" name="lastName" placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                            </div>
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>GIVEN NAME</label>
+                                <input type="text" name="givenName" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                            </div>
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>MIDDLE NAME</label>
+                                <input type="text" name="middleName" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>Gender</label>
+                                <Select 
+                                    options={genderOPD?.map(gender => ({ value: gender.name, label: gender.label }))}
+                                    onChange={handleGenderOPD}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder="Select gender..."
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                />
+                            </div>
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>Physician</label>
+                                <Select 
+                                    options={physicianOPD?.map(physic => ({ value: physic.user_id, label: physic.name, charge: physic.physician_charge }))}
+                                    onChange={handlePhysicianOPD}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder="Select physician..."
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                />
+                            </div>
+                        </div>
+
+
+                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>Ancillary</label>
+                                <Select 
+                                    options={ancillaryOPD?.map(ancillary => ({ value: ancillary.name, label: ancillary.label }))}
+                                    onChange={handleAncillaryOPD}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder="Select ancillary..."
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                />
+                            </div>
+                            <div className="flex flex-col w-full">
+                                <label className={labelCss}>Disposition</label>
+                                <Select 
+                                    options={dispositionOPD?.map(disposition => ({ value: disposition.name, label: disposition.label }))}
+                                    onChange={handleDispositionOPD}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder="Select disposition..."
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col w-full mb-4">
+                            <label className={labelCss}>Standard Charge</label>
+                            <input type="text" value={doctorCharge} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" disabled/>
+                        </div>
+
+                        <div className="flex flex-col w-full mb-4">
+                            <label className={labelCss}>Description</label>
+                            <textarea type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
+                        </div>
+                    </div>
                 )}
                 </div>
                 <div className="mt-6 flex justify-end">

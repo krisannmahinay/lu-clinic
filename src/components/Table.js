@@ -113,7 +113,35 @@ const Table = ({title, tableData, tableHeader, isLoading, permission, module, ta
                                                     <a href={`/patients/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
                                                         {tblBody[tblHeader]}
                                                     </a>
-                                                ): (
+                                                ) : tblHeader === 'ancillary' ? (
+                                                        tblBody[tblHeader] === "None" && (
+                                                            <span className="p-2 bg-slate-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        )  
+                                                ) : tblHeader === 'laboratory_status' ? (
+                                                        tblBody[tblHeader] === "Pending" ? (
+                                                            <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        ) : 
+
+                                                        tblBody[tblHeader] === "Available" && (
+                                                            <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        )
+                                                ) : tblHeader === 'imaging_status' ? (
+                                                        tblBody[tblHeader] === "Pending" ? (
+                                                            <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        ) : 
+
+                                                        tblBody[tblHeader] === "Available" && (
+                                                            <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        )
+                                                ) : tblHeader === 'disposition' ? (
+                                                        tblBody[tblHeader] === "Admission" ? (
+                                                            <span className="p-2 bg-blue-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        ) : 
+
+                                                        tblBody[tblHeader] === "Discharged" && (
+                                                            <span className="p-2 bg-yellow-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                                                        )
+                                                ) : (
                                                     tblBody[tblHeader]
                                                 )}
                                             </td>
