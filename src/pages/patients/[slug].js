@@ -31,9 +31,10 @@ const SubModule = () => {
             age: 20,
             gender: "Male",
             phone: "092222222222",
+            chief_complain: "Cough",
             physician: "Dr Smith",
             ancillary: "None",
-            laboratory_status: "None",
+            laboratory_status: "Pending",
             imaging_status: "Pending",
             disposition: "Admission",
         },
@@ -45,11 +46,12 @@ const SubModule = () => {
             age: 27,
             gender: "Male",
             phone: "092222222222",
+            chief_complain: "Abdominal Pain",
             physician: "Dr Smith",
             ancillary: "None",
-            laboratory_status: "None",
-            imaging_status: "Pending",
-            disposition: "Admission",
+            laboratory_status: "Available",
+            imaging_status: "Available",
+            disposition: "Discharged",
         }
     ]
 
@@ -113,6 +115,7 @@ const SubModule = () => {
                             onChangeItemPage={(item) => handleItemsPerPageChange(item)}
                             onCurrentPage={(page) => handleCurrentPage(page)}
                             // onSearchResults={(results) => handleSearchResults(results)}
+                            action={true}
                             onSearch={(q) => handleSearch(q)}
                             onAddClicked={() => setIsModalOpen(true)}
                         />
