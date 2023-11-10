@@ -12,7 +12,6 @@ import {
     useGetPermissionListQuery, 
     useGetModuleListQuery 
 } from '@/service/settingService'
-import ModalTest from "./ModalTest"
 import Soap from "./Patient/OPD/Soap"
 
 const soapData = [
@@ -151,24 +150,39 @@ const Table = forwardRef(({
     const [inpatientAction, setInpatientAction] = useState("")
 
     // state for dynamic table
-    const [formData, setFormData] = useState([])
+    // const [formData, setFormData] = useState([])
+    const [formData, setFormData] = useState(tableData)
     const [editMode, setEditMode] = useState({})
     const [idCounter, setIdCounter] = useState(0)
     const [addRowClicked, setAddRowClicked] = useState(false)
     const [selectedBedType, setSelectedBedType] = useState("")
     const [selectedBedGroup, setSelectedBedGroup] = useState("")
-
-    useImperativeHandle(ref, () => ({
-        handleAddRow
-    }))
-
-    // console.log(tableData)
+    const [selectedOption, setSelectedOption] = useState({
+        bed_type: "",
+        bed_group: ""
+    })
 
     useEffect(() => {
-        if(tableData?.length > 0) {
-            setFormData(tableData)
-        }
+        const editModes = tableData.reduce((acc, item) => {
+            acc[item.id] = false // Initially, all items are not in edit mode
+            return acc
+        }, {})
+        setEditMode(editModes)
     }, [tableData])
+
+    useImperativeHandle(ref, () => ({
+        handleAddRow: () => {
+            const nextId = Math.max(0, ...formData.map((data) => data.id)) + 1
+        }
+    }))
+
+    // useEffect(() => {
+    //     if(tableData?.length > 0) {
+    //         setFormData(tableData)
+    //     }
+    // }, [tableData])
+
+    
 
 
     // useEffect(() => {
@@ -183,6 +197,8 @@ const Table = forwardRef(({
     const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
     const moduleData = moduleList?.moduleList ?? []
     // console.log(moduleData)
+
+    // console.log(formData)
 
     const openModal = (userId) => {
         if(selectedRows.includes(userId)) {
@@ -261,12 +277,11 @@ const Table = forwardRef(({
         setImgLink(link)
     }
 
-    const handleSelectedBedType = (selectedOption) => {
-        setSelectedBedType(selectedOption)
-    }
-
-    const handleSelectedBedGroup = (selectedOption) => {
-        setSelectedBedGroup(selectedOption)
+    const handleSelectChange = (optionSelected, name) => {
+        setSelectedOption(prevOptions => ({
+            ...prevOptions,
+            [name]: optionSelected
+        }))
     }
 
     const handleFieldChange = (e, rowIndex, fieldName) => {
@@ -276,8 +291,7 @@ const Table = forwardRef(({
             }
             return row
         })
-        // console.log(updateData)
-        // setFormData(updateData)
+        setFormData(updateData)
     }
 
     const handleInputText = (a, b , c) => {
@@ -285,44 +299,50 @@ const Table = forwardRef(({
     }
 
     const generateInitialFields = (tblHeader) => {
-        const initialFields = {}
-
-        tblHeader.forEach((header) => {
-            initialFields[header] = ''
-        })
-
-        return initialFields
+        return tblHeader.reduce((fields, header) => {
+            fields[header] = '' 
+            return fields
+        }, {})
     }
 
-    const handleAddRow = () => {
-        const nextId = Math.max(0, ...tableData.map((data) => data.id)) + 1
-        const newRow = { 
-            id: nextId,
-            ...generateInitialFields(tableHeader) 
-        }
+    // const handleAddRow = () => {
+    //     const nextId = Math.max(0, ...formData.map((data) => data.id)) + 1
+    //     // const newRow = generateInitialFields(tableHeader) 
+    //     const newRow = {
+    //         id: nextId,
+    //         ...generateInitialFields(tableHeader)
+    //     }
 
-        const formRow = {
-            id: nextId,
-            ...tableHeader.reduce((acc, fieldName) => {
-                acc[fieldName] = renderForm(fieldName, newRow, idCounter)
-                return acc
-            }, {})
-        }
+    //     const formRow = {
+    //         id: nextId,
+    //         ...tableHeader.reduce((acc, fieldName) => {
+    //             acc[fieldName] = renderForm(fieldName, newRow, nextId)
+    //             return acc
+    //         }, {})
+    //     }
 
-        setEditMode((prevModes) => ({
-            ...prevModes,
-            [newRow.id]: true,
-        }))
+    //     setEditMode((prevModes) => ({
+    //         ...prevModes,
+    //         [nextId]: true,
+    //     }))
         
-        setFormData((prev) => [...prev, formRow])
-        setIdCounter((prev) => prev + 1)
-    }
+    //     setFormData((prev) => [...prev, formRow])
+    //     setIdCounter((prev) => prev + 1)
+    // }
 
     const toggleEditMode = (rowIndex) => {
         setEditMode((prev) => ({
-          ...prev,
-            //   [rowId]: !prev[rowId],
+            ...prev,
             [formData[rowIndex]?.id]: !prev[formData[rowIndex]?.id]
+        }))
+    }
+
+    const toggleSaveMode = (rowId) => {
+        setEditMode((prev) => ({
+            ...prev,
+            // [rowId]: false
+            
+            [formData[rowId]?.id]: !prev[formData[rowId]?.id]
         }))
     }
 
@@ -332,31 +352,33 @@ const Table = forwardRef(({
     }
 
     const renderForm = (fieldName, formRow, index) => {
-        console.log(index)
+        console.log(formRow)
         if(fieldName === 'bed_type') {
             return (
                 <Select 
+                    name="bed_type"
                     options={bedType?.map(type => ({ value: type.name, label: type.name }))}
-                    onChange={handleSelectedBedType}
+                    onChange={(optionSelected) => handleSelectChange(optionSelected, 'bed_type')}
                     isSearchable={true}
                     isClearable={true}
                     placeholder="Select..."
                     classNamePrefix="react-select"
                     styles={styleDropdown} 
-                    defaultValue={selectedBedType}
+                    defaultValue={selectedOption.bed_type}
                 />
             )
         } else if(fieldName === 'bed_group') {
             return (
                 <Select 
+                    name="bed_group"
                     options={bedGroup?.map(group => ({ value: group.name, label: `${group.name} - ${group.floor}` }))}
-                    onChange={handleSelectedBedGroup}
+                    onChange={(optionSelected) => handleSelectChange(optionSelected, 'bed_group')}
                     isSearchable={true}
                     isClearable={true}
                     placeholder="Select..."
                     classNamePrefix="react-select"
                     styles={styleDropdown} 
-                    defaultValue={selectedBedGroup}
+                    defaultValue={selectedOption.bed_group}
                 />
             )
         } else {
@@ -453,7 +475,7 @@ const Table = forwardRef(({
                 {renderContentBySlug(inpatientAction)}
             </Modal>
 
-            <div className="bg-white shadow overflow-y-auto scroll-custom sm:rounded-lg">
+            <div className="bg-white overflow-y-auto scroll-custom sm:rounded-lg">
                 {isLoading ? (
                     <>
                         <SkeletonScreen rowCount={tableData.length} columnCount={tableHeader.length}/> 
@@ -488,17 +510,16 @@ const Table = forwardRef(({
                                         formData.map((formRow, index) => (
                                             <tr key={formRow.id}>
                                                 {tableHeader.map((fieldName, fieldIndex) => (
+                                                    // console.log(formRow[fieldName].value)
                                                     <td key={fieldIndex} className="px-6 py-4 whitespace-nowrap">
-                                                        {editMode[index] ? (
-                                                            renderForm(fieldName, formRow, index)
-                                                        ) : (
-                                                            formRow[fieldName]
-                                                        )}
+                                                        {/* {console.log(formRow[fieldName])} */}
+                                                        {editMode[formRow.id] ? renderForm(fieldName, formRow, fieldIndex) : formRow[fieldName]}
+                                                        {/* {editMode[formRow.id] ? formRow[fieldName]?.element : formRow[fieldName]} */}
                                                     </td>
                                                 ))}
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {editMode[formRow.id] ? (
-                                                        <button onClick={() => toggleEditMode(index)}>
+                                                        <button onClick={() => toggleSaveMode(index)}>
                                                             <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                                             </svg>
