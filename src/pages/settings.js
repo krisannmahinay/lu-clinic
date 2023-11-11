@@ -22,6 +22,12 @@ import Pagination from '@/components/Pagination'
 import SearchItemPage from '@/components/SearchItemPage'
 import Modal from '@/components/Modal'
 import ProfileInformation from '@/components/ProfileInformation'
+import Button from '@/components/Button'
+import ItemPerPage from '@/components/ItemPerPage'
+import Dropdown from "@/components/Dropdown"
+import SearchExport from '@/components/SearchExport'
+import { DropdownExport } from "@/components/DropdownLink"
+
 
 const Setting = () => {
 
@@ -52,6 +58,8 @@ const Setting = () => {
     })
 
     
+    // console.log(moduleList)
+    
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
     const userData = userList?.userList ?? []
@@ -68,13 +76,9 @@ const Setting = () => {
         }
     }, [userSuccess, userData])
 
-    const handleSearch = (q) => {
-        setSearchQuery(q)
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value)
     }
-
-    // const handleOpenModal = (data) => {
-    //     setModalId(data)
-    // }
 
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
@@ -86,8 +90,8 @@ const Setting = () => {
         setCurrentPage(page)
     }
 
-    const handleItemsPerPageChange = (item) => {
-        setItemsPerPage(item)
+    const handleItemsPerPageChange = (e) => {
+        setItemsPerPage(e.target.value)
     }
 
     const handleExportToPDF = () => {
@@ -114,7 +118,94 @@ const Setting = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
+    const renderConfiguration = () => {
+        return (
+            <>
+                <div className="flex justify-between py-2">
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none px-4">
+                        <svg width="20" height="20" className="mr-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Add
+                    </button>
 
+                    <SearchExport>
+                        <div className="flex items-center">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    // onChange={e => setSearchQuery(e.target.value)}
+                                    onChange={(e) => handleSearch(e)}
+                                    className="border border-gray-300 w-full px-2 py-2 rounded focus:outline-none flex-grow pl-10"
+                                    placeholder="Search..."
+                                />
+                                <svg fill="none" stroke="currentColor" className="mx-2 h-6 w-6 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
+
+                            <Dropdown
+                                align="right"
+                                width="48"
+                                trigger={
+                                    <button className="border border-gray-300 bg-white rounded px-4 py-2 ml-2 focus:outline-none" aria-labelledby="Export">
+                                        <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                        </svg>
+                                    </button>
+                                }>
+                                <DropdownExport>
+                                    Export as PDF
+                                </DropdownExport>
+                                <DropdownExport>
+                                    Export as JSON
+                                </DropdownExport>
+                            </Dropdown>
+                        </div>
+                    </SearchExport>
+                </div>
+
+                <div className="border border-gray-300 rounded">
+                    <Table 
+                        title="User List" 
+                        action={true}
+                        module={moduleData} 
+                        tableData={userData} 
+                        tableHeader={tableHeader}
+                        permission={permissionData} 
+                        isLoading={userListLoading}
+                        onOpenModal={(id) => setModalId(id)}
+                    />
+                </div>
+    
+                <div className="flex flex-wrap py-2">
+                    <div className="flex items-center justify-center flex-grow">
+                        <Pagination 
+                            currentPage={pagination.currentPage} 
+                            totalPages={pagination.totalPages}
+                            // onPageChange={newPage => setCurrentPage(newPage)}
+                            onPageChange={(newPage) => handleNewPage(newPage)}
+                        />
+                    </div>
+    
+                    <ItemPerPage className="flex flex-grow">
+                        <div className="flex items-center justify-end">
+                            <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => handleItemsPerPageChange(e)}
+                                className="border border-gray-300 rounded px-4 py-2 focus:outline-none">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                    </ItemPerPage>
+                </div>
+            </>
+        )
+    }
 
     const userRegistration = [
         {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
@@ -131,7 +222,7 @@ const Setting = () => {
         }
     ]
 
-    console.log(userDetails)
+    // console.log(userDetails)
 
     return (
         <AppLayout
@@ -148,13 +239,6 @@ const Setting = () => {
             </Head>
 
             <div className="p-8">
-                {/* <Card title="Create User">
-                    <Form 
-                        initialFields={userRegistration}
-                        addUserBtn={true}
-                        onSucess={handleRefetch}
-                    />
-                </Card> */}
                 
                 {alertMessage &&
                     <Alert 
@@ -167,12 +251,12 @@ const Setting = () => {
 
                 <Modal 
                     // title={title}
+                    openId={modalId}
                     slug={moduleId} 
                     isOpen={isModalOpen} 
-                    onClose={closeModal}
                     initialFields={userRegistration}
                     addUserBtn={true}
-                    openId={modalId}
+                    onClose={closeModal}
                     onSuccess={handleRefetch}
                     onSetAlertType={(data) => setAlertType(data)}
                     onSetAlertMessage={(data) => setAlertMessage(data)}
@@ -181,34 +265,7 @@ const Setting = () => {
                 />
                 
                 {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
-                    <>
-                        <SearchItemPage
-                            onExportToPDF={handleExportToPDF}
-                            onChangeItemPage={(item) => handleItemsPerPageChange(item)}
-                            onCurrentPage={(page) => handleCurrentPage(page)}
-                            // onSearchResults={(results) => handleSearchResults(results)}
-                            onSearch={(q) => handleSearch(q)}
-                            onAddClicked={() => setIsModalOpen(true)}
-                        />
-
-                        <Table 
-                            title="User List" 
-                            tableData={userData} 
-                            action={true}
-                            permission={permissionData} 
-                            module={moduleData} 
-                            tableHeader={tableHeader}
-                            isLoading={userListLoading}
-                            onOpenModal={(id) => setModalId(id)}
-                        />
-
-                        <Pagination 
-                            currentPage={pagination.currentPage} 
-                            totalPages={pagination.totalPages}
-                            // onPageChange={newPage => setCurrentPage(newPage)}
-                            onPageChange={(newPage) => handleNewPage(newPage)}
-                        />
-                    </>
+                    renderConfiguration()
                 )} 
 
                 {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (

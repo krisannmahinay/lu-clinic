@@ -12,17 +12,17 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     }
 
     return (
-        <div class="flex items-center justify-center my-4">
+        <div class="">
             <nav>
-                <ul className="flex pl-0 rounded list-none flex-wrap mt-3 gap-2">
+                <ul className="flex rounded list-none flex-wrap gap-1">
                     <li>
                         {/* Previous Button */}
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={isFirstPage}
-                            className={`${isFirstPage ? 'cursor-not-allowed' : 'cursor-pointer'} shadow-md bg-white border border-gray-200 hover:bg-gray-400 p-2 hover:text-white rounded-full text-gray-500`}
+                            className={`${isFirstPage ? 'cursor-not-allowed' : 'cursor-pointer'} bg-white border border-gray-300 hover:bg-gray-400 p-2 hover:text-white rounded-md text-gray-500`}
                         >
-                            <svg fill="none" width="24" height="24" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <svg fill="none" className="w-[22px]" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                             </svg>
                         </button>
@@ -32,7 +32,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                     <li>
                         <button
                             onClick={() => handlePageChange(1)}
-                            className={`${currentPage === 1 ? 'bg-gray-500 text-white' : 'bg-white border border-gray-200 hover:bg-gray-300'} p-2 w-10 h-10 rounded-full`}
+                            className={`${currentPage === 1 ? 'bg-gray-500 text-white' : 'bg-white border border-gray-300 hover:bg-gray-300'} w-10 h-10 rounded-md`}
                         >
                             1
                         </button>
@@ -44,7 +44,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         <li key={page}>
                             <button
                                 onClick={() => handlePageChange(page)}
-                                className={`${currentPage === page ? 'bg-gray-500 text-white' : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300'} p-2 w-10 h-10 rounded-full`}
+                                className={`${currentPage === page ? 'bg-gray-500 text-white' : 'bg-white border border-gray-300 hover:bg-gray-300'} w-10 h-10 rounded-md`}
                             >
                                 {page}
                             </button>
@@ -58,7 +58,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         <li>
                             <button
                                 onClick={() => handlePageChange(totalPages)}
-                                className={`${currentPage === totalPages ? 'bg-gray-500 text-white' : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300'} p-2 w-10 h-10 rounded-full`}
+                                className={`${currentPage === totalPages ? 'bg-gray-500 text-white' : 'bg-white border border-gray-300 hover:bg-gray-300'} p-2 w-10 h-10 rounded-md`}
                             >
                                 {totalPages}
                             </button>
@@ -70,9 +70,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={isLastPage}
-                            className={`${isLastPage ? 'cursor-not-allowed' : 'cursor-pointer'} shadow-md bg-white border border-gray-200 hover:bg-gray-400 p-2 rounded-full text-[#676a6e]`}
+                            className={`${isLastPage ? 'cursor-not-allowed' : 'cursor-pointer'} bg-white border border-gray-300 hover:bg-gray-400 p-2 rounded-md text-[#676a6e]`}
                         >
-                            <svg fill="none" width="24" height="24" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <svg fill="none" className="w-[22px]" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                             </svg>
                         </button>
