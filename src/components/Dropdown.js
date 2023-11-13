@@ -4,6 +4,7 @@ import { Menu, Transition } from '@headlessui/react'
 const Dropdown = ({
     align = 'right',
     width = 48,
+    notifWidth = 80,
     contentClasses = 'py-1 bg-white',
     trigger,
     children,
@@ -13,6 +14,9 @@ const Dropdown = ({
     switch (width) {
         case '48':
             width = 'w-48'
+            break
+        case '80':
+            width = 'w-80'
             break
     }
 
@@ -48,7 +52,7 @@ const Dropdown = ({
                         <div
                             className={`absolute z-50 mt-2 ${width} rounded-md shadow-lg ${alignmentClasses}`}>
                             <Menu.Items
-                                className={`rounded-md focus:outline-none ring-1 ring-black ring-opacity-5 ${contentClasses}`}
+                                className={` rounded-md focus:outline-none ring-1 ring-black ring-opacity-5 ${contentClasses}`}
                                 static>
                                 {children}
                             </Menu.Items>
