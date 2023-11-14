@@ -7,6 +7,8 @@ import {
     useGetModuleListQuery 
 } from '@/service/settingService'
 
+import loadinSpinner from '../../public/assets/svg/image2vector.svg'
+
 import { useGetUserDetailsQuery } from '@/service/authService'
 
 
@@ -26,6 +28,7 @@ import Button from '@/components/Button'
 import ItemPerPage from '@/components/ItemPerPage'
 import Dropdown from "@/components/Dropdown"
 import SearchExport from '@/components/SearchExport'
+import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from "@/components/DropdownLink"
 
 const userRegistration = [
@@ -48,17 +51,19 @@ const Setting = () => {
     const moduleId = "settings"
     const menuGroup = "settings"
     const formRef = useRef(null)
-    const [ modalId, setModalId ] = useState("") 
-    const [ tableHeader, setTableHeader ] = useState([])
+    const [modalId, setModalId] = useState("") 
+    const [tableHeader, setTableHeader] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const [alertType, setAlertType] = useState("")
-    const [alertMessage, setAlertMessage] = useState("test")
+    const [alertMessage, setAlertMessage] = useState("")
     const [activeContent, setActiveContent] = useState("yellow")
     const [refetchData, setRefetchData] = useState(false)
+    const [reInitFields, setReIinitFields] = useState(true)
+    const [btnSpinner, setBtnSpinner] = useState(true)
     // const [totalPages, setTotalPages] = useState(0)
     // const [perPage, setPerPage] = useState(0)
     
@@ -72,7 +77,6 @@ const Setting = () => {
         enabled: !!searchQuery
     })
 
-    
     // console.log(moduleList)
     
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
@@ -89,7 +93,23 @@ const Setting = () => {
             setTableHeader(headers)
             // setItemsPerPage(prev => prev + 1)
         }
-    }, [userSuccess, userData])
+        setAlertMessage("test")
+
+        let timer
+        if(btnSpinner) {
+            timer = setTimeout(() => {
+                setBtnSpinner(false)
+                handleCloseSlider()
+            }, 500)
+        }
+
+        return () => {
+            if(timer) {
+                clearTimeout(timer)
+            }
+        }
+
+    }, [userSuccess, userData, btnSpinner])
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value)
@@ -137,23 +157,93 @@ const Setting = () => {
     }
 
     const handleRefetch = () => {
-        // setRefetchData(true)
         setItemsPerPage(prev => prev + 1)
     }
 
-    const renderConfiguration = () => {
+    const handleLoadingSpinner = (data) => {
+        setBtnSpinner(data)
+    }
+
+    const handleCloseSlider = () => {
+        setActiveContent("yellow")
+        formRef.current.handleResetForm()
+    }
+
+    const renderTableContent = () => {
+        return (
+            <>
+            {userListLoading ? (
+                <SkeletonScreen rowCount={userData?.length} columnCount={tableHeader?.length}/> 
+            ) : (
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                                <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {tblHeader}
+                                </th>
+
+                            ))}
+
+                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {userData.length === 0 ? (
+                            <tr>
+                                <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                    No records found.
+                                </td>
+                            </tr>
+                        ) : (
+                            userData.map((tblBody, tblBodyIndex) => (
+                                <tr key={tblBodyIndex}>
+                                    {tableHeader.map((tblHeader) => (
+                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                                            {tblBody[tblHeader]}
+                                        </td>
+                                    ))}
+
+                                    <td className="px-6 py-2 whitespace-nowrap">    
+                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
+                                            {/* <span>ADD</span> */}
+                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>
+
+                                            {/* <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg> */}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+                )}
+            </>
+            
+        )
+    }
+
+    const renderContent = () => {
         return (
             <>
                 <div className="flex relative overflow-hidden h-screen">
                     <div className="absolute inset-0 w-full">
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
-                            <div className="flex justify-between py-2">
-                                <button onClick={() => setActiveContent("green")} className="flex items-center bg-gray-500 text-white px-2 gap-2 rounded hover:bg-gray-600 focus:outline-none">
-                                    <svg fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
-                                    </svg>
+                            <div className="flex justify-between py-1">
+                                <Button
+                                    bgColor=""
+                                    btnIcon="user"
+                                    onClick={() => setActiveContent("green")}
+                                >
                                     New User
-                                </button>
+                                </Button>
 
                                 <SearchExport>
                                     <div className="flex items-center">
@@ -163,10 +253,10 @@ const Setting = () => {
                                                 value={searchQuery}
                                                 // onChange={e => setSearchQuery(e.target.value)}
                                                 onChange={(e) => handleSearch(e)}
-                                                className="border border-gray-300 w-full px-2 py-2 rounded focus:outline-none flex-grow pl-10"
+                                                className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
                                                 placeholder="Search..."
                                             />
-                                            <svg fill="none" stroke="currentColor" className="mx-2 h-6 w-6 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                                             </svg>
                                         </div>
@@ -175,8 +265,8 @@ const Setting = () => {
                                             align="right"
                                             width="48"
                                             trigger={
-                                                <button className="border border-gray-300 bg-white rounded px-4 py-2 ml-2 focus:outline-none" aria-labelledby="Export">
-                                                    <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                                    <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                                                     </svg>
                                                 </button>
@@ -195,17 +285,14 @@ const Setting = () => {
                             <div className="border border-gray-300 rounded">
                                 <Table 
                                     title="User List" 
-                                    action={true}
-                                    module={moduleData} 
-                                    tableData={userData} 
-                                    tableHeader={tableHeader}
-                                    permission={permissionData} 
-                                    isLoading={userListLoading}
+                                    disableTable={true}
                                     onOpenModal={(id) => setModalId(id)}
-                                />
+                                >
+                                    {renderTableContent()}
+                                </Table>
                             </div>
                 
-                            <div className="flex flex-wrap py-2">
+                            <div className="flex flex-wrap py-1">
                                 <div className="flex items-center justify-center flex-grow">
                                     <Pagination 
                                         currentPage={pagination.currentPage} 
@@ -217,11 +304,11 @@ const Setting = () => {
                 
                                 <ItemPerPage className="flex flex-grow">
                                     <div className="flex items-center justify-end">
-                                        <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
+                                        <span className="mr-2 mx-2 text-gray-700 text-sm">Per Page:</span>
                                         <select
                                             value={itemsPerPage}
                                             onChange={(e) => handleItemsPerPageChange(e)}
-                                            className="border border-gray-300 rounded px-4 py-2 focus:outline-none">
+                                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
                                             <option value="5">5</option>
                                             <option value="10">10</option>
                                             <option value="20">20</option>
@@ -232,28 +319,36 @@ const Setting = () => {
                         </div>
                         
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
+                            
+                            
+
                             <div className="flex justify-between py-2">
-                                <button onClick={() => setActiveContent("yellow")} className="flex items-center bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 gap-2 rounded focus:outline-none">
-                                    <svg fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                <Button
+                                    paddingY="1"
+                                    btnIcon="close"
+                                    // onClick={() => setActiveContent("yellow")}
+                                    onClick={handleCloseSlider}
+                                >
                                     Close
-                                </button>
+                                </Button>
 
                                 <div className="flex gap-2">
-                                    <button onClick={() => formRef.current.handleAddRow()} className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white px-2 gap-2 rounded  focus:outline-none">
-                                        <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                    <Button
+                                        bgColor="indigo"
+                                        btnIcon="add"
+                                        onClick={() => formRef.current.handleAddRow()}
+                                    >
                                         Add Row
-                                    </button>
+                                    </Button>
 
-                                    <button onClick={() => formRef.current.handleSubmit()} className="flex items-center bg-green-500 hover:bg-green-600 text-white px-2 gap-2 rounded  focus:outline-none">
-                                        <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                        </svg>
-                                        Submit
-                                    </button>
+                                    <Button
+                                        bgColor={btnSpinner ? 'disable': 'emerald'}
+                                        btnIcon={btnSpinner ? 'disable': 'submit'}
+                                        btnLoading={btnSpinner}
+                                        onClick={() => formRef.current.handleSubmit()}
+                                    >
+                                        {btnSpinner ? '' : 'Submit'}
+                                    </Button>
                                 </div>
                             </div>
 
@@ -261,6 +356,7 @@ const Setting = () => {
                                 ref={formRef} 
                                 initialFields={userRegistration}
                                 onSuccess={handleRefetch}
+                                onLoading={(data) => setBtnSpinner(data)}
                                 onSetAlertType={(data) => setAlertType(data)}
                                 onSetAlertMessage={(data) => setAlertMessage(data)}
                             />
@@ -313,7 +409,7 @@ const Setting = () => {
                 />
                 
                 {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
-                    renderConfiguration()
+                    renderContent()
                 )} 
 
                 {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
