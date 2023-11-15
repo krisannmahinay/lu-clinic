@@ -64,6 +64,7 @@ const Setting = () => {
     const [refetchData, setRefetchData] = useState(false)
     const [reInitFields, setReIinitFields] = useState(true)
     const [btnSpinner, setBtnSpinner] = useState(true)
+    const [highlightedRows, setHighlightedRows] = useState(new Set())
     // const [totalPages, setTotalPages] = useState(0)
     // const [perPage, setPerPage] = useState(0)
     
@@ -88,19 +89,23 @@ const Setting = () => {
     const userInfo = userDetails?.data[0] ?? []
 
     useEffect(() => {
+        userData.forEach((row, index) => {
+            if(row.isNew) {
+                highlightedNewRows(index)
+            }
+        })
+
         if(userSuccess && Array.isArray(userData) && userData.length > 0) {
             const headers = Object.keys(userData[0])
             setTableHeader(headers)
             // setItemsPerPage(prev => prev + 1)
         }
-        setAlertMessage("test")
 
         let timer
         if(btnSpinner) {
             timer = setTimeout(() => {
                 setBtnSpinner(false)
-                handleCloseSlider()
-            }, 500)
+            }, 1000)
         }
 
         return () => {
@@ -110,6 +115,17 @@ const Setting = () => {
         }
 
     }, [userSuccess, userData, btnSpinner])
+
+    const highlightedNewRows = (index) => {
+        setHighlightedRows((prev) => new Set(prev).add(index))
+        setTimeout(() => {
+            setHighlightedRows((prev) => {
+                const newSet = new Set(prev)
+                newSet.delete(index)
+                return newSet
+            })
+        }, 500)
+    }
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value)
@@ -166,7 +182,6 @@ const Setting = () => {
 
     const handleCloseSlider = () => {
         setActiveContent("yellow")
-        formRef.current.handleResetForm()
     }
 
     const renderTableContent = () => {
@@ -200,7 +215,7 @@ const Setting = () => {
                             </tr>
                         ) : (
                             userData.map((tblBody, tblBodyIndex) => (
-                                <tr key={tblBodyIndex}>
+                                <tr key={tblBodyIndex} className={highlightedRows.has(tblBodyIndex) ? 'bg-emerald-200' : ''}>
                                     {tableHeader.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblBody[tblHeader]}
@@ -213,10 +228,6 @@ const Setting = () => {
                                             <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                             </svg>
-
-                                            {/* <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg> */}
                                         </button>
                                     </td>
                                 </tr>
@@ -356,6 +367,7 @@ const Setting = () => {
                                 ref={formRef} 
                                 initialFields={userRegistration}
                                 onSuccess={handleRefetch}
+                                onCloseSlider={() => setActiveContent("yellow")}
                                 onLoading={(data) => setBtnSpinner(data)}
                                 onSetAlertType={(data) => setAlertType(data)}
                                 onSetAlertMessage={(data) => setAlertMessage(data)}
