@@ -134,8 +134,9 @@ const Table = forwardRef(({
     slug, 
     children, 
     disableTable,
-    dynamicTable
-},ref) => {
+    dynamicTable,
+    fontSize,
+}, ref) => {
     const imgRef = useRef(null)
     const dispatch = useDispatch()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -151,7 +152,7 @@ const Table = forwardRef(({
 
     // state for dynamic table
     // const [formData, setFormData] = useState([])
-    const [formData, setFormData] = useState(tableData)
+    const [formData, setFormData] = useState([])
     const [editMode, setEditMode] = useState({})
     const [idCounter, setIdCounter] = useState(0)
     const [addRowClicked, setAddRowClicked] = useState(false)
@@ -163,27 +164,34 @@ const Table = forwardRef(({
     })
 
     useEffect(() => {
-        const editModes = tableData.reduce((acc, item) => {
-            acc[item.id] = false // Initially, all items are not in edit mode
-            return acc
-        }, {})
-        setEditMode(editModes)
+        if(tableData?.length > 0) {
+            setFormData(tableData)
+        }
     }, [tableData])
 
-    useImperativeHandle(ref, () => ({
-        handleAddRow: () => {
-            const nextId = Math.max(0, ...formData.map((data) => data.id)) + 1
-        }
-    }))
+    let adjustFontSize
 
-    // useEffect(() => {
-    //     if(tableData?.length > 0) {
-    //         setFormData(tableData)
-    //     }
-    // }, [tableData])
+    switch(fontSize) {
+        case 'xmall':
+            adjustFontSize = 'text-xs'
+            break
+        
+        case 'small':
+            adjustFontSize = 'text-sm'
+            break
 
-    
+        case 'large':
+            adjustFontSize = 'text-lg'
+            break
 
+        case 'xlarge':
+            adjustFontSize = 'text-xl'
+            break
+
+        default:
+            adjustFontSize = 'text-base'
+            break
+    }
 
     // useEffect(() => {
     //     if(alertType !== "") {
@@ -277,16 +285,20 @@ const Table = forwardRef(({
         setImgLink(link)
     }
 
-    const handleSelectChange = (optionSelected, name) => {
+    const handleSelectChange = (optionSelected, rowId, name) => {
+        console.log(rowId)
         setSelectedOption(prevOptions => ({
             ...prevOptions,
-            [name]: optionSelected
+            [rowId]: {
+                ...prevOptions[rowId],
+                [name]: optionSelected
+            }
         }))
     }
 
-    const handleFieldChange = (e, rowIndex, fieldName) => {
+    const handleFieldChange = (e, id, fieldName) => {
         const updateData = formData.map((row, index) => {
-            if(index === rowIndex) {
+            if(row.id === id) {
                 return { ...row, [fieldName]: e.target.value }
             }
             return row
@@ -298,51 +310,32 @@ const Table = forwardRef(({
         console.log(a,b,c)
     }
 
-    const generateInitialFields = (tblHeader) => {
-        return tblHeader.reduce((fields, header) => {
-            fields[header] = '' 
-            return fields
-        }, {})
-    }
-
-    // const handleAddRow = () => {
-    //     const nextId = Math.max(0, ...formData.map((data) => data.id)) + 1
-    //     // const newRow = generateInitialFields(tableHeader) 
-    //     const newRow = {
-    //         id: nextId,
-    //         ...generateInitialFields(tableHeader)
-    //     }
-
-    //     const formRow = {
-    //         id: nextId,
-    //         ...tableHeader.reduce((acc, fieldName) => {
-    //             acc[fieldName] = renderForm(fieldName, newRow, nextId)
-    //             return acc
-    //         }, {})
-    //     }
-
-    //     setEditMode((prevModes) => ({
-    //         ...prevModes,
-    //         [nextId]: true,
-    //     }))
-        
-    //     setFormData((prev) => [...prev, formRow])
-    //     setIdCounter((prev) => prev + 1)
-    // }
-
-    const toggleEditMode = (rowIndex) => {
+    const toggleEditMode = (rowId) => {
         setEditMode((prev) => ({
             ...prev,
-            [formData[rowIndex]?.id]: !prev[formData[rowIndex]?.id]
+            [rowId]: true
+            // [rowId]: !prev[rowId]
+            // [formData[rowId]?.id]: !prev[formData[rowId]?.id]
         }))
+
+        if(!selectedOption[rowId]) {
+            setSelectedOption((prevSelected) => ({
+                ...prevSelected,
+                [rowId]: {
+                    bed_type: bed_type,
+                    bed_group: bed_group,
+                }
+            }))
+        }
+
     }
 
     const toggleSaveMode = (rowId) => {
         setEditMode((prev) => ({
             ...prev,
-            // [rowId]: false
+            [rowId]: !prev[rowId]
+            // [formData[rowId]?.id]: !prev[formData[rowId]?.id]
             
-            [formData[rowId]?.id]: !prev[formData[rowId]?.id]
         }))
     }
 
@@ -352,13 +345,13 @@ const Table = forwardRef(({
     }
 
     const renderForm = (fieldName, formRow, index) => {
-        console.log(formRow)
+        // console.log(idCounter)
         if(fieldName === 'bed_type') {
             return (
                 <Select 
                     name="bed_type"
                     options={bedType?.map(type => ({ value: type.name, label: type.name }))}
-                    onChange={(optionSelected) => handleSelectChange(optionSelected, 'bed_type')}
+                    onChange={(optionSelected) => handleSelectChange(optionSelected, idCounter, 'bed_type')}
                     isSearchable={true}
                     isClearable={true}
                     placeholder="Select..."
@@ -372,7 +365,7 @@ const Table = forwardRef(({
                 <Select 
                     name="bed_group"
                     options={bedGroup?.map(group => ({ value: group.name, label: `${group.name} - ${group.floor}` }))}
-                    onChange={(optionSelected) => handleSelectChange(optionSelected, 'bed_group')}
+                    onChange={(optionSelected) => handleSelectChange(optionSelected, idCounter,'bed_group')}
                     isSearchable={true}
                     isClearable={true}
                     placeholder="Select..."
@@ -478,14 +471,14 @@ const Table = forwardRef(({
             <div className="bg-white overflow-y-auto scroll-custom sm:rounded-lg">
                 {isLoading ? (
                     <>
-                        <SkeletonScreen rowCount={tableData.length} columnCount={tableHeader.length}/> 
+                        <SkeletonScreen rowCount={tableData?.length} columnCount={tableHeader?.length}/> 
                     </>
                 ) : (
                     <>
                         {disableTable ? (
                             <div>{children}</div>
                         ) : dynamicTable ? (
-                            <table className="min-w-full divide-y divide-gray-200">
+                            <table className="min-w-full divide-y  divide-gray-200">
                                 <thead>
                                     <tr>
                                         {tableHeader.map((tblHeader, tblHeaderIndex) => (
@@ -500,9 +493,10 @@ const Table = forwardRef(({
                                 </thead>
                                 
                                 <tbody className="bg-white divide-y divide-gray-200">
+                                    {/* {formData.map(renderTableRow)} */}
                                     {formData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={tableHeader.length + 1} className="px-6 py-4 text-center">
+                                            <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
                                                 No records found.
                                             </td>
                                         </tr>
@@ -510,22 +504,19 @@ const Table = forwardRef(({
                                         formData.map((formRow, index) => (
                                             <tr key={formRow.id}>
                                                 {tableHeader.map((fieldName, fieldIndex) => (
-                                                    // console.log(formRow[fieldName].value)
-                                                    <td key={fieldIndex} className="px-6 py-4 whitespace-nowrap">
-                                                        {/* {console.log(formRow[fieldName])} */}
-                                                        {editMode[formRow.id] ? renderForm(fieldName, formRow, fieldIndex) : formRow[fieldName]}
-                                                        {/* {editMode[formRow.id] ? formRow[fieldName]?.element : formRow[fieldName]} */}
+                                                    <td key={fieldIndex} className="px-6 py-3 whitespace-nowrap text-sm">
+                                                        {editMode[idCounter] ? renderForm(fieldName, formRow, index) : formRow[fieldName]}
                                                     </td>
                                                 ))}
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {editMode[formRow.id] ? (
-                                                        <button onClick={() => toggleSaveMode(index)}>
+                                                <td className="px-6 whitespace-nowrap">
+                                                    {editMode[idCounter] ? (
+                                                        <button onClick={() => toggleSaveMode(idCounter)}>
                                                             <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                                             </svg>
                                                         </button>
                                                     ) : (
-                                                        <button onClick={() => toggleEditMode(index)}>
+                                                        <button onClick={() => toggleEditMode(idCounter)}>
                                                             <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                                             </svg>
@@ -570,7 +561,7 @@ const Table = forwardRef(({
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {tableData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={tableHeader.length + 1} className="px-6 py-4 text-center">
+                                            <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
                                                 No records found.
                                             </td>
                                         </tr>
@@ -578,7 +569,7 @@ const Table = forwardRef(({
                                         tableData.map((tblBody, tblBodyIndex) => (
                                             <tr key={tblBodyIndex}>
                                                 {tableHeader.map((tblHeader) => (
-                                                    <td key={tblHeader} className="px-6 py-4 whitespace-nowrap">
+                                                    <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                                         {tblHeader === 'patient_id' ? (
                                                             // console.log(slug)
                                                             slug === 'out-patient' || slug === 'in-patient' ? (
@@ -645,11 +636,11 @@ const Table = forwardRef(({
                                                 ))}
 
                                                 {action && (
-                                                    <td>    
-                                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)} className="bg-green-500 hover:bg-green-600 rounded-full text-white px-2 py-2 focus:outline-none flex items-center space-x-2 ">
+                                                    <td className="px-6 py-2 whitespace-nowrap">    
+                                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
                                                             {/* <span>ADD</span> */}
-                                                            <svg fill="currentColor" className="h-6 w-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                                                            <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                                                             </svg>
 
                                                             {/* <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
