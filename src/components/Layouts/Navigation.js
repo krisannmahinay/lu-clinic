@@ -181,7 +181,7 @@ const Navigation = ({ ...props }) => {
                     {/* <div className={`flex-grow bg-gray-100 overflow-y-auto scroll-custom ${sidebarOpen ? 'ml-[15rem]' : 'w-full'}`}> */}
                     <div className={`flex-grow bg-gray-100 ${sidebarOpen ? 'ml-[15rem] sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}>
                         <nav className="bg-[#15803d] border-b border-gray-100 fixed w-full top-0 left-0 z-10">
-                            <div className={`${sidebarOpen ? 'ml-[15rem] lg:ml-0 phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}>
+                            <div className={`${sidebarOpen ? 'ml-[15rem]  phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}>
                                 <div className="flex justify-between h-16">
                                     <div className="flex">
                                         {/* Logo */}
