@@ -4,7 +4,7 @@ import Head from 'next/head'
 import { 
     useGetUserListQuery, 
     useGetPermissionListQuery, 
-    useGetModuleListQuery 
+    useGetModuleListQuery
 } from '@/service/settingService'
 
 import loadinSpinner from '../../public/assets/svg/image2vector.svg'
@@ -70,7 +70,13 @@ const Setting = () => {
     
     const { data: permission, isLoading: permissionListLoading, isError: permissionErr } = useGetPermissionListQuery()
     const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
-    const { data: userList, isLoading: userListLoading, isError: userErr, error, isSuccess: userSuccess } = useGetUserListQuery({
+    const { 
+        data: userList, 
+        isLoading: userListLoading, 
+        isError: userErr, 
+        error, 
+        isSuccess: userSuccess 
+    } = useGetUserListQuery({
         items: itemsPerPage,
         page: currentPage,
         keywords: searchQuery
@@ -82,50 +88,58 @@ const Setting = () => {
     
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
-    const userData = userList?.userList ?? []
+    const userData = userList?.data ?? []
     const pagination = userList?.pagination ?? []
     const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
     const userInfo = userDetails?.data[0] ?? []
+    
+    console.log(pagination)
+
+    const isRowNew = (createdAt) => {
+        const rowDate = new Date(createdAt)
+        const now = new Date()
+        return (now - rowDate) / 1000 <= 5
+    }
 
     useEffect(() => {
-        userData.forEach((row, index) => {
-            if(row.isNew) {
-                highlightedNewRows(index)
-            }
-        })
+        // const newRows = new Set()
+
+        // userData.forEach((row, index) => {
+        //     if(isRowNew(row.created_at)) {
+        //         newRows.add(index)
+        //     }
+        // })
+
+        // setHighlightedRows(newRows)
+        
+        // console.log(highlightedRows)
+
+        // const highlightTimeout = setTimeout(() => {
+        //     setHighlightedRows(new Set())
+        // }, 2000) //clear the highlights after .5milliseconds
 
         if(userSuccess && Array.isArray(userData) && userData.length > 0) {
             const headers = Object.keys(userData[0])
             setTableHeader(headers)
-            // setItemsPerPage(prev => prev + 1)
         }
 
-        let timer
+        let spinnerTimer
         if(btnSpinner) {
-            timer = setTimeout(() => {
+            spinnerTimer = setTimeout(() => {
                 setBtnSpinner(false)
             }, 1000)
         }
 
         return () => {
-            if(timer) {
-                clearTimeout(timer)
+            if(spinnerTimer) {
+                clearTimeout(spinnerTimer)
             }
+            // clearTimeout(highlightTimeout)
         }
 
-    }, [userSuccess, userData, btnSpinner])
+    }, [userSuccess, btnSpinner])
 
-    const highlightedNewRows = (index) => {
-        setHighlightedRows((prev) => new Set(prev).add(index))
-        setTimeout(() => {
-            setHighlightedRows((prev) => {
-                const newSet = new Set(prev)
-                newSet.delete(index)
-                return newSet
-            })
-        }, 500)
-    }
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value)
@@ -215,7 +229,7 @@ const Setting = () => {
                             </tr>
                         ) : (
                             userData.map((tblBody, tblBodyIndex) => (
-                                <tr key={tblBodyIndex} className={highlightedRows.has(tblBodyIndex) ? 'bg-emerald-200' : ''}>
+                                <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
                                     {tableHeader.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblBody[tblHeader]}
@@ -237,7 +251,6 @@ const Setting = () => {
                 </table>
                 )}
             </>
-            
         )
     }
 
@@ -306,8 +319,8 @@ const Setting = () => {
                             <div className="flex flex-wrap py-1">
                                 <div className="flex items-center justify-center flex-grow">
                                     <Pagination 
-                                        currentPage={pagination.currentPage} 
-                                        totalPages={pagination.totalPages}
+                                        currentPage={pagination.current_page} 
+                                        totalPages={pagination.total_page}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
                                         onPageChange={(newPage) => handleNewPage(newPage)}
                                     />
@@ -330,9 +343,6 @@ const Setting = () => {
                         </div>
                         
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
-                            
-                            
-
                             <div className="flex justify-between py-2">
                                 <Button
                                     paddingY="1"
@@ -378,8 +388,6 @@ const Setting = () => {
             </>
         )
     }
-
-    // console.log(userDetails)
 
     return (
         <AppLayout
