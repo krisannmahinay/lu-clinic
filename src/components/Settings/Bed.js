@@ -8,7 +8,9 @@ import ItemPerPage from "../ItemPerPage"
 import Pagination from "../Pagination"
 import Dropdown from "../Dropdown"
 import Form from "../Form"
+import SkeletonScreen from "../SkeletonScreen"
 import { DropdownExport } from "../DropdownLink"
+import { useGetBedListQuery } from '../../service/settingService'
 
 
 const bedStatus = [
@@ -97,10 +99,35 @@ const Bed = ({slug}) => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [totalPages, setTotalPages] = useState(1)
     const [activeContent, setActiveContent] = useState("yellow")
-    const [btnSpinner, setBtnSpinner] = useState(true)
+    const [btnSpinner, setBtnSpinner] = useState(false)
+    const [tableHeader, setTableHeader] = useState([])
 
-    const handleItemsPerPageChange = (item) => {
-        setItemsPerPage(item)
+    const { 
+        data: bedData, 
+        isLoading: bedLoading, 
+        isError: bedError, 
+        isSuccess: bedSuccess,
+        // refetch
+    } = useGetBedListQuery({
+        items: itemsPerPage,
+        tabs: activeTab,
+        page: currentPage,
+    })
+
+    const bedMaster = bedData?.data ?? []
+    const pagination = bedData?.pagination ?? []
+    
+    console.log(bedMaster)
+    useEffect(() => {
+        if(bedSuccess && Array.isArray(bedMaster) && bedMaster.length > 0) {
+            const headers = Object.keys(bedMaster[0])
+            setTableHeader(headers)
+        }
+        // refetch()
+    }, [bedSuccess])
+
+    const handleItemsPerPageChange = (e) => {
+        setItemsPerPage(e.target.value)
     }
 
     const handleCurrentPage = (page) => {
@@ -128,78 +155,141 @@ const Bed = ({slug}) => {
     const addRow = () => {
         fieldRef.current.handleAddRow()
     }
+    
+    const renderTableContent = () => {
+        return (
+            <>
+            {bedLoading ? (
+                <SkeletonScreen rowCount={bedMaster?.length} columnCount={tableHeader?.length}/> 
+            ) : (
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                                <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {tblHeader}
+                                </th>
+
+                            ))}
+
+                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {bedMaster.length === 0 ? (
+                            <tr>
+                                <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                    No records found.
+                                </td>
+                            </tr>
+                        ) : (
+                            bedMaster.map((tblBody, tblBodyIndex) => (
+                                // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
+                                <tr key={tblBodyIndex}>
+                                    {tableHeader.map((tblHeader) => (
+                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                                            {tblBody[tblHeader]}
+                                        </td>
+                                    ))}
+
+                                    <td className="px-6 py-2 whitespace-nowrap">    
+                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
+                                            {/* <span>ADD</span> */}
+                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+                )}
+            </>
+        )
+    }
 
     const renderTableContentByTab = (tab) => {
         switch(tab) {
             case 'tab1':
                 return (
                     <Table 
-                        slug={slug}
-                        action={false}
-                        ref={fieldRef} 
                         title="User List" 
-                        dynamicTable={true}
-                        tableData={bedStatus} 
-                        tableHeader={Object.keys(bedStatus[0])}
-                        // isLoading={userListLoading}
-                    />
+                        disableTable={true}
+                        onOpenModal={(id) => setModalId(id)}
+                    >
+                        {renderTableContent()}
+                    </Table>
+
+                    // <Table 
+                    //     slug={slug}
+                    //     action={false}
+                    //     ref={fieldRef} 
+                    //     title="User List" 
+                    //     dynamicTable={true}
+                    //     tableData={bedMaster} 
+                    //     tableHeader={Object.keys(bedMaster[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
     
             case 'tab2':
                 return (
                     <Table 
-                        slug={slug}
-                        action={false}
-                        ref={fieldRef} 
                         title="User List" 
-                        dynamicTable={true}
-                        tableData={bedList} 
-                        tableHeader={Object.keys(bedList[0])}
-                        // isLoading={userListLoading}
-                    />
+                        disableTable={true}
+                        onOpenModal={(id) => setModalId(id)}
+                    >
+                        {renderTableContent()}
+                    </Table>
+
+                    // <Table 
+                    //     slug={slug}
+                    //     action={false}
+                    //     ref={fieldRef} 
+                    //     title="User List" 
+                    //     dynamicTable={true}
+                    //     tableData={bedMaster} 
+                    //     tableHeader={Object.keys(bedMaster[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
     
             case 'tab3':
                 return (
                     <Table 
-                        slug={slug}
-                        action={false}
-                        ref={fieldRef} 
                         title="User List" 
-                        dynamicTable={true}
-                        tableData={bedType} 
-                        tableHeader={Object.keys(bedType[0])}
-                        // isLoading={userListLoading}
-                    />
-                    
+                        disableTable={true}
+                        onOpenModal={(id) => setModalId(id)}
+                    >
+                        {renderTableContent()}
+                    </Table>
                 )
     
             case 'tab4':
                 return (
                     <Table 
-                        slug={slug}
-                        action={false}
-                        ref={fieldRef} 
                         title="User List" 
-                        dynamicTable={true}
-                        tableData={bedGroup} 
-                        tableHeader={Object.keys(bedGroup[0])}
-                        // isLoading={userListLoading}
-                    />
+                        disableTable={true}
+                        onOpenModal={(id) => setModalId(id)}
+                    >
+                        {renderTableContent()}
+                    </Table>
                 )
     
             case 'tab5':
                 return (
                     <Table 
-                        slug={slug}
-                        action={false}
-                        ref={fieldRef} 
                         title="User List" 
-                        dynamicTable={true}
-                        tableData={bedFloor} 
-                        tableHeader={Object.keys(bedFloor[0])}
-                        // isLoading={userListLoading}
-                    />
+                        disableTable={true}
+                        onOpenModal={(id) => setModalId(id)}
+                    >
+                        {renderTableContent()}
+                    </Table>
                 )
             
             default:
@@ -394,8 +484,8 @@ const Bed = ({slug}) => {
                             <div className="flex flex-wrap py-2">
                                 <div className="flex items-center justify-center flex-grow">
                                     <Pagination 
-                                        currentPage={currentPage} 
-                                        totalPages={totalPages}
+                                        currentPage={pagination.current_page} 
+                                        totalPages={pagination.total_page}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
                                         onPageChange={(newPage) => handleNewPage(newPage)}
                                     />
@@ -406,7 +496,7 @@ const Bed = ({slug}) => {
                                         <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
                                         <select
                                             value={itemsPerPage}
-                                            onChange={handleItemsPerPageChange}
+                                            onChange={(e) => handleItemsPerPageChange(e)}
                                             className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
                                             <option value="5">5</option>
                                             <option value="10">10</option>
@@ -438,11 +528,12 @@ const Bed = ({slug}) => {
                                     </Button>
 
                                     <Button
-                                        bgColor="emerald"
-                                        btnIcon="submit"
+                                        bgColor={btnSpinner ? 'disable': 'emerald'}
+                                        btnIcon={btnSpinner ? 'disable': 'submit'}
+                                        btnLoading={btnSpinner}
                                         onClick={() => formRef.current.handleSubmit()}
                                     >
-                                        Submit
+                                        {btnSpinner ? '' : 'Submit'}
                                     </Button>
                                 </div>
                             </div>
