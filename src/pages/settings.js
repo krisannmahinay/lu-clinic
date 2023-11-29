@@ -94,7 +94,7 @@ const Setting = () => {
     const moduleData = moduleList?.moduleList ?? []
     const userInfo = userDetails?.data[0] ?? []
     
-    console.log(pagination)
+    console.log(userList)
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)
@@ -320,7 +320,7 @@ const Setting = () => {
                                 <div className="flex items-center justify-center flex-grow">
                                     <Pagination 
                                         currentPage={pagination.current_page} 
-                                        totalPages={pagination.total_page}
+                                        totalPages={pagination.total_pages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
                                         onPageChange={(newPage) => handleNewPage(newPage)}
                                     />
