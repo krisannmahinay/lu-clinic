@@ -8,8 +8,8 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { makeStore } from '@/store/store'
 import Loading from '@/components/Loading'
 
-const { publicRuntimeConfig } = getConfig();
-const { pwa } = publicRuntimeConfig || {};
+const { publicRuntimeConfig } = getConfig()
+const { pwa } = publicRuntimeConfig || {}
 
 export default function App ({Component, pageProps}) {
     const { store, persistor } = makeStore()
@@ -18,9 +18,9 @@ export default function App ({Component, pageProps}) {
     useEffect(() => {
         // Simulate a 2-second loading delay
         setTimeout(() => {
-          setIsLoading(false);
-        }, 500); // Adjust the delay time as needed
-      }, []);
+          setIsLoading(false)
+        }, 500) // Adjust the delay time as needed
+    }, [])
 
     return (
         <>
@@ -32,12 +32,11 @@ export default function App ({Component, pageProps}) {
                 {pwa && pwa.manifest && (
                     <link rel="manifest" href={pwa.manifest} />
                 )}
+                
             </Head>
             <Provider store={store}>
-                {/* <PersistGate loading={<Loading />} persistor={persistor}> */}
-                    {/* <Component {...pageProps}/> */}
-                    {isLoading ? <Loading /> : <Component {...pageProps} />}
-                {/* </PersistGate> */}
+                {/* {isLoading ? <Loading /> :} */}
+                <Component {...pageProps} />
             </Provider>
         </>
     )

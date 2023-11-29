@@ -91,18 +91,18 @@ export default function Login() {
                     /> 
                 }
 
-                <div className="bg-white p-8 rounded shadow-md">
+                <div className="bg-white p-8 border border-gray-300 rounded">
                     <div className="flex flex-col items-center mb-6 ">
                         {/* <img src="https://i.imgur.com/WyzP2gd.png" alt="Logo" className="mb-4 w-28 h-30" /> */}
-                        <h2 className="text-2xl font-bold">Login</h2>
+                        <h2 className="text-2xl uppercase">Login</h2>
                     </div>
                     
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
+                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="email">Email</label>
                             <input 
-                                className="appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-slate-400" 
+                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
                                 id="email" 
                                 type="email" 
                                 placeholder="Enter your email"
@@ -112,9 +112,9 @@ export default function Login() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
+                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="password">Password</label>
                             <input 
-                                className="appearance-none border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-slate-400" 
+                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
                                 id="password" 
                                 type="password" 
                                 placeholder="Enter your password"
@@ -125,11 +125,11 @@ export default function Login() {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Database</label>
+                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="password">Database</label>
                             <select 
                                 value={database.value}
                                 onChange={handleChange}
-                                className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline-blue focus:border-blue-300"
+                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full"
                             >
                                 {options.map(option => (
                                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -141,11 +141,16 @@ export default function Login() {
                                 </svg>
                             </div>
                         </div>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
-                            type="submit">
-                            {/* {loading ? 'Loading' : 'Login'} */}  Login
-                        </button>
+                        <div className="flex justify-center">
+                            <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                                type="submit">
+                                {/* {loading ? 'Loading' : 'Login'} */}  Login
+                            </button>
+                        </div>
                     </form>
+
+                    
+                    <p className="text-center text-gray-600 text-xs py-3">&copy; 2023. All rights reserved.</p>
                 </div>
             </div>
         </GuestLayout>

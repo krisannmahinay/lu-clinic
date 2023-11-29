@@ -72,13 +72,13 @@ const Alert = ({ isOpen: propIsOpen, message, alertType, onClose}) => {
           onExited={handleTransition} 
         >
         
-          <div className={`text-white px-6 py-4 border-0 absolute rounded top-0 mb-4 mt-20 right-8 w-96 z-50 ${color}`}>
+          <div className={`relative flex justify-center text-white px-4 py-2 border-0  rounded mb-4 w-38 z-50 ${color}`}>
             <div className="flex items-center">
-              <span className="inline-block w-5 h-5 mr-3">{icon}</span>
-              <span className="inline-block align-middle mr-8" dangerouslySetInnerHTML={{ __html: message }} />
+              <span className="inline-block text-md mr-3">{icon}</span>
+              <span className="inline-block align-middle mr-8 text-sm" dangerouslySetInnerHTML={{ __html: message }} />
             </div>
               {propIsOpen && (
-                <button className="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none" onClick={close}>
+                <button className="absolute bg-transparent text-md translate-y-3 font-semibold leading-none right-0 top-0 mr-6 outline-none focus:outline-none" onClick={close}>
                   <span>×</span>
                 </button>
               )}
