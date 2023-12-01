@@ -17,33 +17,6 @@ import {
     useGetBedGroupListQuery
 } from '../../service/settingService'
 
-
-const bedStatus = [
-    {name: "Bed 1", bed_type: "Normal", bed_group: "General Ward - 1st Floor", floor: "1st Floor", status: "allotted"},
-]
-
-const bedList = [
-    {name: "Bed 1", bed_type: "Normal", bed_group: "General Ward - 1st Floor"},
-]
-
-const bedType = [
-    {name: "Normal"},
-]
-
-const bedGroup = [
-    {name: "General Ward", floor: "1st Floor", description: ""},
-]
-
-const bedFloorFields = {
-    name: '',
-    description: ''
-}
-
-
-const bedFloor = [
-    {name: "1st Floor", description: ""},
-]
-
 const Bed = ({slug}) => {
     const fieldRef = useRef(null)
     const formRef = useRef(null)
