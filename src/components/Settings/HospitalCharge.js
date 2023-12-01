@@ -207,7 +207,7 @@ const HospitalCharge = ({slug}) => {
     const pagination = hospitalCharge?.pagination ?? []
     const header = hospitalCharge?.columns ?? []
 
-    console.log(hospitalCharge)
+    // console.log(hospitalCharge)
 
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
@@ -232,9 +232,6 @@ const HospitalCharge = ({slug}) => {
     const renderTableContent = () => {
         return (
             <>
-            {hospitalChargeLoading ? (
-                <SkeletonScreen rowCount={hospitalChargeMaster?.length} columnCount={header?.length}/> 
-            ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
@@ -297,7 +294,6 @@ const HospitalCharge = ({slug}) => {
                         )}
                     </tbody>
                 </table>
-                )}
             </>
         )
     }
@@ -416,37 +412,44 @@ const HospitalCharge = ({slug}) => {
                                 </SearchExport>
                             </div>
 
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="border rounded-lg">
-                                    <div className="flex justify-items-center">
-                                        <div className="rounded-tl-lg py-3 ml-3">
-                                            <button 
-                                                onClick={() => setActiveTab('tab1')}
-                                                className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab1' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charges
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveTab('tab2')}
-                                                className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charge Category
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveTab('tab3')}
-                                                className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab3' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Doctor OPD Charge
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveTab('tab4')}
-                                                className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab4' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Doctor Emergency Charge
-                                            </button>
-                                            <button 
-                                                onClick={() => setActiveTab('tab5')}
-                                                className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab5' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charge Type
-                                            </button>
-                                        </div>
+                            
+                            <div className="bg-white overflow-hidden border border-gray-300 rounded">
+                                <div className="flex justify-items-center">
+                                    <div className="rounded-tl-lg py-3 ml-3">
+                                        <button 
+                                            onClick={() => setActiveTab('tab1')}
+                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab1' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charges
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab2')}
+                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charge Category
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab3')}
+                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab3' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Doctor OPD Charge
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab4')}
+                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab4' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Doctor Emergency Charge
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab5')}
+                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab5' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Charge Type
+                                        </button>
                                     </div>
+                                </div>
 
+                                {hospitalChargeLoading ? (
+                                    <div className="p-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className='w-10 h-10 animate-spin text-gray-400' viewBox="0 0 100 100" fill="none">
+                                            <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
+                                        </svg>
+                                    </div>
+                                ) : (
                                     <div className="tab-content">
                                         {renderTableContentByTab(activeTab)}
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="flex flex-wrap py-2">
