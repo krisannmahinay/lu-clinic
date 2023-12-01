@@ -80,7 +80,7 @@ const Bed = ({slug}) => {
     const pagination = bedData?.pagination ?? []
     const header = bedData?.columns ?? []
     
-    console.log(bedLoading)
+    // console.log(bedLoading)
 
     useEffect(() => {
         // const newRows = new Set()
@@ -203,7 +203,6 @@ const Bed = ({slug}) => {
     }
 
     const handleSubmitButton = (tabs) => {
-        console.log(tabs)
         if(tabs === 'tab5') {
             formRef.current.handleSubmit('createBedFloor')
         } else if(tabs === 'tab4') {
