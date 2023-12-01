@@ -194,9 +194,6 @@ const Bed = ({slug}) => {
     const renderTableContent = () => {
         return (
             <>
-            {bedLoading ? (
-                <SkeletonScreen rowCount={bedMaster?.length} columnCount={header?.length}/> 
-            ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
@@ -266,7 +263,6 @@ const Bed = ({slug}) => {
                         )}
                     </tbody>
                 </table>
-                )}
             </>
         )
     }
@@ -496,9 +492,17 @@ const Bed = ({slug}) => {
                                 </div>
 
                                 
-                                <div className="tab-content">
-                                    {renderTableContentByTab(activeTab)}
-                                </div>
+                                {bedLoading ? (
+                                    <div className="p-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className='w-10 h-10 animate-spin text-gray-400' viewBox="0 0 100 100" fill="none">
+                                            <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
+                                        </svg>
+                                    </div>
+                                ) : (
+                                    <div className="tab-content">
+                                        {renderTableContentByTab(activeTab)}
+                                    </div>
+                                )}
                             </div>
                             
                             <div className="flex flex-wrap py-1">
