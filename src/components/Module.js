@@ -48,7 +48,7 @@ const Module = ({data, menuGroup}) => {
                     const isInventorySpecificRouteActive = router.asPath.startsWith(`/inventory/${item.module?.module_id}/`)
                     const isInventoryActive = isInventoryRoute || isInventorySpecificRouteActive
                 
-                    const baseClasses = 'flex px-2 py-2 cursor-pointer rounded-lg'
+                    const baseClasses = 'flex px-2 py-[4px] cursor-pointer rounded-lg text-[16px]'
                     const activeClasses = 'bg-[#5e6064] text-[#fff]'
                     const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#fff] text-[#c2c7d0]'
                     const subModuleClasses = item.module?.type === 'sub' ? 'pl-9' : ''
@@ -56,7 +56,7 @@ const Module = ({data, menuGroup}) => {
                     return (
                         // console.log(item)
                         <nav className="bg-[#343a40]">
-                            <ul className="mx-2 my-2 px-2 ">
+                            <ul className="mx-4 my-2">
                                 {item.module?.type === 'sub' ? (
                                     <>
                                         {menuGroup === 'patients' && (
@@ -68,7 +68,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
+                                                        style={{ width: '1.5em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -86,7 +86,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
+                                                        style={{ width: '1.6em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -104,7 +104,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
+                                                        style={{ width: '1.6em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -118,15 +118,16 @@ const Module = ({data, menuGroup}) => {
                                             key={index}
                                             href={`/${item.module?.module_id}`}>
                                             
+                                                {/* ${router.pathname === `/${item.module?.module_id}`  */}
                                             <div
-                                                className={`${router.pathname === `/${item.module?.module_id}` 
-                                                        ? 'bg-[#5e6064] flex px-2 py-2 cursor-pointer text-[#fff] rounded-lg' 
-                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-2 cursor-pointer text-[#c2c7d0] rounded-lg' }
+                                                className={`${router.pathname.startsWith(`/${item.module?.module_id}`)
+                                                        ? 'bg-[#5e6064] flex px-2 py-[4px] cursor-pointer text-[#fff] rounded-lg text-[16px]' 
+                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-1 cursor-pointer text-[#c2c7d0] rounded-lg text-[16px]' }
                                                         ${item.module?.type === 'sub' ? 'pl-9' : ''}`}>
                                                 <svg 
                                                     className="" 
                                                     dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                    style={{ width: '1.6rem', height: '1.6rem', marginRight: '5px'}}>
+                                                    style={{ width: '1.5em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
                                                 </svg>
                                                 {item.module?.name}
                                             </div>

@@ -1,11 +1,16 @@
-import React,{ useImperativeHandle, forwardRef, useState, useRef, useEffect  } from "react"
+import React,{ useImperativeHandle, forwardRef, useMemo, useState, useRef, useEffect  } from "react"
 import NavTab from "./NavTab"
 import { useDispatch } from 'react-redux'
-import Form from "./Form"
+import { useRouter } from "next/router"
 import Select from 'react-select'
+
+import Form from "./Form"
 
 import { useGrantUserModuleMutation, useGetUserByIdQuery } from "@/service/authService"
 import { authApi } from "@/service/authService"
+import Timer from "./Timer"
+
+
 
 const genderOPD = [
     {value: "male", label: "Male", },
@@ -29,6 +34,16 @@ const dispositionOPD = [
     {id:2, label: "Discharged", value: "discharged"},
 ]
 
+// const bedGroup = [
+//     {}
+// ]
+
+const bedType = [
+    {id: 1, bed_type: "Ward"},
+    {id: 2, bed_type: "Room"},
+    {id: 3, bed_type: "Bed"}
+]
+
 const styleDropdown = {
     control: (provided) => ({
         ...provided,
@@ -46,13 +61,22 @@ const styleDropdown = {
       }),
 }
 
+const bedRoomData = [
+    {id:1, type: "ward", roomNo: 2, description: "Wider room", status: "available"},
+    {id:2, type: "ward", roomNo: 3, description: "Wider room with aircon", status: "available"},
+    {id:3, type: "bed", roomNo: 1, description: "With more patients", status: "available"},
+    {id:4, type: "bed", roomNo: 2, description: "Wider room with aircon", status: "available"},
+    {id:5, type: "bed", roomNo: 3, description: "Wider bed with aircon", status: "available"},
+    {id:6, type: "bed", roomNo: 4, description: "Wider bed ", status: "occupied"}
+]
+
 const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
 const Modal = ({
         isOpen, 
         onClose, 
         permission, 
-        module, 
+        moduleData, 
         slug, 
         selectedRowId, 
         tabNumber, 
@@ -60,8 +84,12 @@ const Modal = ({
         openId,
         onSetAlertMessage,
         onSetAlertType,
+        patientData,
+        children,
         ...props
     }) => {
+        
+    const router = useRouter()
     const formRef = useRef(null)
     const dispatch = useDispatch()
     const [checkedItem, setCheckedItem] = useState([])
@@ -69,41 +97,65 @@ const Modal = ({
     const [navTab, setNavTab] = useState([])
     const [triggerSubmit, setTriggerSubmit] = useState(false)
     const [openModalId, setOpenModalId] = useState("")
+    const [selectedType, setSelectedType] = useState(null)
 
     const [currentTime, setCurrentTime] = useState(new Date())
     const [savedDate, setSavedDate] = useState(null)
     const [savedTime, setSavedTime] = useState(null)
 
-    const [doctorCharge, setDoctorCharge] = useState("")
+    const [formData, setFormData] = useState({
+        last_name: "",
+        first_name: "",
+        middle_name: "",
+        gender: "",
+        physician: "",
+        standard_charge: "",
+        description: "",
+        birthday: "",
+        age: ""
+    })
+    
     
     const [grantUserModule, { isLoading, isError, error, isSuccess }] = useGrantUserModuleMutation()
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
         user_id: openId
     })
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-          setCurrentTime(new Date())
-        }, 1000)
+    // console.log(moduleData)
     
-        return () => clearInterval(intervalId)
-    }, [])
-    
-    const groupModules = module
-        ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
-        .reduce((groups, module) => {
-            const { menu_group } = module.grant || {}
-            if(!groups[menu_group]) {
-                groups[menu_group] = []
-            }
-            if(module.type === "") {
-                groups[menu_group].unshift(module)
-            } else {
-                groups[menu_group].push(module)
-            }
+    // const groupModules = useMemo(() => {
+    //     return module
+    //         ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
+    //         .reduce((groups, module) => {
+    //             const { menu_group } = module.grant || {}
+    //             if(!groups[menu_group]) {
+    //                 groups[menu_group] = []
+    //             }
+    //             if(module.type === "") {
+    //                 groups[menu_group].unshift(module)
+    //             } else {
+    //                 groups[menu_group].push(module)
+    //             }
 
-            return groups
-        }, {})
+    //             return groups
+    //         }, {})
+    // }, [module])
+        
+    // const groupModules = module
+    //     ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
+    //     .reduce((groups, module) => {
+    //         const { menu_group } = module.grant || {}
+    //         if(!groups[menu_group]) {
+    //             groups[menu_group] = []
+    //         }
+    //         if(module.type === "") {
+    //             groups[menu_group].unshift(module)
+    //         } else {
+    //             groups[menu_group].push(module)
+    //         }
+
+    //         return groups
+    //     }, {})
         
     const handleCheckbox = (moduleId) => {
         const correspondingModule = Object.values(groupModules).flat().find(mod => mod.module_id === moduleId)
@@ -126,13 +178,54 @@ const Modal = ({
         })
     }
 
-    const handleGenderOPD = () => {
-        
+
+    const handleRoomChange = (type) => {
+        if (selectedType === type) {
+            setSelectedType(null) // Uncheck if already checked
+        } else {
+            // const extractRm = bedRoomData.map
+            setSelectedType(type)
+
+        }
+    }
+
+    const handleSelectedType = () => {
+
+    }
+
+    const handleFieldChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prevData => ({
+            ...prevData, 
+            [name]: value
+        }))
+    }
+
+    const handleGenderOPD = (selectedOption) => {
+        setFormData({
+            ...formData,
+            gender: selectedOption?.value
+        })
     }
 
     const handlePhysicianOPD = (selectedOption) => {
-        console.log(selectedOption)
-        setDoctorCharge(selectedOption?.charge)
+        setFormData({
+            ...formData,
+            physician: selectedOption?.label,
+            standard_charge: selectedOption?.charge
+        })
+    }
+
+    const handleBirthdateOPD = (e) => {
+        const birth = new Date(e.target.value)
+        const today = new Date()
+        let calculatedAge = today.getFullYear() - birth.getFullYear() - (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0)
+
+        setFormData({
+            ...formData,
+            birthday: birth,
+            age: calculatedAge
+        })
     }
 
     const handleDispositionOPD = () => {
@@ -143,23 +236,21 @@ const Modal = ({
 
     }
 
+    // console.log(module)
     
     
     const userData = userDetails?.user[0] ?? []
     
-    const excludeDashboard = ["dashboard"]
-    const dashboard = (groupModules?.dashboard || []).filter(module => !excludeDashboard.includes(module.module_id))
+    // const excludeDashboard = ["dashboard"]
+    // const dashboard = (groupModules?.dashboard || []).filter(module => !excludeDashboard.includes(module.module_id))
     
-    // const dashboard = groupModules?.dashboard || []
-    // const inventory = groupModules?.inventory || []
-    const excludePatient = ["dashboard", "patients"]
-    const patients = (groupModules?.patients || []).filter(module => !excludePatient.includes(module.module_id))
-    // const patients = groupModules?.patients || []
-    const excluceInventory = ["inventory"]
-    const inventory = (groupModules?.inventory || []).filter(module => !excluceInventory.includes(module.module_id))
+    // const excludePatient = ["dashboard", "patients"]
+    // const patients = (groupModules?.patients || []).filter(module => !excludePatient.includes(module.module_id))
+    // const excluceInventory = ["inventory"]
+    // const inventory = (groupModules?.inventory || []).filter(module => !excluceInventory.includes(module.module_id))
 
-    const excludeSettings = ["dashboard", "inventory", "radiology", "panthology", "pharmacy", "settings", "patients"]
-    const settings = (groupModules?.settings || []).filter(module => !excludeSettings.includes(module.module_id))
+    // const excludeSettings = ["dashboard", "inventory", "radiology", "panthology", "pharmacy", "settings", "patients"]
+    // const settings = (groupModules?.settings || []).filter(module => !excludeSettings.includes(module.module_id))
     
 
 
@@ -170,7 +261,7 @@ const Modal = ({
     const handleClose = () => {
         onClose()
         setCheckedItem([])
-        setDoctorCharge("")
+        setFormData({})
         // dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
     }
 
@@ -178,54 +269,44 @@ const Modal = ({
     //     onSetAlertType(data)
     // }
 
-    const formatDate = (date) => {
-        let options = { day: '2-digit', month: 'short', year: 'numeric' };
-        return new Intl.DateTimeFormat('default', options).format(date);
-    }
-    
-    const formatTime = (date) => {
-        return date.toLocaleTimeString('en-US', { hour12: false });
-    }
-
     const handleCloseModal = (data) => {
         data !== null && (
             handleClose(),
             onSetAlertType(data)
         )
-
     }
 
     const moduleClose = () => {
         onClose()
     }
 
-    const handleSave = (e) => {
-        e.preventDefault()
+    const handleSave = () => {
+        // e.preventDefault()
         if(slug === "out-patient") {
-
+            console.log(formData)
         }
         
-        if(groupModules) {
-            grantUserModule({checkedItem, identity_id:selectedRowId})
-            .unwrap()
-            .then(response => {
-                if(response.status === "success") {
-                    onSetAlertType("success")
-                    onSetAlertMessage(response.message)
-                    setAlertOpen(true)
-                    setFormData([])
-                    moduleClose()
-                }
-            })
-            .catch(error => {
-                // console.log(error)
-                if(error.status === 500) {
-                    onSetAlertType("error")
-                    onSetAlertMessage("Unsuccessful")
-                    setAlertOpen(true)
-                }
-            })
-        }
+        // if(groupModules) {
+        //     grantUserModule({checkedItem, identity_id:selectedRowId})
+        //     .unwrap()
+        //     .then(response => {
+        //         if(response.status === "success") {
+        //             onSetAlertType("success")
+        //             onSetAlertMessage(response.message)
+        //             setAlertOpen(true)
+        //             setFormData([])
+        //             moduleClose()
+        //         }
+        //     })
+        //     .catch(error => {
+        //         // console.log(error)
+        //         if(error.status === 500) {
+        //             onSetAlertType("error")
+        //             onSetAlertMessage("Unsuccessful")
+        //             setAlertOpen(true)
+        //         }
+        //     })
+        // }
 
         if(slug === "settings") {
             formRef.current.handleSubmit()
@@ -260,387 +341,117 @@ const Modal = ({
                 </div>
                 <div className="w-full">
                 
-                {groupModules && (
-                        <>
-                            {/* {console.log(user)} */}
-                            {/* <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Dashboard</div> */}
-                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                                <div className="border rounded-lg">
-                                    <div className="flex justify-items-center">
+                {/* {groupModules && (
+                    <>
+                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div className="border rounded-lg">
+                                <div className="flex justify-items-center">
+                                    <button 
+                                        onClick={() => setActiveTab('tab1')}
+                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab1' ? 'bg-white':'bg-gray-200'}`}>Dashboard
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveTab('tab2')}
+                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Inventory
+                                    </button>
+                                    {userData.roles === "x" && (
                                         <button 
-                                            onClick={() => setActiveTab('tab1')}
-                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab1' ? 'bg-white':'bg-gray-200'}`}>Dashboard
+                                            onClick={() => setActiveTab('tab3')}
+                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Settings
                                         </button>
-                                        <button 
-                                            onClick={() => setActiveTab('tab2')}
-                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Inventory
-                                        </button>
-                                        {userData.roles === "x" && (
-                                            <button 
-                                                onClick={() => setActiveTab('tab3')}
-                                                className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Settings
-                                            </button>
-                                        )}
-                                        <button 
-                                            onClick={() => setActiveTab('tab4')}
-                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab4' ? 'bg-white':'bg-gray-200'}`}>Patients
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="tab-content p-2">
-                                        {activeTab === 'tab1' && (
-                                            <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                                {dashboard.map((item) => (
-                                                    <li key={item.module_id}>
-                                                        <div className="flex items-center space-x-3 p-2 ">
-                                                            <input
-                                                                type="checkbox" 
-                                                                className="w-4 h-4"
-                                                                name={`grant_${item.module_id}`}
-                                                                value={item.module_id}
-                                                                // checked={checkedItem.includes(item.module_id)}
-                                                                checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                                onChange={() => handleCheckbox(item.module_id)}
-                                                            />
-                                                            <p className="text-medium text-gray-500">{item.name}</p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        {activeTab === 'tab2' && (
-                                            <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                                {inventory.map((item) => (
-                                                    
-                                                    <li key={item.module_id}>
-                                                        <div className="flex items-center space-x-3 p-2  ">
-                                                            <input
-                                                                type="checkbox" 
-                                                                className="w-4 h-4"
-                                                                name={`grant_${item.module_id}`}
-                                                                value={item.module_id}
-                                                                // checked={checkedItem.includes(item.module_id)}
-                                                                checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                                onChange={() => handleCheckbox(item.module_id)}
-                                                            />
-                                                            <p className="text-medium text-gray-500">{item.name}</p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        {activeTab === 'tab3' && (
-                                            <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                                {settings.map((item) => (
-                                                    
-                                                    <li key={item.module_id}>
-                                                        <div className="flex items-center space-x-3 p-2 ">
-                                                            <input
-                                                                type="checkbox" 
-                                                                className="w-4 h-4"
-                                                                name={`grant_${item.module_id}`}
-                                                                value={item.module_id}
-                                                                
-                                                                checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                                onChange={() => handleCheckbox(item.module_id)}
-                                                            />
-                                                            <p className="text-medium text-gray-500">{item.name}</p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                        {activeTab === 'tab4' && (
-                                            <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                                {patients.map((item) => (
-                                                    
-                                                    <li key={item.module_id}>
-                                                        <div className="flex items-center space-x-3 p-2 ">
-                                                            <input
-                                                                type="checkbox" 
-                                                                className="w-4 h-4"
-                                                                name={`grant_${item.module_id}`}
-                                                                value={item.module_id}
-                                                                checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                                onChange={() => handleCheckbox(item.module_id)}
-                                                            />
-                                                            <p className="text-medium text-gray-500">{item.name}</p>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
+                                    )}
+                                    <button 
+                                        onClick={() => setActiveTab('tab4')}
+                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab4' ? 'bg-white':'bg-gray-200'}`}>Patients
+                                    </button>
                                 </div>
-                            </div>
-                        </>
-                    )
-                }
-
-                {slug === 'charges' && (
-                    tabNumber === 'tab1' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Charge Type</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Charge Category</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Code</label>
-                                    <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Standard Charge</label>
-                                    <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Description</label>
-                                    <textarea type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab2' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Name</label>
-                                    <input type="text" placeholder="Enter name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Description</label>
-                                    <textarea type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Charge Type</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab3' ? (
-                        <>
-                            <div className="w-80">
                                 
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Doctor</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Standard Charge</label>
-                                    <input type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab4' ? (
-                        <>
-                            <div className="w-80">
-                                
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Doctor</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Standard Charge</label>
-                                    <input type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab5' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Charge type</label>
-                                    <input type="text" placeholder="Enter charge type" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : null
-                )}
-
-                {slug === 'bed' && (
-                    tabNumber === 'tab2' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Name</label>
-                                    <input type="text" placeholder="Enter name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Bed Type</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Bed Group</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
+                                <div className="tab-content p-2">
+                                    {activeTab === 'tab1' && (
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
+                                            {dashboard.map((item) => (
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-3 p-2 ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-4 h-4"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
+                                                        />
+                                                        <p className="text-medium text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {activeTab === 'tab2' && (
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
+                                            {inventory.map((item) => (
+                                                
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-3 p-2  ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-4 h-4"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
+                                                        />
+                                                        <p className="text-medium text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {activeTab === 'tab3' && (
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
+                                            {settings.map((item) => (
+                                                
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-3 p-2 ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-4 h-4"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            
+                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
+                                                        />
+                                                        <p className="text-medium text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                    {activeTab === 'tab4' && (
+                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
+                                            {patients.map((item) => (
+                                                
+                                                <li key={item.module_id}>
+                                                    <div className="flex items-center space-x-3 p-2 ">
+                                                        <input
+                                                            type="checkbox" 
+                                                            className="w-4 h-4"
+                                                            name={`grant_${item.module_id}`}
+                                                            value={item.module_id}
+                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
+                                                            onChange={() => handleCheckbox(item.module_id)}
+                                                        />
+                                                        <p className="text-medium text-gray-500">{item.name}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
-                        </>
-                    ) : tabNumber === 'tab3' ? (
-                        <>
-                            <div className="w-80">
-                                
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Name</label>
-                                    <input type="text" placeholder="Enter name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab4' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Name</label>
-                                    <input type="text" placeholder="Enter name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Floor</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Description</label>
-                                    <textarea type="text" placeholder="Enter description" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab5' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Name</label>
-                                    <input type="text" placeholder="Enter charge type" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : null
-                )}
-
-                {slug === 'symptoms' && (
-                    tabNumber === 'tab1' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Symptoms Head</label>
-                                    <input type="text" placeholder="Enter symptoms" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Symptoms Type</label>
-                                    <select
-                                        name=""
-                                        value=""
-                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                        className="border border-gray-300  w-full px-3 py-2 focus:outline-none"
-                                    >
-                                        <option value="">Select option</option>
-                                        <option value="">Test</option>
-                                        
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Description</label>
-                                    <textarea type="text" placeholder="Enter description" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab2' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Symptoms Type</label>
-                                    <input type="text" placeholder="Enter charge type" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : null
-                )}
+                        </div>
+                    </>
+                )} */}
 
                 {slug === 'pharmacy' && (
                     tabNumber === 'tab1' ? (
@@ -700,30 +511,78 @@ const Modal = ({
                 {slug === 'out-patient' && (
                     <div className="w-full">
                         <div className="flex flex-col w-full mb-4">
-                            <label className={labelCss}>DATE | TIME - {formatDate(currentTime)} | {currentTime.toLocaleTimeString()}</label>
+                            <label className={labelCss}>DATE | TIME - <Timer /></label>
                             {/* <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" /> */}
                         </div>
 
+                        {/* <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                            <div className="flex flex-col w-full">
+                                <div className="flex space-x-2">
+                                    <input type="checkbox" checked={selectedType === 'ward'} onChange={() => handleRoomChange('ward')} />
+                                    <label className={labelCss}>WARD</label>
+
+                                    <input type="checkbox" checked={selectedType === 'room'} onChange={() => handleRoomChange('room')} />
+                                    <label className={labelCss}>Room</label>
+
+                                    <input type="checkbox" checked={selectedType === 'bed'} onChange={() => handleRoomChange('bed')} />
+                                    <label className={labelCss}>Bed</label>
+                                </div>
+                                <Select 
+                                    // options={selectedNumber?.map(number => ({ ... }))}
+                                    onChange={handleSelectedType}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder={`Select ${selectedType || ""}`}
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                />
+                                <Select 
+                                    // options={selectedNumber?.map(number => ({ ... }))}
+                                    onChange={handleSelectedType}
+                                    isSearchable={true}
+                                    isClearable={true}
+                                    placeholder={`Select ${selectedType || ""}`}
+                                    classNamePrefix="react-select"
+                                    styles={styleDropdown} 
+                                /> 
+                            </div>
+                        </div> */}
                         <div className="flex flex-col gap-4 mb-2 sm:flex-row">
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>LAST NAME</label>
-                                <input type="text" name="lastName" placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                                <input type="text" name="last_name" value={formData.last_name} onChange={(e) => handleFieldChange(e)} placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                             </div>
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>GIVEN NAME</label>
-                                <input type="text" name="givenName" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                                <input type="text" name="first_name" value={formData.first_name} onChange={(e) => handleFieldChange(e)}  placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                             </div>
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>MIDDLE NAME</label>
-                                <input type="text" name="middleName" placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                                <input type="text" name="middle_name" value={formData.middle_name} onChange={(e) => handleFieldChange(e)}  placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-4 mb-2 sm:flex-row">
                             <div className="flex flex-col w-full">
+                                <label className={labelCss}>Birthday</label>
+                                <input type="date" name="birthday" value={
+                                    formData.birthday ? new Date(formData.birthday).toISOString().substring(0, 10) : ""
+                                } onChange={(e) => handleBirthdateOPD(e)} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
+                            </div>
+
+                            <div className="flex flex-col w-full mb-4">
+                                <label className={labelCss}>Age</label>
+                                <input type="text" value={formData.age} onChange={(e) => handleFieldChange(e)} className="border-none bg-gray-200 px-3 py-2 focus:outline-none" disabled/>
+                            </div>
+
+                            <div className="flex flex-col w-full">
                                 <label className={labelCss}>Gender</label>
                                 <Select 
-                                    options={genderOPD?.map(gender => ({ value: gender.name, label: gender.label }))}
+                                    options={
+                                        genderOPD?.map(genderopd => ({ 
+                                            value: genderopd.value, 
+                                            label: genderopd.label 
+                                        }))}
                                     onChange={handleGenderOPD}
                                     isSearchable={true}
                                     isClearable={true}
@@ -732,10 +591,19 @@ const Modal = ({
                                     styles={styleDropdown} 
                                 />
                             </div>
+                            
+                        </div>
+
+                        <div className="flex flex-col w-full mb-4 gap-4 sm:flex-row">
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>Physician</label>
                                 <Select 
-                                    options={physicianOPD?.map(physic => ({ value: physic.user_id, label: physic.name, charge: physic.physician_charge }))}
+                                    options={
+                                        physicianOPD?.map(physic => ({ 
+                                            value: physic.user_id, 
+                                            label: physic.name, 
+                                            charge: physic.physician_charge 
+                                        }))}
                                     onChange={handlePhysicianOPD}
                                     isSearchable={true}
                                     isClearable={true}
@@ -744,47 +612,24 @@ const Modal = ({
                                     styles={styleDropdown} 
                                 />
                             </div>
-                        </div>
 
-
-                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
+                            
                             <div className="flex flex-col w-full">
-                                <label className={labelCss}>Ancillary</label>
-                                <Select 
-                                    options={ancillaryOPD?.map(ancillary => ({ value: ancillary.name, label: ancillary.label }))}
-                                    onChange={handleAncillaryOPD}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder="Select ancillary..."
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                />
+                                <label className={labelCss}>Standard Charge</label>
+                                <input type="text" value={formData.standard_charge} onChange={(e) => handleFieldChange(e)} className="border-none bg-gray-200 px-3 py-2 focus:outline-none" disabled/>
                             </div>
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>Disposition</label>
-                                <Select 
-                                    options={dispositionOPD?.map(disposition => ({ value: disposition.name, label: disposition.label }))}
-                                    onChange={handleDispositionOPD}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder="Select disposition..."
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                />
-                            </div>
-                        </div>
 
-                        <div className="flex flex-col w-full mb-4">
-                            <label className={labelCss}>Standard Charge</label>
-                            <input type="text" value={doctorCharge} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" disabled/>
                         </div>
 
                         <div className="flex flex-col w-full mb-4">
                             <label className={labelCss}>Description</label>
-                            <textarea type="text" placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
+                            <textarea type="text" name="description" value={formData.description} onChange={(e) => handleFieldChange(e)} placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
                         </div>
                     </div>
                 )}
+                
+                {children}
+
                 </div>
                 <div className="mt-6 flex justify-end">
                     <button
