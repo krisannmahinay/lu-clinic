@@ -34,12 +34,13 @@ export const settingApi = createApi({
                     }
                 }
             },
-            keepUnusedData: true,
-            refetchOnMount: true,
-            staleTime: 60,
-            cacheTime: 300,
-            keepAllData: true
+            // keepUnusedData: true,
+            // refetchOnMount: true,
+            // staleTime: 60,
+            // cacheTime: 300,
+            // keepAllData: true
         }),
+
         getPermissionList: builder.query({
             query: () => {
                 const session = Cookies.get('session');
@@ -66,6 +67,66 @@ export const settingApi = createApi({
             }
         }),
 
+        getBedList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { tabs, items, page } = args
+                return {
+                    url: '/bed-management',
+                    method: 'GET',
+                    params: {
+                        tabs: tabs,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
+        getBedFloorList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-bed-floor',
+                    method: 'GET',
+                    params: {
+                        tabs: 'floor',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
+        getBedTypeList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-bed-type',
+                    method: 'GET',
+                    params: {
+                        tabs: 'type',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
+        getBedGroupList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-bed-group',
+                    method: 'GET',
+                    params: {
+                        tabs: 'group',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
         createUserBatch: builder.mutation({
             query: dataArray => {
                 const data = dataArray.map(item => item.fields)
@@ -79,6 +140,65 @@ export const settingApi = createApi({
                     }
                 }
             }
+        }),
+
+        createBulk: builder.mutation({
+            query: (args) => {
+                const { actionType, data } = args
+                const session = Cookies.get('session')
+                let url, body
+                switch(actionType) {
+                    case 'createUser':
+                        url = '/user-bulk-registration',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                       
+                    case 'createBedFloor':
+                        url = '/create-bed-floor',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    case 'createBedGroup':
+                        url = '/create-bed-group',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    case 'createBedType':
+                        url = '/create-bed-type',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    case 'createBed':
+                        url = '/create-bed',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    default:
+                        break
+                }
+                return {
+                    url: url,
+                    method: 'POST',
+                    body: body
+                }
+            }
         })
     })
 })
@@ -88,5 +208,10 @@ export const {
     useGetUserListQuery, 
     useGetPermissionListQuery, 
     useGetModuleListQuery,
-    useCreateUserBatchMutation
+    useCreateUserBatchMutation,
+    useCreateBulkMutation,
+    useGetBedListQuery,
+    useGetBedFloorListQuery,
+    useGetBedTypeListQuery,
+    useGetBedGroupListQuery
 } = settingApi
