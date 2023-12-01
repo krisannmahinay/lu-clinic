@@ -51,7 +51,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                         </li>
                     ))}
 
-                    {currentPage < totalPages - 3 && <li className="self-center mx-2">...</li>}
+                    {currentPage < totalPages - 2 && <li className="self-center mx-2">...</li>}
 
                     {/* Last Page */}
                     {totalPages !== 1 && (
