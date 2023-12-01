@@ -31,8 +31,66 @@ export const patientApi = createApi({
                     }
                 }
             }
-        })
+        }),
+        getOutPatientList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, slug, patientType } = args
+                return {
+                    url: '/opd-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        slug: slug,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        patientType: patientType,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getPhysicianList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                // const { items, page, patientType } = args
+                return {
+                    url: '/physician-list',
+                    method: 'GET',
+                    params: {
+                        roles: 'doctor',
+                        slug: 'physician',
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getPhysicianCharge: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { physicianChargeId } = args
+                console.log(physicianChargeId)
+                return {
+                    url: '/physician-charge',
+                    method: 'GET',
+                    params: {
+                        physicianChargeId: physicianChargeId,
+                        slug: 'physician-charge',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
     })
 })
 
-export const { useAutoSaveDataMutation } = patientApi
+export const { 
+    useAutoSaveDataMutation, 
+    useGetOutPatientListQuery,
+    useGetPhysicianListQuery,
+    useGetPhysicianChargeQuery
+} = patientApi
