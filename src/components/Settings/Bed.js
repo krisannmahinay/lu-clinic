@@ -502,10 +502,10 @@ const Bed = ({slug}) => {
 
                                 
                                 {bedLoading ? (
-                                    <div className="p-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className='w-10 h-10 animate-spin text-gray-400' viewBox="0 0 100 100" fill="none">
-                                            <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
-                                        </svg>
+                                    <div className="grid p-3 gap-y-2">
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
                                     </div>
                                 ) : (
                                     <div className="tab-content">
