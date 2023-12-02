@@ -16,6 +16,7 @@ import {
     useGetBedTypeListQuery,
     useGetBedGroupListQuery
 } from '../../service/settingService'
+import Alert from "../Alert"
 
 const Bed = ({slug}) => {
     const fieldRef = useRef(null)
@@ -29,7 +30,10 @@ const Bed = ({slug}) => {
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [tableHeader, setTableHeader] = useState([])
-    const [floorId, setFloorId] = useState(0);
+    const [floorId, setFloorId] = useState(0)
+    
+    const [alertType, setAlertType] = useState("")
+    const [alertMessage, setAlertMessage] = useState("")
 
     const { 
         data: bedData, 
@@ -159,6 +163,11 @@ const Bed = ({slug}) => {
 
     const handleExportToPDF = () => {
         
+    }
+
+    const handleAlertClose = () => {
+        setAlertType("")
+        setAlertMessage([])
     }
 
     const handleRefetch = () => {
@@ -627,6 +636,15 @@ const Bed = ({slug}) => {
             >
                 {renderModalContentByTab(activeTab)}
             </Modal>
+
+            {alertMessage &&
+                <Alert 
+                    alertType={alertType}
+                    isOpen={alertType !== ""}
+                    onClose={handleAlertClose}
+                    message={alertMessage} 
+                /> 
+            }
 
             {renderContent()}
         </div>

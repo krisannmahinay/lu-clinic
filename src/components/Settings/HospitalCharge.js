@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import SearchItemPage from "../SearchItemPage"
 import Modal from "../Modal"
+import Form from "../Form"
 import Table from "../Table"
 import Button from "../Button"
 import ItemPerPage from "../ItemPerPage"
@@ -10,6 +11,7 @@ import Pagination from "../Pagination"
 import SkeletonScreen from "../SkeletonScreen"
 import { DropdownExport } from "../DropdownLink"
 import { useGetHospitalChargeQuery } from "@/service/chargeService"
+import Alert from "../Alert"
 
 
 const hospitalCharge = [
@@ -33,8 +35,6 @@ const hospitalOPDCharge = [
 const hospitalChargeCategory = [
     {name: "OT Charges", decscription: "OT Charges", charge_type: "Operation Theatre"},
 ]
-
-
 
 
 const renderModalContentByTab = (tab) => {
@@ -179,7 +179,13 @@ const renderModalContentByTab = (tab) => {
     }
 }
 
-const HospitalCharge = ({slug}) => {
+const HospitalCharge = ({
+    slug,
+    hosptlChargeTypeData,
+    hosptlChargeCategoryData,
+    hosptlPhysicianListData
+}) => {
+    const formRef = useRef(null)
     const [activeTab, setActiveTab] = useState('tab1')
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
@@ -189,6 +195,10 @@ const HospitalCharge = ({slug}) => {
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [activeContent, setActiveContent] = useState("yellow")
 
+    const [alertType, setAlertType] = useState("")
+    const [alertMessage, setAlertMessage] = useState("")
+
+    
     const { 
         data: hospitalCharge, 
         isLoading: hospitalChargeLoading, 
@@ -203,11 +213,112 @@ const HospitalCharge = ({slug}) => {
         enabled: !!activeTab
     })
 
+    useEffect(() => {
+        // const newRows = new Set()
+
+        // userData.forEach((row, index) => {
+        //     if(isRowNew(row.created_at)) {
+        //         newRows.add(index)
+        //     }
+        // })
+
+        // setHighlightedRows(newRows)
+        
+        // console.log(highlightedRows)
+
+        // const highlightTimeout = setTimeout(() => {
+        //     setHighlightedRows(new Set())
+        // }, 2000) //clear the highlights after .5milliseconds
+
+        let spinnerTimer
+        if(btnSpinner) {
+            spinnerTimer = setTimeout(() => {
+                setBtnSpinner(false)
+            }, 500)
+        }
+
+        return () => {
+            if(spinnerTimer) {
+                clearTimeout(spinnerTimer)
+            }
+            // clearTimeout(highlightTimeout)
+        }
+
+    }, [btnSpinner])
+
     const hospitalChargeMaster = hospitalCharge?.data ?? []
     const pagination = hospitalCharge?.pagination ?? []
     const header = hospitalCharge?.columns ?? []
 
-    // console.log(hospitalCharge)
+    // console.log(hosptlPhysicianListData)
+    const chargeTypeOption = hosptlChargeTypeData?.map(type => ({
+        value: type?.id,
+        label: type?.name
+    }))
+
+    const chargeCategoryOption = hosptlChargeCategoryData?.map(category => ({
+        value: category?.id,
+        label: category?.name
+    }))
+
+    const chargeTab = [
+        {
+            name: 'charge_type', 
+            type: 'dropdown', 
+            label: 'Charge Type',
+            options: chargeTypeOption
+        },
+        {
+            name: 'charge_category',
+            type: 'dropdown',
+            label: 'Charge Category',
+            options: chargeCategoryOption
+        },
+        {name: 'code', type: 'text', label: 'Code', placeholder: 'Enter code'},
+        {name: 'standard_charge', type: 'number', label: 'Standard Charge', placeholder: 'Enter standard charge'}
+    ]
+    
+    const chargeCategoryTab = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
+        {name: 'description', type: 'text', label: 'Description', placeholder: 'Enter description'},
+        {
+            name: 'charge_type', 
+            type: 'dropdown', 
+            label: 'Charge Type',
+            options: chargeTypeOption
+        },
+    ]
+
+    // physician list
+    const physicianChargeOption = hosptlPhysicianListData?.map(physician => ({
+        value: physician?.user_id,
+        label: `Dr. ${physician?.identity?.first_name} ${physician?.identity?.last_name}`
+    }))
+    
+    const physicianChargeOPD = [
+        {
+            name: 'doctor_opd',
+            type: 'dropdown',
+            label: 'Doctor',
+            options: physicianChargeOption
+        },
+        {name: 'standard_charge', type: 'number', label: 'Standard Charge', placeholder: 'Enter standard charge'}
+    ]
+    
+    const physicianChargeER = [
+        {
+            name: 'doctor_er',
+            type: 'dropdown',
+            label: 'Doctor',
+            options: physicianChargeOption
+        },
+        {name: 'standard_charge', type: 'number', label: 'Standard Charge', placeholder: 'Enter standard charge'}
+    ]
+    
+    const chargeType = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
+    ]
+    
 
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
@@ -225,8 +336,31 @@ const HospitalCharge = ({slug}) => {
         
     }
 
+    const handleAlertClose = () => {
+        setAlertType("")
+        setAlertMessage([])
+    }
+
+    const handleRefetch = () => {
+        setItemsPerPage(prev => prev + 1)
+    }
+
     const closeModal = () => {
         setIsModalOpen(false)
+    }
+
+    const handleSubmitButton = (tabs) => {
+        if(tabs === 'tab1') {
+            formRef.current.handleSubmit('createHosptlCharge')
+        } else if(tabs === 'tab2') {
+            formRef.current.handleSubmit('createHosptlChargeCat')
+        } else if(tabs === 'tab3') {
+            formRef.current.handleSubmit('createHosptlPhyChargeOpd')
+        } else if(tabs === 'tab4') {
+            formRef.current.handleSubmit('createHosptlPhyChargeEr')
+        } else if(tabs === 'tab5') {
+            formRef.current.handleSubmit('createHosptlChargeType')
+        }
     }
 
     const renderTableContent = () => {
@@ -235,7 +369,7 @@ const HospitalCharge = ({slug}) => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            {header.map((tblHeader, tblHeaderIndex) => (
+                            {header.filter(tblHeader => tblHeader !== 'id').map((tblHeader, tblHeaderIndex) => (
                                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {tblHeader === 'charge_type_id' ? (
                                         'CHARGE_TYPE'
@@ -267,7 +401,7 @@ const HospitalCharge = ({slug}) => {
                             hospitalChargeMaster.map((tblBody, tblBodyIndex) => (
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
                                 <tr key={tblBodyIndex}>
-                                    {header.map((tblHeader) => (
+                                    {header.filter(tblHeader => tblHeader !== 'id').map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblHeader === 'charge_type_id' ? (
                                                 tblBody?.charge_type?.name
@@ -501,12 +635,72 @@ const HospitalCharge = ({slug}) => {
                                         bgColor={btnSpinner ? 'disable': 'emerald'}
                                         btnIcon={btnSpinner ? 'disable': 'submit'}
                                         btnLoading={btnSpinner}
-                                        onClick={() => formRef.current.handleSubmit()}
+                                        onClick={() => handleSubmitButton(activeTab)}
                                     >
                                         {btnSpinner ? '' : 'Submit'}
                                     </Button>
                                 </div>
                             </div>
+
+                            {activeTab === 'tab1' && (
+                                <Form 
+                                    ref={formRef} 
+                                    initialFields={chargeTab}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
+                                    onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
+                                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                                />
+                            )}
+
+                            {activeTab === 'tab2' && (
+                                <Form 
+                                    ref={formRef} 
+                                    initialFields={chargeCategoryTab}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
+                                    onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
+                                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                                />
+                            )}
+
+                            {activeTab === 'tab3' && (
+                                <Form 
+                                    ref={formRef} 
+                                    initialFields={physicianChargeOPD}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
+                                    onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
+                                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                                />
+                            )}
+
+                            {activeTab === 'tab4' && (
+                                <Form 
+                                    ref={formRef} 
+                                    initialFields={physicianChargeER}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
+                                    onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
+                                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                                />
+                            )}
+
+                            {activeTab === 'tab5' && (
+                                <Form 
+                                    ref={formRef} 
+                                    initialFields={chargeType}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
+                                    onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
+                                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -524,14 +718,15 @@ const HospitalCharge = ({slug}) => {
                 {renderModalContentByTab(activeTab)}
             </Modal>
 
-            {/* <SearchItemPage
-                action={true}
-                onExportToPDF={handleExportToPDF}
-                onChangeItemPage={(item) => handleItemsPerPageChange(item)}
-                onCurrentPage={(page) => handleCurrentPage(page)}
-                onSearch={(q) => handleSearch(q)}
-                onAddClicked={() => setIsModalOpen(true)}
-            /> */}
+            {alertMessage &&
+                <Alert 
+                    alertType={alertType}
+                    isOpen={alertType !== ""}
+                    onClose={handleAlertClose}
+                    message={alertMessage} 
+                /> 
+            }
+
 
             {renderContent()}
             
