@@ -70,15 +70,12 @@ export const patientApi = createApi({
         }),
 
         getPhysicianCharge: builder.query({
-            query: (args) => {
+            query: () => {
                 const session = Cookies.get('session')
-                const { physicianChargeId } = args
-                console.log(physicianChargeId)
                 return {
                     url: '/physician-charge',
                     method: 'GET',
                     params: {
-                        physicianChargeId: physicianChargeId,
                         slug: 'physician-charge',
                         selectedDB: session
                     }
