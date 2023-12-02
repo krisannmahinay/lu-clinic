@@ -5,11 +5,6 @@ import AppLayout from "@/components/Layouts/AppLayout"
 import NavTab from "@/components/NavTab"
 import CustomCKEditor from '@/components/CustomCKEditor'
 import SearchItemPage from '@/components/SearchItemPage'
-import { 
-    useGetUserDetailsQuery
-} from '@/service/authService'
-
-
 import Table from '@/components/Table'
 import Modal from '@/components/Modal'
 import Accordion from '@/components/Accordion'
@@ -21,6 +16,14 @@ import Pharmacy from '@/components/Settings/Pharmacy'
 import Phantology from '@/components/Settings/Phantology'
 import Radiology from '@/components/Settings/Radiology'
 import System from '@/components/Settings/System'
+import { useGetPhysicianListQuery } from '@/service/patientService'
+import { useGetUserDetailsQuery} from '@/service/authService'
+import { 
+    useGetHosptlChargeQuery,
+    useGetHosptlChargeTypeQuery, 
+    useGetHosptlChargeCategoryQuery, 
+} from '@/service/settingService'
+
 
 const itemCategory = [
     {item_category: ""}
@@ -40,8 +43,16 @@ const SubModule = () => {
     const { slug } = router.query
     const menuGroup = "settings"
     
-    const { data: data, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+    const { 
+        data: data, 
+        isError: dataError, 
+        refetch: refetchUserDetails 
+    } = useGetUserDetailsQuery()
     
+    const {data: hosptlChargeMaster} = useGetHosptlChargeQuery()
+    const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery()
+    const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery()
+    const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery()
 
     const [activeTab, setActiveTab] = useState('tab1')
     const [editorData, setEditorData] = useState("")
@@ -49,6 +60,7 @@ const SubModule = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
 
+    console.log(hosptlChargeCategoryMaster)
     
     const userDetails = data?.data ?? []
 
@@ -194,7 +206,12 @@ const SubModule = () => {
 
                 {slug === 'charges' && (
                     <div>
-                        <HospitalCharge slug={slug}/>
+                        <HospitalCharge 
+                            slug={slug}
+                            hosptlChargeTypeData={hosptlChargeTypeMaster}
+                            hosptlChargeCategoryData={hosptlChargeCategoryMaster}
+                            hosptlPhysicianListData={hosptlPhysicianListMaster}
+                        />
                     </div>
                 )}
 
