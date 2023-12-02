@@ -127,6 +127,48 @@ export const settingApi = createApi({
             },
         }),
 
+        getHosptlCharge: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-hosptl-charge',
+                    method: 'GET',
+                    params: {
+                        tabs: 'hosptl-charge',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
+        getHosptlChargeType: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-hosptl-charge-type',
+                    method: 'GET',
+                    params: {
+                        tabs: 'hosptl-charge-type',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
+        getHosptlChargeCategory: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-hosptl-charge-category',
+                    method: 'GET',
+                    params: {
+                        tabs: 'hosptl-charge-category',
+                        selectedDB: session
+                    }
+                }
+            },
+        }),
+
         createUserBatch: builder.mutation({
             query: dataArray => {
                 const data = dataArray.map(item => item.fields)
@@ -190,6 +232,60 @@ export const settingApi = createApi({
                         }
                         break
 
+                    case 'createBedFloor':
+                        url = '/create-bed-floor',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createHosptlCharge':
+                        url = '/create-hosptl-charge',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                        
+                    case 'createHosptlChargeCat':
+                        url = '/create-hosptl-charge-cat',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createHosptlPhyChargeOpd':
+                        url = '/create-hosptl-phy-opd',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createHosptlPhyChargeEr':
+                        url = '/create-hosptl-phy-er',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createHosptlChargeType':
+                        url = '/create-hosptl-charge-type',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
                     default:
                         break
                 }
@@ -213,5 +309,8 @@ export const {
     useGetBedListQuery,
     useGetBedFloorListQuery,
     useGetBedTypeListQuery,
-    useGetBedGroupListQuery
+    useGetBedGroupListQuery,
+    useGetHosptlChargeQuery,
+    useGetHosptlChargeTypeQuery,
+    useGetHosptlChargeCategoryQuery
 } = settingApi
