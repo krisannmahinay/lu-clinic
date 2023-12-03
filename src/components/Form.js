@@ -132,12 +132,21 @@ const Form = forwardRef(({
                     ) 
                 )
             }
-         } else if(fieldName === 'gender') {
+         } else if([
+                'gender',
+                'roles',
+                'bed_type',
+                'bed_group',
+                'bed_floor',
+                'charge_type',
+                'charge_category',
+                'doctor_opd'
+            ].includes(fieldName)) {
             setFormData((prev) =>
                 prev.map((row, index) =>
                     index === rowIndex ? { ...row, fields: {
                             ...row.fields,
-                            gender: e?.value,
+                            [fieldName]: e?.value,
                         }
                     } : row
                 ) 
