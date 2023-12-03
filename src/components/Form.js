@@ -2,8 +2,27 @@ import { useRouter } from 'next/router'
 import React, { useImperativeHandle, forwardRef, useEffect, useState } from 'react'
 import { useCreateUserBatchMutation, useCreateBulkMutation } from '@/service/settingService'
 import { useGetPhysicianChargeQuery } from '@/service/patientService'
+import Select from 'react-select'
 
 import Alert from "./Alert"
+
+const styleDropdown = {
+    control: (provided) => ({
+        ...provided,
+        // border: '1px solid gray',
+        padding: '0.1em',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'gray',
+          border: '1px solid gray'
+        },
+      }),
+      input: (provided) => ({
+        ...provided,
+        inputOutline: 'none',
+      }),
+}
+
 
 const Form = forwardRef(({
         initialFields = [], 
@@ -88,18 +107,12 @@ const Form = forwardRef(({
     
     // console.log(formData)
      const handleInputChange = (e, rowIndex, fieldName) => {
-        const { value, type, checked } = e.target
-        const fieldValue = type === 'checkbox' ? checked : value
-        const age = calculatedAge(value)
-        // setPhysicianChargeId(value)
          if(fieldName === 'birth_date') {
+            const age = calculatedAge(e.target.value)
             setFormData((prev) =>
                 prev.map((row, index) =>
-                    index === rowIndex ? {
-                        ...row,
-                        fields: {
+                    index === rowIndex ? { ...row, fields: {
                             ...row.fields,
-                            [fieldName]: fieldValue,
                             age: age,
                         }
                     } : row
@@ -109,18 +122,29 @@ const Form = forwardRef(({
             if(physicianChargeMaster) {
                 setFormData((prev) =>
                     prev.map((row, index) =>
-                        index === rowIndex ? {
-                            ...row,
-                            fields: {
+                        index === rowIndex ? { ...row, fields: {
                                 ...row.fields,
-                                [fieldName]: fieldValue,
-                                standard_charge: physicianChargeMaster?.find(charge => charge.doctor_id === value)?.standard_charge
+                                standard_charge: physicianChargeMaster?.find(
+                                    charge => charge.doctor_id === e?.value
+                                )?.standard_charge
                             }
                         } : row 
                     ) 
                 )
             }
+         } else if(fieldName === 'gender') {
+            setFormData((prev) =>
+                prev.map((row, index) =>
+                    index === rowIndex ? { ...row, fields: {
+                            ...row.fields,
+                            gender: e?.value,
+                        }
+                    } : row
+                ) 
+            )
          } else {
+             const { value, type, checked } = e.target
+             const fieldValue = type === 'checkbox' ? checked : value
              setFormData((prev) =>
                  prev.map((row, index) =>
                      index === rowIndex ? { 
@@ -332,7 +356,23 @@ const Form = forwardRef(({
                 {field.type === 'dropdown' && (
                     <div>
                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">{field.label}:</label>
-                        <select
+                        <Select 
+                            options={field.options?.map(option => ({ 
+                                value: option.value, 
+                                label: option.label 
+                            }))}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            isSearchable={true}
+                            isClearable={true}
+                            placeholder={`Select ${field.label.toLowerCase()}...`}
+                            classNamePrefix="react-select"
+                            styles={styleDropdown}
+                            value={field.options?.find(option => 
+                                option.value === row.fields[field.name]
+                            )}
+                        />
+
+                        {/* <select
                             name={field.name}
                             value={row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
@@ -344,7 +384,7 @@ const Form = forwardRef(({
                                     {option.label}
                                 </option>
                             ))}
-                        </select>
+                        </select> */}
                     </div>
                 )}
              </div>
