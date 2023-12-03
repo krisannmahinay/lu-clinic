@@ -286,6 +286,15 @@ export const settingApi = createApi({
                         }
                         break
 
+                    case 'createOutPatient':
+                        url = '/create-out-patient',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
                     default:
                         break
                 }
