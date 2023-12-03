@@ -78,6 +78,7 @@ const SubModule = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
+    const [updateForm, setUpdateForm] = useState({})
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -198,6 +199,12 @@ const SubModule = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
+    const handleOpenModal = (userId) => {
+        const patienData = patientData?.find(e=> e.patient_identity?.user_id === userId)
+        setUpdateForm(patienData)
+        setIsModalOpen(true)
+    }
+
     const closeModal = () => {
         // setSelectedRows([])
         setIsModalOpen(false)
@@ -249,7 +256,7 @@ const SubModule = () => {
                             patientData.map((tblBody, tblBodyIndex) => (
                                 // console.log(tblBody)
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBodyIndex}>
+                                <tr key={tblBodyIndex} className="hover:bg-gray-100 hover:cursor-pointer">
                                     {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblHeader === 'admitting_physician' ? (
@@ -265,7 +272,7 @@ const SubModule = () => {
                                     ))}
 
                                     <td className="px-6 py-2 whitespace-nowrap">    
-                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
+                                        <button title="Edit" type="button" onClick={() => handleOpenModal(tblBody?.patient_identity?.user_id)}>
                                             {/* <span>ADD</span> */}
                                             <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -346,7 +353,7 @@ const SubModule = () => {
                                     <Table 
                                         title="User List" 
                                         disableTable={true}
-                                        onOpenModal={(id) => setModalId(id)}
+                                        // onOpenModal={(id) => setModalId(id)}
                                     >
                                         {renderTableContent()}
                                     </Table>
@@ -450,7 +457,7 @@ const SubModule = () => {
                     // charges={true} 
                     slug={slug}
                     isOpen={isModalOpen}
-                    tabNumber={activeTab}
+                    data={updateForm}
                     onClose={closeModal}
                     // permission={permission} 
                     // selectedRowId={selectedRows}
