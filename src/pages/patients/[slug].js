@@ -18,6 +18,7 @@ import {
     useGetOutPatientListQuery,
     useGetPhysicianListQuery
 } from '@/service/patientService'
+import Alert from '@/components/Alert'
 
 const patientOPD = [
     {
@@ -78,6 +79,9 @@ const SubModule = () => {
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
     
+    const [alertType, setAlertType] = useState("")
+    const [alertMessage, setAlertMessage] = useState("")
+    
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     const { 
@@ -100,15 +104,45 @@ const SubModule = () => {
     const patientData = patientList?.data ?? []
     const pagination = patientList?.pagination ?? []
     const header = patientList?.columns ?? []
-    const physician = physicianList ?? []
 
-    // console.log(physician)
+    // console.log(patientData)
+    useEffect(() => {
+        // const newRows = new Set()
 
-    const phyisicianOptions = physician.map(ph => ({
+        // userData.forEach((row, index) => {
+        //     if(isRowNew(row.created_at)) {
+        //         newRows.add(index)
+        //     }
+        // })
+
+        // setHighlightedRows(newRows)
+        
+        // console.log(highlightedRows)
+
+        // const highlightTimeout = setTimeout(() => {
+        //     setHighlightedRows(new Set())
+        // }, 2000) //clear the highlights after .5milliseconds
+
+        let spinnerTimer
+        if(btnSpinner) {
+            spinnerTimer = setTimeout(() => {
+                setBtnSpinner(false)
+            }, 500)
+        }
+
+        return () => {
+            if(spinnerTimer) {
+                clearTimeout(spinnerTimer)
+            }
+            // clearTimeout(highlightTimeout)
+        }
+
+    }, [btnSpinner])
+
+    const phyisicianOptions = physicianList?.map(ph => ({
         value: ph.user_id,
         label: `Dr. ${ph.identity?.first_name} ${ph.identity?.last_name}`,
     }))
-
 
     const opdForms = [
         {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
@@ -145,8 +179,23 @@ const SubModule = () => {
         setCurrentPage(page)
     }
 
+    const handleSubmitButton = (slug) => {
+        if(slug === 'out-patient') {
+            formRef.current.handleSubmit('createOutPatient')
+        }
+    }
+
     const handleSearch = (q) => {
         setSearchQuery(q)
+    }
+
+    const handleAlertClose = () => {
+        setAlertType("")
+        setAlertMessage([])
+    }
+
+    const handleRefetch = () => {
+        setItemsPerPage(prev => prev + 1)
     }
 
     const closeModal = () => {
@@ -156,9 +205,12 @@ const SubModule = () => {
 
     const renderTableContent = () => {
         return (
-            <>
-            {patientListLoading ? (
-                <SkeletonScreen rowCount={patientData?.length} columnCount={header?.length}/> 
+            patientListLoading ? (
+                <div className="grid p-3 gap-y-2">
+                    <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                </div>
             ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -166,16 +218,20 @@ const SubModule = () => {
                             {header.map((tblHeader, tblHeaderIndex) => (
                                 // console.log(tblHeaderIndex)
                                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    {tblHeader}
+                                    {tblHeader === 'id' ? (
+                                        'patient_id'
+                                    ) : tblHeader === 'patient_id' ? (
+                                        'patient_name'
+                                    ) : tblHeader === 'admitting_physician' ? (
+                                        'physician'
+                                    ) : tblHeader === 'created_at' ? (
+                                        'time_in'
+                                    ) : (
+                                        tblHeader
+                                    )}
                                 </th>
                             ))}
 
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Patient Name
-                            </th>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Physician
-                            </th>
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Action
                             </th>
@@ -191,16 +247,22 @@ const SubModule = () => {
                             </tr>
                         ) : (
                             patientData.map((tblBody, tblBodyIndex) => (
+                                // console.log(tblBody)
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
                                 <tr key={tblBodyIndex}>
                                     {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                            {tblBody[tblHeader]}
+                                            {tblHeader === 'admitting_physician' ? (
+                                                `Dr. ${tblBody?.physician_identity?.first_name} ${tblBody?.physician_identity?.last_name}`
+                                            ) : tblHeader === 'id' ? (
+                                                tblBody?.patient_id
+                                            ) : tblHeader === 'patient_id' ? (
+                                                `${tblBody?.patient_identity?.first_name} ${tblBody?.patient_identity?.last_name}`
+                                            ) : (
+                                                tblBody[tblHeader]
+                                            )}
                                         </td>
                                     ))}
-
-                                    <td></td>
-                                    <td></td>
 
                                     <td className="px-6 py-2 whitespace-nowrap">    
                                         <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
@@ -215,8 +277,7 @@ const SubModule = () => {
                         )}
                     </tbody>
                 </table>
-                )}
-            </>
+            )
         )
     }
 
@@ -343,7 +404,7 @@ const SubModule = () => {
                                             bgColor={btnSpinner ? 'disable': 'emerald'}
                                             btnIcon={btnSpinner ? 'disable': 'submit'}
                                             btnLoading={btnSpinner}
-                                            onClick={() => formRef.current.handleSubmit()}
+                                            onClick={() => handleSubmitButton(slug)}
                                         >
                                             {btnSpinner ? '' : 'Submit'}
                                         </Button>
@@ -353,8 +414,10 @@ const SubModule = () => {
                                 <Form 
                                     ref={formRef} 
                                     initialFields={opdForms}
-                                    // onSuccess={handleRefetch}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
                                     onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
                                     onSetAlertMessage={(data) => setAlertMessage(data)}
                                 />
                                 
@@ -392,6 +455,15 @@ const SubModule = () => {
                     // permission={permission} 
                     // selectedRowId={selectedRows}
                 />
+
+            {alertMessage &&
+                <Alert 
+                    alertType={alertType}
+                    isOpen={alertType !== ""}
+                    onClose={handleAlertClose}
+                    message={alertMessage} 
+                /> 
+            }
 
                 {renderContent(slug)}
 
