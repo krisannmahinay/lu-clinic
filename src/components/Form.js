@@ -39,14 +39,10 @@ const Form = forwardRef(({
         isSuccess: createUserSuccess 
     }] = useCreateBulkMutation()
 
-    const { 
-        data: physicianChargeMaster, 
-        isLoading: physicianChargeLoading,
-    } = useGetPhysicianChargeQuery({physicianChargeId: physicianChargeId})
+    const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
 
     // console.log(physicianChargeMaster[0].standard_charge)
-    
-    const standardCharge = physicianChargeMaster ?? []
+    // console.log(formData)
     
     useImperativeHandle(ref, () => ({
         handleSubmit: (actionType) => handleSubmit(actionType),
@@ -89,12 +85,13 @@ const Form = forwardRef(({
         return age
     }
     
+    
     // console.log(formData)
      const handleInputChange = (e, rowIndex, fieldName) => {
         const { value, type, checked } = e.target
         const fieldValue = type === 'checkbox' ? checked : value
         const age = calculatedAge(value)
-        setPhysicianChargeId(value)
+        // setPhysicianChargeId(value)
          if(fieldName === 'birth_date') {
             setFormData((prev) =>
                 prev.map((row, index) =>
@@ -109,18 +106,20 @@ const Form = forwardRef(({
                 ) 
             )
          } else if(fieldName === 'admiting_physician') {
-            setFormData((prev) =>
-                prev.map((row, index) =>
-                    index === rowIndex ? {
-                        ...row,
-                        fields: {
-                            ...row.fields,
-                            [fieldName]: fieldValue,
-                            standard_charge: standardCharge[0].standard_charge
-                        }
-                    } : row 
-                ) 
-            )
+            if(physicianChargeMaster) {
+                setFormData((prev) =>
+                    prev.map((row, index) =>
+                        index === rowIndex ? {
+                            ...row,
+                            fields: {
+                                ...row.fields,
+                                [fieldName]: fieldValue,
+                                standard_charge: physicianChargeMaster?.find(charge => charge.doctor_id === value)?.standard_charge
+                            }
+                        } : row 
+                    ) 
+                )
+            }
          } else {
              setFormData((prev) =>
                  prev.map((row, index) =>
@@ -134,9 +133,6 @@ const Form = forwardRef(({
                  )
              )
          }
-
-
-
      }
  
      const handleResetForm = () => {
@@ -298,6 +294,24 @@ const Form = forwardRef(({
                 )}
 
                 {field.type === 'date' && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === 'number' && (
                     <div>
                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
                             {field.label}
