@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import Cookies from 'js-cookie'
 
-export const chargeApi = createApi({
-    reducerPath: 'chargeApi',
+export const hospitalChargeApi = createApi({
+    reducerPath: 'hospitalChargeApi',
     baseQuery: fetchBaseQuery({
          baseUrl: process.env.API_URL,
          prepareHeaders: (headers, {getState}) => {
@@ -40,4 +40,4 @@ export const chargeApi = createApi({
 
 export const { 
     useGetHospitalChargeQuery
-} = patientApi
+} = hospitalChargeApi
