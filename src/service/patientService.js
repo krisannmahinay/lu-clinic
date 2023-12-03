@@ -81,33 +81,6 @@ export const patientApi = createApi({
                     }
                 }
             }
-        }),
-
-        createBulk: builder.mutation({
-            query: (args) => {
-                const { actionType, data } = args
-                const session = Cookies.get('session')
-                let url, body
-                switch(actionType) {
-                    case 'createOutPatient':
-                        url = '/create-out-patient',
-                        body = {
-                            actionType: actionType,
-                            data: data.map(item => item.fields),
-                            selectedDB: session
-                        }
-                        break
-                    
-                    default:
-                        break
-                }
-
-                return {
-                    url: url,
-                    method: 'POST',
-                    body: body
-                }
-            }
         })
     })
 })
