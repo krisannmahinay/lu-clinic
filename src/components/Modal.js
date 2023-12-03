@@ -1,4 +1,11 @@
-import React,{ useImperativeHandle, forwardRef, useMemo, useState, useRef, useEffect  } from "react"
+import React,{ 
+    useImperativeHandle, 
+    forwardRef, 
+    useMemo, 
+    useState, 
+    useRef, 
+    useEffect
+} from "react"
 import NavTab from "./NavTab"
 import { useDispatch } from 'react-redux'
 import { useRouter } from "next/router"
@@ -6,7 +13,10 @@ import Select from 'react-select'
 
 import Form from "./Form"
 
-import { useGrantUserModuleMutation, useGetUserByIdQuery } from "@/service/authService"
+import { 
+    useGrantUserModuleMutation, 
+    useGetUserByIdQuery
+} from "@/service/authService"
 import { authApi } from "@/service/authService"
 import Timer from "./Timer"
 
@@ -73,6 +83,7 @@ const bedRoomData = [
 const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
 const Modal = ({
+        data,
         isOpen, 
         onClose, 
         permission, 
@@ -110,11 +121,25 @@ const Modal = ({
         gender: "",
         physician: "",
         standard_charge: "",
-        description: "",
         birthday: "",
         age: ""
     })
     
+    // console.log(data)
+    useEffect(() => {
+        if(data) {
+            setFormData({
+                last_name: data?.patient_identity?.last_name || "",
+                first_name: data?.patient_identity?.first_name || "",
+                middle_name: data?.patient_identity?.middle_name || "",
+                gender: data?.patient_identity?.gender || "",
+                physician: data?.physician_identity?.user_id || "",
+                standard_charge: "",
+                birthday: data?.patient_identity?.birth_date || "",
+                age: data?.patient_identity?.age || ""
+            })
+        }
+    },[data])
     
     const [grantUserModule, { isLoading, isError, error, isSuccess }] = useGrantUserModuleMutation()
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
@@ -123,23 +148,23 @@ const Modal = ({
 
     // console.log(moduleData)
     
-    // const groupModules = useMemo(() => {
-    //     return module
-    //         ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
-    //         .reduce((groups, module) => {
-    //             const { menu_group } = module.grant || {}
-    //             if(!groups[menu_group]) {
-    //                 groups[menu_group] = []
-    //             }
-    //             if(module.type === "") {
-    //                 groups[menu_group].unshift(module)
-    //             } else {
-    //                 groups[menu_group].push(module)
-    //             }
+    const groupModules = useMemo(() => {
+        // return module
+        //     ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
+        //     .reduce((groups, module) => {
+        //         const { menu_group } = module.grant || {}
+        //         if(!groups[menu_group]) {
+        //             groups[menu_group] = []
+        //         }
+        //         if(module.type === "") {
+        //             groups[menu_group].unshift(module)
+        //         } else {
+        //             groups[menu_group].push(module)
+        //         }
 
-    //             return groups
-    //         }, {})
-    // }, [module])
+        //         return groups
+        //     }, {})
+    }, [module])
         
     // const groupModules = module
     //     ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
@@ -235,9 +260,6 @@ const Modal = ({
     const handleAncillaryOPD = () => {
 
     }
-
-    // console.log(module)
-    
     
     const userData = userDetails?.user[0] ?? []
     
@@ -251,8 +273,6 @@ const Modal = ({
 
     // const excludeSettings = ["dashboard", "inventory", "radiology", "panthology", "pharmacy", "settings", "patients"]
     // const settings = (groupModules?.settings || []).filter(module => !excludeSettings.includes(module.module_id))
-    
-
 
     const handleCheckedData = (data) => {
         setNavTab(data)
@@ -265,10 +285,6 @@ const Modal = ({
         // dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
     }
 
-    // const handleSetAlertType = (data) => {
-    //     onSetAlertType(data)
-    // }
-
     const handleCloseModal = (data) => {
         data !== null && (
             handleClose(),
@@ -280,13 +296,17 @@ const Modal = ({
         onClose()
     }
 
+    const renderUpdateForm = () => {
+        
+    }
+
     const handleSave = () => {
         // e.preventDefault()
         if(slug === "out-patient") {
             console.log(formData)
         }
         
-        // if(groupModules) {
+        if(groupModules) {
         //     grantUserModule({checkedItem, identity_id:selectedRowId})
         //     .unwrap()
         //     .then(response => {
@@ -306,14 +326,12 @@ const Modal = ({
         //             setAlertOpen(true)
         //         }
         //     })
-        // }
+        }
 
         if(slug === "settings") {
             formRef.current.handleSubmit()
         }
     }
-
-    // console.log(user)
 
     return (
         <div className={`fixed inset-0 flex top-0 p-4 items-center justify-center z-50 ${isOpen ? 'visible': 'hidden'}`}>
@@ -341,9 +359,9 @@ const Modal = ({
                 </div>
                 <div className="w-full">
                 
-                {/* {groupModules && (
+                {groupModules && (
                     <>
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                        {/* <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div className="border rounded-lg">
                                 <div className="flex justify-items-center">
                                     <button 
@@ -449,9 +467,9 @@ const Modal = ({
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </>
-                )} */}
+                )}
 
                 {slug === 'pharmacy' && (
                     tabNumber === 'tab1' ? (
@@ -515,38 +533,6 @@ const Modal = ({
                             {/* <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" /> */}
                         </div>
 
-                        {/* <div className="flex flex-col gap-4 mb-2 sm:flex-row">
-                            <div className="flex flex-col w-full">
-                                <div className="flex space-x-2">
-                                    <input type="checkbox" checked={selectedType === 'ward'} onChange={() => handleRoomChange('ward')} />
-                                    <label className={labelCss}>WARD</label>
-
-                                    <input type="checkbox" checked={selectedType === 'room'} onChange={() => handleRoomChange('room')} />
-                                    <label className={labelCss}>Room</label>
-
-                                    <input type="checkbox" checked={selectedType === 'bed'} onChange={() => handleRoomChange('bed')} />
-                                    <label className={labelCss}>Bed</label>
-                                </div>
-                                <Select 
-                                    // options={selectedNumber?.map(number => ({ ... }))}
-                                    onChange={handleSelectedType}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder={`Select ${selectedType || ""}`}
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                />
-                                <Select 
-                                    // options={selectedNumber?.map(number => ({ ... }))}
-                                    onChange={handleSelectedType}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder={`Select ${selectedType || ""}`}
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                /> 
-                            </div>
-                        </div> */}
                         <div className="flex flex-col gap-4 mb-2 sm:flex-row">
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>LAST NAME</label>
@@ -589,6 +575,7 @@ const Modal = ({
                                     placeholder="Select gender..."
                                     classNamePrefix="react-select"
                                     styles={styleDropdown} 
+                                    
                                 />
                             </div>
                             
@@ -596,6 +583,7 @@ const Modal = ({
 
                         <div className="flex flex-col w-full mb-4 gap-4 sm:flex-row">
                             <div className="flex flex-col w-full">
+
                                 <label className={labelCss}>Physician</label>
                                 <Select 
                                     options={
@@ -612,7 +600,6 @@ const Modal = ({
                                     styles={styleDropdown} 
                                 />
                             </div>
-
                             
                             <div className="flex flex-col w-full">
                                 <label className={labelCss}>Standard Charge</label>
@@ -620,16 +607,10 @@ const Modal = ({
                             </div>
 
                         </div>
-
-                        <div className="flex flex-col w-full mb-4">
-                            <label className={labelCss}>Description</label>
-                            <textarea type="text" name="description" value={formData.description} onChange={(e) => handleFieldChange(e)} placeholder="Enter standard charge" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"  />
-                        </div>
                     </div>
                 )}
                 
                 {children}
-
                 </div>
                 <div className="mt-6 flex justify-end">
                     <button
@@ -639,8 +620,9 @@ const Modal = ({
                         Close
                     </button>
                     <button
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-500"
                         onClick={handleSave}
+                        disabled
                     >
                         Save
                     </button>
