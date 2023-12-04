@@ -81,7 +81,35 @@ export const patientApi = createApi({
                     }
                 }
             }
-        })
+        }),
+
+        getPathologyList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-pathology',
+                    method: 'GET',
+                    params: {
+                        slug: 'pathology',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getPathologyCategoryList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-pathology-category',
+                    method: 'GET',
+                    params: {
+                        slug: 'pathology-category',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
     })
 })
 
@@ -89,5 +117,7 @@ export const {
     useAutoSaveDataMutation, 
     useGetOutPatientListQuery,
     useGetPhysicianListQuery,
-    useGetPhysicianChargeQuery
+    useGetPhysicianChargeQuery,
+    useGetPathologyListQuery,
+    useGetPathologyCategoryListQuery
 } = patientApi
