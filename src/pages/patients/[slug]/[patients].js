@@ -348,8 +348,8 @@ const SubModule = () => {
         setCurrentPage(page)
     }
 
-    const handleSearch = (q) => {
-        setSearchQuery(q)
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value)
     }
 
     const handleImageChange = async (e) => {
