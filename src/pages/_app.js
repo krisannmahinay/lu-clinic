@@ -35,8 +35,8 @@ export default function App ({Component, pageProps}) {
                 
             </Head>
             <Provider store={store}>
-                {/* {isLoading ? <Loading /> :} */}
-                <Component {...pageProps} />
+                {isLoading ? <Loading /> : <Component {...pageProps} />}
+                {/* <Component {...pageProps} /> */}
             </Provider>
         </>
     )

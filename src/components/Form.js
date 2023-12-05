@@ -1,6 +1,28 @@
+import { useRouter } from 'next/router'
 import React, { useImperativeHandle, forwardRef, useEffect, useState } from 'react'
-import { useCreateUserBatchMutation } from '@/service/settingService'
+import { useCreateUserBatchMutation, useCreateBulkMutation } from '@/service/settingService'
+import { useGetPhysicianChargeQuery } from '@/service/patientService'
+import Select from 'react-select'
+
 import Alert from "./Alert"
+
+const styleDropdown = {
+    control: (provided) => ({
+        ...provided,
+        // border: '1px solid gray',
+        padding: '0.1em',
+        boxShadow: 'none',
+        '&:hover': {
+          borderColor: 'gray',
+          border: '1px solid gray'
+        },
+      }),
+      input: (provided) => ({
+        ...provided,
+        inputOutline: 'none',
+      }),
+}
+
 
 const Form = forwardRef(({
         initialFields = [], 
@@ -11,18 +33,38 @@ const Form = forwardRef(({
         onSetAlertType,
         onLoading
     }, ref) => {
-     const [formData, setFormData] = useState([])
-     const [idCounter, setIdCounter] = useState(0)
-     
-     const [alertType, setAlertType] = useState("")
-     const [alertOpen, setAlertOpen] = useState(false)
-     const [alertMessage, setAlertMessage] = useState([])
-     const [resetFormTimer, setResetFormTimer] = useState(false)
-     const [createUserBatch, { isLoading: createUserLoading, isError, error, isSuccess: createUserSuccess }] = useCreateUserBatchMutation()
+    const router = useRouter()
+    const [formData, setFormData] = useState([])
+    const [idCounter, setIdCounter] = useState(0)
+    
+    const [alertType, setAlertType] = useState("")
+    const [alertOpen, setAlertOpen] = useState(false)
+    const [alertMessage, setAlertMessage] = useState([])
+    const [resetFormTimer, setResetFormTimer] = useState(false)
 
+    const [physicianChargeId, setPhysicianChargeId] = useState(0)
 
+    // const [createUserBatch, { 
+    //     isLoading: createUserLoading, 
+    //     isError, 
+    //     error, 
+    //     isSuccess: createUserSuccess 
+    // }] = useCreateUserBatchMutation()
+
+    const [createBulk, { 
+        isLoading: createBulkLoading, 
+        isError, 
+        error, 
+        isSuccess: createUserSuccess 
+    }] = useCreateBulkMutation()
+
+    const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
+
+    // console.log(physicianChargeMaster[0].standard_charge)
+    // console.log(formData)
+    
     useImperativeHandle(ref, () => ({
-        handleSubmit,
+        handleSubmit: (actionType) => handleSubmit(actionType),
         handleAddRow
     }));
  
@@ -37,7 +79,7 @@ const Form = forwardRef(({
         let timer
         if(resetFormTimer) {
             timer = setTimeout(() => {
-                onCloseSlider(),
+                onCloseSlider()
                 handleResetForm()
                 setResetFormTimer(false)
             }, 500)
@@ -49,15 +91,81 @@ const Form = forwardRef(({
             }
         }
      }, [initialFields, resetFormTimer])
- 
+
+
+    const calculatedAge = (birthdate) => {
+        const birthDate = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--
+        }
+        return age
+    }
+    
+    
+    // console.log(formData)
      const handleInputChange = (e, rowIndex, fieldName) => {
-         const { value, type, checked } = e.target
-         const fieldValue = type === 'checkbox' ? checked : value
-         setFormData((prev) =>
-             prev.map((row, index) =>
-                 index === rowIndex ? { ...row, fields: {...row.fields, [fieldName]: fieldValue }} : row 
+         if(fieldName === 'birth_date') {
+            const age = calculatedAge(e.target.value)
+            setFormData((prev) =>
+                prev.map((row, index) =>
+                    index === rowIndex ? { ...row, fields: {
+                            ...row.fields,
+                            age: age,
+                        }
+                    } : row
+                ) 
+            )
+         } else if(fieldName === 'admiting_physician') {
+            if(physicianChargeMaster) {
+                setFormData((prev) =>
+                    prev.map((row, index) =>
+                        index === rowIndex ? { ...row, fields: {
+                                ...row.fields,
+                                standard_charge: physicianChargeMaster?.find(
+                                    charge => charge.doctor_id === e?.value
+                                )?.standard_charge
+                            }
+                        } : row 
+                    ) 
+                )
+            }
+         } else if([
+                'gender',
+                'roles',
+                'bed_type',
+                'bed_group',
+                'bed_floor',
+                'charge_type',
+                'charge_category',
+                'doctor_opd'
+            ].includes(fieldName)) {
+            setFormData((prev) =>
+                prev.map((row, index) =>
+                    index === rowIndex ? { ...row, fields: {
+                            ...row.fields,
+                            [fieldName]: e?.value,
+                        }
+                    } : row
+                ) 
+            )
+         } else {
+             const { value, type, checked } = e.target
+             const fieldValue = type === 'checkbox' ? checked : value
+             setFormData((prev) =>
+                 prev.map((row, index) =>
+                     index === rowIndex ? { 
+                        ...row, 
+                        fields: {
+                            ...row.fields,
+                            [fieldName]: fieldValue 
+                        }
+                    } : row 
+                 )
              )
-         )
+         }
      }
  
      const handleResetForm = () => {
@@ -89,15 +197,42 @@ const Form = forwardRef(({
              prev.filter((_, index) => index !== rowIndex))
      }
 
-     const handleSubmit = () => {
-        //  e.preventDefault()
-        createUserBatch(formData)
+    //  const handleSubmit = () => {
+    //     createUserBatch(formData)
+    //         .unwrap()
+    //         .then(response => {
+    //             if(response.status === "success") {
+    //                 onLoading(true)
+    //                 setResetFormTimer(true)
+    //                 onSuccess(1)
+    //                 // onSetAlertType("success")
+    //                 // onSetAlertMessage(response.message)
+    //                 // setAlertMessage(response.message)
+    //                 // setAlertOpen(true)
+    //             }
+    //         })
+    //         .catch(error => {
+    //         //  console.log(error)
+    //             if(error.status === 500) {
+    //                 onSetAlertType("error")
+    //                 onSetAlertMessage("Unsuccessful")
+    //                 setAlertMessage("Unsuccessful")
+    //                 setAlertOpen(true)
+    //             }
+    //         })
+    //  }
+
+    //  console.log(formData)
+     const handleSubmit = (actionType) => {
+        createBulk({actionType: actionType, data: formData})
             .unwrap()
             .then(response => {
                 if(response.status === "success") {
                     onLoading(true)
                     setResetFormTimer(true)
                     onSuccess(1)
+                    // router.push('/exam')
+                    // router.push()
                     // onSetAlertType("success")
                     // onSetAlertMessage(response.message)
                     // setAlertMessage(response.message)
@@ -117,80 +252,150 @@ const Form = forwardRef(({
  
      const renderForm = (row, rowIndex) => {
          return initialFields.map((field) => (
-             <div key={field.name} className="w-full mb-4">
-                 {field.type === "text" && (
-                     <>
-                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
-                             {field.label}
-                         </label>
-                         <input
-                             required
-                             type={field.type}
-                             id={field.name}
-                             name={field.name}
-                             value={row.fields[field.name]}
-                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                             className="border border-gray-300  w-full px-3 py-1 focus:outline-none"
-                             placeholder={field.placeholder}
-                         />
-                     </>
-                 )}
- 
-                 {field.type === "password" && (
-                     <>
-                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
-                             {field.label}
-                         </label>
-                         <input
-                             required
-                             type={field.type}
-                             id={field.name}
-                             name={field.name}
-                             value={row.fields[field.name]}
-                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                             placeholder={field.placeholder}
-                         />
-                     </>
-                 )}
- 
- 
-                 {field.type === 'email' && (
-                     <>
-                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
-                             {field.label}
-                         </label>
-                         <input
-                             required
-                             type={field.type}
-                             id={field.name}
-                             name={field.name}
-                             value={row.fields[field.name]}
-                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                             placeholder={field.placeholder}
-                         />
-                     </>
-                 )}
- 
-                 {field.type === 'dropdown' && (
-                     <>
-                         <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">{field.label}:</label>
-                         <select
-                             name={field.name}
-                             value={row.fields[field.name]}
-                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                         >
-                             <option value="">Select option</option>
-                             {field.options.map((option) => (
-                                 <option key={option.value} value={option.value}>
-                                     {option.label}
-                                 </option>
-                             ))}
-                         </select>
-                     </>
-                 )}
+             <div key={field.name}>
+                {field.type === "text" && !field.disabled && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300  w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === "text" && field.disabled && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border-none bg-gray-200 px-3 py-1 focus:outline-none w-full"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === "password" && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+
+                {field.type === 'email' && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === 'date' && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === 'number' && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                            {field.label}
+                        </label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
+                    </div>
+                )}
+
+                {field.type === 'dropdown' && (
+                    <div>
+                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">{field.label}:</label>
+                        <Select 
+                            options={field.options?.map(option => ({ 
+                                value: option.value, 
+                                label: option.label 
+                            }))}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            isSearchable={true}
+                            isClearable={true}
+                            placeholder={`Select ${field.label.toLowerCase()}...`}
+                            classNamePrefix="react-select"
+                            styles={styleDropdown}
+                            value={field.options?.find(option => 
+                                option.value === row.fields[field.name]
+                            )}
+                        />
+
+                        {/* <select
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
+                        >
+                            <option value="">Select option</option>
+                            {field.options?.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select> */}
+                    </div>
+                )}
              </div>
  
          ))
@@ -211,8 +416,10 @@ const Form = forwardRef(({
                  <form onSubmit={handleSubmit}>
                  {/* <form> */}
                      {formData.map((row, rowIndex) => (
-                             <div key={row.id} className="flex gap-2 justify-between">
-                                 {renderForm(row, rowIndex)}
+                             <div key={row.id} className="flex gap-4">
+                                <div className="grid grid-cols-3 w-full gap-4">
+                                    {renderForm(row, rowIndex)}
+                                </div>
                                  {formData.length > 1 && (
                                      <button
                                          type="button"

@@ -93,6 +93,7 @@ const Setting = () => {
     const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
     const userInfo = userDetails?.data[0] ?? []
+    const header = userList?.columns ?? []
     
     console.log(userList)
 
@@ -202,12 +203,12 @@ const Setting = () => {
         return (
             <>
             {userListLoading ? (
-                <SkeletonScreen rowCount={userData?.length} columnCount={tableHeader?.length}/> 
+                <SkeletonScreen rowCount={userData?.length} columnCount={header?.length}/> 
             ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                            {header.map((tblHeader, tblHeaderIndex) => (
                                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     {tblHeader}
                                 </th>
@@ -223,14 +224,14 @@ const Setting = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {userData.length === 0 ? (
                             <tr>
-                                <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                <td colSpan={header.length + 1} className="px-6 py-2 text-center">
                                     No records found.
                                 </td>
                             </tr>
                         ) : (
                             userData.map((tblBody, tblBodyIndex) => (
                                 <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                    {tableHeader.map((tblHeader) => (
+                                    {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblBody[tblHeader]}
                                         </td>

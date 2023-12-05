@@ -439,8 +439,9 @@ const SubModule = () => {
 
                 {slug === 'out-patient' && (
                     <>
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg mx-auto sm:w-full">
-                            <div className="border rounded-lg ">
+                    
+                        <div className="bg-white overflow-hidden mx-auto sm:w-full">
+                            <div className="border border-gray-300 rounded">
                                 <div className="flex justify-items-center">
                                     <div className="rounded-tl-lg py-3 ml-3">
                                         <button 
@@ -492,7 +493,6 @@ const SubModule = () => {
                                 </div>
                             </div>
                         </div>
-                        
                         
                         <div>
                             <div className="mt-5 font-bold text-xl uppercase text-gray-600">Medical History</div>

@@ -10,89 +10,18 @@ import Dropdown from "../Dropdown"
 import Form from "../Form"
 import SkeletonScreen from "../SkeletonScreen"
 import { DropdownExport } from "../DropdownLink"
-import { useGetBedListQuery } from '../../service/settingService'
-
-
-const bedStatus = [
-    {name: "Bed 1", bed_type: "Normal", bed_group: "General Ward - 1st Floor", floor: "1st Floor", status: "allotted"},
-]
-
-const bedList = [
-    {name: "Bed 1", bed_type: "Normal", bed_group: "General Ward - 1st Floor"},
-]
-
-const bedType = [
-    {name: "Normal"},
-]
-
-const bedGroup = [
-    {name: "General Ward", floor: "1st Floor", description: ""},
-]
-
-const bedFloorFields = {
-    name: '',
-    description: ''
-}
-
-const bedTypeOptions = bedType.map(type => ({
-    value: type.name,
-    label: type.name
-}))
-
-const bedGroupOptions = bedGroup.map(group => ({
-    value: `${group.name} - ${group.floor}`,
-    label:`${group.name} - ${group.floor}`,
-}))
-
-const bedListTab = [
-    {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
-    {
-        name: 'bed_type', 
-        type: 'dropdown', 
-        label: 'Bed Type',
-        options: bedTypeOptions
-    },
-    {
-        name: 'bed_group',
-        type: 'dropdown',
-        label: 'Bed Group',
-        options: bedGroupOptions
-    }
-]
-
-const bedFloorTab = [
-    {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
-    {name: 'description', type: 'text', label: 'Description', placeholder: 'Enter description'},
-]
-
-const bedFloor = [
-    {name: "1st Floor", description: ""},
-]
-
-const bedFloorOptions = bedFloor.map(floor => ({
-    value: floor.name,
-    label: floor.name,
-}))
-
-const bedGroupTab = [
-    {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
-    {
-        name: 'bedFloor', 
-        type: 'dropdown', 
-        label: 'Bed Floor',
-        options: bedFloorOptions
-    },
-    {name: 'description', type: 'text', label: 'Description', placeholder: 'Enter description'},
-]
-
-const bedTypeTab = [
-    {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'}
-]
+import { 
+    useGetBedListQuery,
+    useGetBedFloorListQuery,
+    useGetBedTypeListQuery,
+    useGetBedGroupListQuery
+} from '../../service/settingService'
+import Alert from "../Alert"
 
 const Bed = ({slug}) => {
     const fieldRef = useRef(null)
     const formRef = useRef(null)
-    const [activeTab, setActiveTab] = useState('tab1')
+    const [activeTab, setActiveTab] = useState('tab2')
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
@@ -101,6 +30,10 @@ const Bed = ({slug}) => {
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [tableHeader, setTableHeader] = useState([])
+    const [floorId, setFloorId] = useState(0)
+    
+    const [alertType, setAlertType] = useState("")
+    const [alertMessage, setAlertMessage] = useState("")
 
     const { 
         data: bedData, 
@@ -112,19 +45,109 @@ const Bed = ({slug}) => {
         items: itemsPerPage,
         tabs: activeTab,
         page: currentPage,
+    },{
+        enabled:!!activeTab
     })
+
+    const { data: floorMaster } = useGetBedFloorListQuery()
+    const { data: typeMaster } = useGetBedTypeListQuery()
+    const { data: groupMaster } = useGetBedGroupListQuery()
 
     const bedMaster = bedData?.data ?? []
     const pagination = bedData?.pagination ?? []
+    const header = bedData?.columns ?? []
     
-    console.log(bedMaster)
+    // console.log(bedLoading)
+
     useEffect(() => {
-        if(bedSuccess && Array.isArray(bedMaster) && bedMaster.length > 0) {
-            const headers = Object.keys(bedMaster[0])
-            setTableHeader(headers)
+        // const newRows = new Set()
+
+        // userData.forEach((row, index) => {
+        //     if(isRowNew(row.created_at)) {
+        //         newRows.add(index)
+        //     }
+        // })
+
+        // setHighlightedRows(newRows)
+        
+        // console.log(highlightedRows)
+
+        // const highlightTimeout = setTimeout(() => {
+        //     setHighlightedRows(new Set())
+        // }, 2000) //clear the highlights after .5milliseconds
+
+        let spinnerTimer
+        if(btnSpinner) {
+            spinnerTimer = setTimeout(() => {
+                setBtnSpinner(false)
+            }, 500)
         }
-        // refetch()
-    }, [bedSuccess])
+
+        return () => {
+            if(spinnerTimer) {
+                clearTimeout(spinnerTimer)
+            }
+            // clearTimeout(highlightTimeout)
+        }
+
+    }, [btnSpinner])
+
+    // tab 2
+    const bedTypeOptions = typeMaster?.map(type => ({
+        value: type?.id,
+        label: type?.name
+    }))
+    
+    // tab 2
+    const bedGroupOptions = groupMaster?.map(group => ({
+        value: group?.id,
+        label:`${group?.name} - ${group?.bed_floor?.floor}`,
+    }))
+    
+    // tab 2
+    const bedListTab = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
+        {
+            name: 'bed_type', 
+            type: 'dropdown', 
+            label: 'Bed Type',
+            options: bedTypeOptions
+        },
+        {
+            name: 'bed_group',
+            type: 'dropdown',
+            label: 'Bed Group',
+            options: bedGroupOptions
+        }
+    ]
+
+    // tab 3
+    const bedTypeTab = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'}
+    ]
+
+    // tab 4
+    const bedFloorOptions = floorMaster?.map(floor => ({
+        value: floor?.id,
+        label: floor?.floor
+    }))
+    // tab 4
+    const bedGroupTab = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
+        {
+            name: 'bed_floor', 
+            type: 'dropdown', 
+            label: 'Bed Floor',
+            options: bedFloorOptions
+        },
+        {name: 'description', type: 'text', label: 'Description', placeholder: 'Enter description'},
+    ]
+
+    // tab 5
+    const bedFloorTab = [
+        {name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name'},
+        {name: 'description', type: 'text', label: 'Description', placeholder: 'Enter description'},
+    ]
 
     const handleItemsPerPageChange = (e) => {
         setItemsPerPage(e.target.value)
@@ -142,6 +165,15 @@ const Bed = ({slug}) => {
         
     }
 
+    const handleAlertClose = () => {
+        setAlertType("")
+        setAlertMessage([])
+    }
+
+    const handleRefetch = () => {
+        setItemsPerPage(prev => prev + 1)
+    }
+
     const closeModal = () => {
         setIsModalOpen(false)
     }
@@ -152,6 +184,18 @@ const Bed = ({slug}) => {
         // setItemsPerPage(prev => prev + 1)
     }
 
+    const handleSubmitButton = (tabs) => {
+        if(tabs === 'tab5') {
+            formRef.current.handleSubmit('createBedFloor')
+        } else if(tabs === 'tab4') {
+            formRef.current.handleSubmit('createBedGroup')
+        } else if(tabs === 'tab3') {
+            formRef.current.handleSubmit('createBedType')
+        } else if(tabs === 'tab2') {
+            formRef.current.handleSubmit('createBed')
+        }
+    }
+
     const addRow = () => {
         fieldRef.current.handleAddRow()
     }
@@ -159,17 +203,23 @@ const Bed = ({slug}) => {
     const renderTableContent = () => {
         return (
             <>
-            {bedLoading ? (
-                <SkeletonScreen rowCount={bedMaster?.length} columnCount={tableHeader?.length}/> 
-            ) : (
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                            {header.filter(tblHeader => tblHeader !== 'id').map((tblHeader, tblHeaderIndex) => (
                                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    {tblHeader}
+                                    {tblHeader === 'floor_id' ? (
+                                        'floor'
+                                    ) : tblHeader === 'bed_type_id' ? (
+                                        'bed_type'
+                                    ) : tblHeader === 'bed_group_id' ? (
+                                        'bed_group'
+                                    ) : tblHeader === 'is_active' ? (
+                                        'status'
+                                    ) : (
+                                        tblHeader
+                                    )}
                                 </th>
-
                             ))}
 
                             <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -181,17 +231,31 @@ const Bed = ({slug}) => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {bedMaster.length === 0 ? (
                             <tr>
-                                <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                <td colSpan={header.length + 1} className="px-6 py-2 text-center">
                                     No records found.
                                 </td>
                             </tr>
                         ) : (
                             bedMaster.map((tblBody, tblBodyIndex) => (
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBodyIndex}>
-                                    {tableHeader.map((tblHeader) => (
-                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                            {tblBody[tblHeader]}
+                                <tr key={tblBodyIndex} className="hover:bg-gray-100">
+                                    {header.filter(tblHeader => tblHeader !== 'id').map((tblHeader) => (
+                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm ">
+                                            {tblHeader === 'floor_id' ? (
+                                                tblBody?.bed_floor.floor
+                                            ) : tblHeader === 'bed_type_id' ? (
+                                                tblBody?.bed_type.name
+                                            ) : tblHeader === 'bed_group_id' ? (
+                                                `${tblBody?.bed_group.name} - ${tblBody?.bed_group?.bed_floor.floor}`
+                                            ) : tblHeader === 'is_active' ? (
+                                                tblBody?.is_active ? (
+                                                    <span className="bg-green-400 p-1 rounded-md">Available</span>
+                                                ) : (
+                                                    <span className="bg-red-400 p-1 rounded-md ">Alotted</span>
+                                                )
+                                            ) : (
+                                                tblBody[tblHeader]
+                                            )}
                                         </td>
                                     ))}
 
@@ -208,35 +272,12 @@ const Bed = ({slug}) => {
                         )}
                     </tbody>
                 </table>
-                )}
             </>
         )
     }
 
     const renderTableContentByTab = (tab) => {
         switch(tab) {
-            case 'tab1':
-                return (
-                    <Table 
-                        title="User List" 
-                        disableTable={true}
-                        onOpenModal={(id) => setModalId(id)}
-                    >
-                        {renderTableContent()}
-                    </Table>
-
-                    // <Table 
-                    //     slug={slug}
-                    //     action={false}
-                    //     ref={fieldRef} 
-                    //     title="User List" 
-                    //     dynamicTable={true}
-                    //     tableData={bedMaster} 
-                    //     tableHeader={Object.keys(bedMaster[0])}
-                    //     // isLoading={userListLoading}
-                    // />
-                )
-    
             case 'tab2':
                 return (
                     <Table 
@@ -246,17 +287,6 @@ const Bed = ({slug}) => {
                     >
                         {renderTableContent()}
                     </Table>
-
-                    // <Table 
-                    //     slug={slug}
-                    //     action={false}
-                    //     ref={fieldRef} 
-                    //     title="User List" 
-                    //     dynamicTable={true}
-                    //     tableData={bedMaster} 
-                    //     tableHeader={Object.keys(bedMaster[0])}
-                    //     // isLoading={userListLoading}
-                    // />
                 )
     
             case 'tab3':
@@ -398,11 +428,10 @@ const Bed = ({slug}) => {
     const renderContent = () => {
         return (
             <>
-            
                 <div className="flex relative overflow-hidden h-screen">
                     <div className="absolute inset-0 w-full">
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
-                        <div className="font-bold text-xl mb-2 uppercase text-gray-600">Bed Management</div>
+                            <div className="font-bold text-xl mb-2 uppercase text-gray-600">Bed Management</div>
                             <div className="flex justify-between py-1">
                                 {activeTab !== 'tab1' && (
                                     <Button
@@ -453,10 +482,6 @@ const Bed = ({slug}) => {
                                 <div className="flex justify-items-center">
                                     <div className="rounded-tl-lg py-3 ml-3">
                                         <button 
-                                            onClick={() => setActiveTab('tab1')}
-                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab1' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed Status
-                                        </button>
-                                        <button 
                                             onClick={() => setActiveTab('tab2')}
                                             className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed List
                                         </button>
@@ -476,16 +501,24 @@ const Bed = ({slug}) => {
                                 </div>
 
                                 
-                                <div className="tab-content">
-                                    {renderTableContentByTab(activeTab)}
-                                </div>
+                                {bedLoading ? (
+                                    <div className="grid p-3 gap-y-2">
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                    </div>
+                                ) : (
+                                    <div className="tab-content">
+                                        {renderTableContentByTab(activeTab)}
+                                    </div>
+                                )}
                             </div>
                             
-                            <div className="flex flex-wrap py-2">
+                            <div className="flex flex-wrap py-1">
                                 <div className="flex items-center justify-center flex-grow">
                                     <Pagination 
                                         currentPage={pagination.current_page} 
-                                        totalPages={pagination.total_page}
+                                        totalPages={pagination.total_pages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
                                         onPageChange={(newPage) => handleNewPage(newPage)}
                                     />
@@ -531,7 +564,7 @@ const Bed = ({slug}) => {
                                         bgColor={btnSpinner ? 'disable': 'emerald'}
                                         btnIcon={btnSpinner ? 'disable': 'submit'}
                                         btnLoading={btnSpinner}
-                                        onClick={() => formRef.current.handleSubmit()}
+                                        onClick={() => handleSubmitButton(activeTab)}
                                     >
                                         {btnSpinner ? '' : 'Submit'}
                                     </Button>
@@ -542,8 +575,10 @@ const Bed = ({slug}) => {
                                 <Form 
                                     ref={formRef} 
                                     initialFields={bedListTab}
-                                    // onSuccess={handleRefetch}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
                                     onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
                                     onSetAlertMessage={(data) => setAlertMessage(data)}
                                 />
                             )}
@@ -552,8 +587,10 @@ const Bed = ({slug}) => {
                                 <Form 
                                     ref={formRef} 
                                     initialFields={bedTypeTab}
-                                    // onSuccess={handleRefetch}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
                                     onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
                                     onSetAlertMessage={(data) => setAlertMessage(data)}
                                 />
                             )}
@@ -562,8 +599,10 @@ const Bed = ({slug}) => {
                                 <Form 
                                     ref={formRef} 
                                     initialFields={bedGroupTab}
-                                    // onSuccess={handleRefetch}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
                                     onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
                                     onSetAlertMessage={(data) => setAlertMessage(data)}
                                 />
                             )}
@@ -572,8 +611,10 @@ const Bed = ({slug}) => {
                                 <Form 
                                     ref={formRef} 
                                     initialFields={bedFloorTab}
-                                    // onSuccess={handleRefetch}
+                                    onSuccess={handleRefetch}
+                                    onLoading={(data) => setBtnSpinner(data)}
                                     onSetAlertType={(data) => setAlertType(data)}
+                                    onCloseSlider={() => setActiveContent("yellow")}
                                     onSetAlertMessage={(data) => setAlertMessage(data)}
                                 />
                             )}
@@ -595,6 +636,15 @@ const Bed = ({slug}) => {
             >
                 {renderModalContentByTab(activeTab)}
             </Modal>
+
+            {alertMessage &&
+                <Alert 
+                    alertType={alertType}
+                    isOpen={alertType !== ""}
+                    onClose={handleAlertClose}
+                    message={alertMessage} 
+                /> 
+            }
 
             {renderContent()}
         </div>
