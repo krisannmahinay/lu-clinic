@@ -77,7 +77,7 @@ const icdDataHeaders = [
 const labelCss = "ml-2 mb-2 text-gray-500 font-medium capitalize text-sm"
 
 const custom_label_style = "block text-gray-500 font-medium text-sm mt-4 capitalize"
-const custom_form_field_style = "border border-gray-300 px-3 py-1 focus:border-gray-500 focus:outline-none w-full"
+const custom_form_field_style = "border border-gray-200 px-3 py-1 focus:border-gray-500 bg-gray-200 focus:outline-none w-full"
 
 const PatientInformation = ({ipdForms, opdForms}) => {
     const [formData, setFormData] = useState({
@@ -1088,42 +1088,42 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Admission Diagnosis:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Discharge Diagnosis:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Principal Diagnosis:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Other Diagnosis:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Principal Operation/s Procedures:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Other Operation/s or Procedures:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
@@ -1149,7 +1149,7 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                         <div className="flex flex-col w-full">
                                             <label className={custom_label_style}>Accident/Injuries/Poisoning:</label>
                                             <textarea 
-                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none h-40"
+                                                className={`${custom_form_field_style} h-40`}
                                             />
                                         </div>
 
