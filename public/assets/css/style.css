@@ -9,11 +9,49 @@
 }
 
 .scroll-custom::-webkit-scrollbar-track {
-    @apply bg-gray-200; /* Tailwind styles for scrollbar track */
+    /* @apply bg-gray-200; Tailwind styles for scrollbar track */
 }
 
 /* Firefox specific scrollbar styling */
 .scroll-custom {
     scrollbar-width: thin; /* or 'auto' or 'none' if you don't want a scrollbar */
     scrollbar-color: rgba(128, 128, 128, 1) rgba(240, 240, 240, 1); /* thumb and track color */
+}
+
+/* Custom scrollbar styles */
+.scroll-custom::-webkit-scrollbar {
+    width: 0px; /* Set the width to 0 to hide it */
+    height: 12px; /* Height of horizontal scrollbars */
+}
+
+.scroll-custom:hover::-webkit-scrollbar {
+    width: 12px; /* Width of vertical scrollbars (visible on hover) */
+}
+
+.scroll-custom::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-md; /* Tailwind styles for scrollbar thumb */
+}
+
+.scroll-custom::-webkit-scrollbar-track {
+    /* @apply bg-gray-200; Tailwind styles for scrollbar track */
+}
+
+/* Firefox specific scrollbar styling */
+.scroll-custom {
+    scrollbar-width: none; /* Hide the scrollbar */
+    scrollbar-color: rgba(128, 128, 128, 1) rgba(240, 240, 240, 1); /* thumb and track color */
+}
+
+.scroll-custom:hover {
+    scrollbar-width: thin; /* Show the scrollbar on hover */
+}
+
+.disable-selecting-text {
+    user-select: none;
+}
+
+@media not all and (max-width: 639px) {
+    .custom-sidebar-margin {
+        margin-left: 0;
+    }
 }
