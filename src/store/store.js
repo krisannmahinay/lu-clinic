@@ -10,6 +10,7 @@ import { pdfApi } from '../service/pdfService'
 import { psgcApi } from '../service/psgcService'
 import { countryApi } from '../service/countryService'
 import { patientApi } from '../service/patientService'
+import { hospitalChargeApi } from '../service/chargeService'
 import thunk from 'redux-thunk';
 
 const persistConfig = {
@@ -24,6 +25,7 @@ export const makeStore = () => {
   const store = configureStore({
     reducer: {
         // auth: persisAuthReducer,
+        [hospitalChargeApi.reducerPath]: hospitalChargeApi.reducer,
         [patientApi.reducerPath]: patientApi.reducer,
         [countryApi.reducerPath]: countryApi.reducer,
         [psgcApi.reducerPath]: psgcApi.reducer,
@@ -34,7 +36,8 @@ export const makeStore = () => {
         [loginApi.reducerPath]: loginApi.reducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(
-      thunk, 
+      thunk,
+      hospitalChargeApi.middleware,
       patientApi.middleware,
       countryApi.middleware,
       psgcApi.middleware,
