@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Login from './login'
-import GuestLayout from "@/components/Layouts/GuestLayout";
-// import TimeTracker from "../components/TimeTracker";
+import GuestLayout from "@/components/Layouts/GuestLayout"
+
 
 export default function Home() {
     
@@ -10,6 +10,7 @@ export default function Home() {
             <Head>
                 <title>Laravel</title>
             </Head>
+
             {/* <Login /> */}
             {/* <TimeTracker /> */}
             <GuestLayout>
