@@ -16,9 +16,18 @@ import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from '@/components/DropdownLink'
 import { 
     useGetOutPatientListQuery,
-    useGetPhysicianListQuery
+    useGetPhysicianListQuery,
+    useGetPathologyListQuery,
+    useGetPathologyCategoryListQuery,
+    useGetMedicineListQuery
 } from '@/service/patientService'
 import Alert from '@/components/Alert'
+import Tabs from '@/components/Tabs'
+import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+import Soap from '@/components/Patient/OPD/Soap'
+import LabResult from '@/components/Patient/OPD/LabResult'
+import ImagingResult from '@/components/ImagingResult'
+import Prescription from '@/components/Prescription'
 
 const patientOPD = [
     {
@@ -65,6 +74,88 @@ const patientIPD = [
     }
 ]
 
+
+const soapData = [
+    {
+        hematology: [
+            {id:1, type:"hematology", name: "Complete Blood Count with platelet count(CBC with platelet)"},
+            {id:2, type:"hematology", name: "Peripheral Blood Smear"},
+            {id:3, type:"hematology", name: "Clotting Time(CT)"},
+            {id:4, type:"hematology", name: "Bleeding Time(BT)"},
+            {id:5, type:"hematology", name: "Prothrombin Time(PT)"},
+            {id:6, type:"hematology", name: "Partial Thromboplastin Time(PTT)"},
+            {id:7, type:"hematology", name: "Dengue NS1"},
+            {id:8, type:"hematology", name: "Crossmatching"},
+            {id:9, type:"hematology", name: "Blood Typing"},
+            {id:10, type:"hematology", name: "Others"}
+        ], 
+        urine_stool_studies: [
+            {id:11, type:"stool", name: "Urinalysis(midstream, clean catch)"},
+            {id:12, type:"stool", name: "Pregnancy Test"},
+            {id:13, type:"stool", name: "Fecalysis"},
+            {id:14, type:"stool", name: "Others"},
+        ],
+        cardiac_studies: [
+            {id:15, type:"cardiac", name: "Electrocardiogram(ECG)"},
+            {id:16, type:"cardiac", name: "Others",}
+        ], 
+        chemistry: [
+            {id:17, type:"chemistry", name: "Lipid Profile"},
+            {id:18, type:"chemistry", name: "Serum Sodium(Na)"},
+            {id:19, type:"chemistry", name: "Serum Potassium(K)"},
+            {id:20, type:"chemistry", name: "Blood Urea Nitrogen(BUN)"},
+            {id:21, type:"chemistry", name: "Ionized Calcium(iCa)"},
+            {id:22, type:"chemistry", name: "Uric Acid"},
+            {id:23, type:"chemistry", name: "ALT/SGPT"},
+            {id:24, type:"chemistry", name: "AST/SGOT"},
+            {id:25, type:"chemistry", name: "Hepatitis Test"},
+            {id:26, type:"chemistry", name: "Syphilis"},
+            {id:27, type:"chemistry", name: "TSH"},
+            {id:28, type:"chemistry", name: "Ft4"},
+            {id:29, type:"chemistry", name: "Ft3"},
+            {id:30, type:"chemistry", name: "TT4"},
+            {id:31, type:"chemistry", name: "TT3"},
+            {id:32, type:"chemistry", name: "PSA"},
+            {id:33, type:"chemistry", name: "Rapid Antigen Test(COVID-19)"},
+            {id:45, type:"chemistry", name: "Others"},
+        ],
+        glucose: [
+            {id:46, type:"glucose", name: "Fasting Blood Sugar(FBS)"},
+            {id:47, type:"glucose", name: "Hba1c"},
+            {id:48, type:"glucose", name: "Random Blood Sugar"},
+            {id:49, type:"glucose", name: "75g Oral Glucose Tolerance Test(OGTT)"},
+            {id:50, type:"glucose", name: "Others"}
+        ]
+    }
+]
+
+const soapHeaders = [
+    "hematology",
+    "urine_stool_studies",
+    "cardiac_studies",
+    "chemistry",
+    "glucose",
+]
+
+const dummyData = [
+    {id:1, name: "Paracetamol"},
+    {id:2, name: "Other Medicine"},
+    {id:3, name: "Test Medicine2"},
+    {id:4, name: "Test Medicine5"},
+    {id:5, name: "Test Medicine6"},
+    {id:6, name: "Test Medicine7"},
+    {id:7, name: "Test Medicine7"},
+    {id:8, name: "Test Medicine7"},
+    {id:9, name: "Test Medicine7"},
+    {id:10, name: "Test Medicine7"},
+    {id:11, name: "Test Medicine7"},
+    {id:12, name: "Test Medicine7"},
+    {id:13, name: "Test Medicine7"},
+    {id:14, name: "Test Medicine7"},
+    {id:15, name: "Test Medicine7"},
+    {id:16, name: "Test Medicine7"},
+]
+
 const SubModule = () => {
     const formRef = useRef(null)
     const router = useRouter()
@@ -79,6 +170,7 @@ const SubModule = () => {
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [updateForm, setUpdateForm] = useState({})
+    const [contentType, setContentType] = useState("")
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -102,11 +194,14 @@ const SubModule = () => {
     })
 
     const { data: physicianList } = useGetPhysicianListQuery()
+    const { data: pathologyList } = useGetPathologyListQuery()
+    const { data: medicineList } = useGetMedicineListQuery()
+    const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
     const patientData = patientList?.data ?? []
     const pagination = patientList?.pagination ?? []
     const header = patientList?.columns ?? []
 
-    // console.log(patientData)
+    // console.log(pathologyList)
     useEffect(() => {
         // const newRows = new Set()
 
@@ -195,11 +290,18 @@ const SubModule = () => {
         setAlertMessage([])
     }
 
+    const handleActiveContent = (type, any) => {
+        console.log(any)
+        setActiveContent("green")
+        setContentType(type)
+    }
+
     const handleRefetch = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
-    const handleOpenModal = (userId) => {
+    const handleOpenModal = (e, userId) => {
+        e.stopPropagation()
         const patienData = patientData?.find(e=> e.patient_identity?.user_id === userId)
         setUpdateForm(patienData)
         setIsModalOpen(true)
@@ -209,6 +311,39 @@ const SubModule = () => {
         // setSelectedRows([])
         setIsModalOpen(false)
     }
+
+    const tabsConfig = [
+        {
+            id: 'tab1',
+            label: 'Patient Information and Consent',
+            content: () => <PatientInformation />
+        },
+        {
+            id: 'tab2',
+            label: 'S.O.A.P',
+            content: () => <Soap 
+                                soapData={soapData} 
+                                soapHeaders={soapHeaders} 
+                                dummyData={dummyData}
+                                medicineMaster={medicineList}
+                            />
+        },
+        {
+            id: 'tab3',
+            label: 'Laboratory Results',
+            content: () => <LabResult />
+        },
+        {
+            id: 'tab4',
+            label: 'Imaging Results',
+            content: () => <ImagingResult />
+        },
+        {
+            id: 'tab5',
+            label: 'Prescription',
+            content: () => <Prescription />
+        }
+    ]
 
     const renderTableContent = () => {
         return (
@@ -256,7 +391,7 @@ const SubModule = () => {
                             patientData.map((tblBody, tblBodyIndex) => (
                                 // console.log(tblBody)
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBodyIndex} className="hover:bg-gray-100 hover:cursor-pointer">
+                                <tr key={tblBodyIndex} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleActiveContent('tableRow',tblBody?.patient_identity?.user_id)}>
                                     {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblHeader === 'admitting_physician' ? (
@@ -272,11 +407,11 @@ const SubModule = () => {
                                     ))}
 
                                     <td className="px-6 py-2 whitespace-nowrap">    
-                                        <button title="Edit" type="button" onClick={() => handleOpenModal(tblBody?.patient_identity?.user_id)}>
+                                        <button title="delete" type="button" onClick={(e) => handleOpenModal(e,tblBody?.patient_identity?.user_id)}>
                                             {/* <span>ADD</span> */}
-                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
+                                            <svg fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                             <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                         </svg>
                                         </button>
                                     </td>
                                 </tr>
@@ -307,7 +442,7 @@ const SubModule = () => {
                                 <div className="flex justify-between py-1">
                                     <Button
                                         btnIcon="add"
-                                        onClick={() => setActiveContent("green")}
+                                        onClick={() => handleActiveContent('addRow', '')}
                                     >
                                     Add
                                     </Button>
@@ -359,7 +494,7 @@ const SubModule = () => {
                                     </Table>
                                 </div>
 
-                                <div className="flex flex-wrap py-2">
+                                <div className="flex flex-wrap py-1">
                                     <div className="flex items-center justify-center flex-grow">
                                         <Pagination 
                                             currentPage={pagination.current_page} 
@@ -371,7 +506,7 @@ const SubModule = () => {
 
                                     <ItemPerPage className="flex flex-grow">
                                         <div className="flex items-center justify-end">
-                                            <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
+                                            <span className="mr-2 mx-2 text-gray-500 uppercase font-medium text-xs">Per Page:</span>
                                             <select
                                                 value={itemsPerPage}
                                                 onChange={(e) => handleItemsPerPageChange(e)}
@@ -386,48 +521,68 @@ const SubModule = () => {
                             </div>
 
                             <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
-                                <div className="font-bold text-xl mb-2 uppercase text-gray-600">Add Out Patient</div>
-                                <div className="flex justify-between py-2">
-                                    <Button
-                                        paddingY="2"
-                                        btnIcon="close"
-                                        onClick={() => setActiveContent("yellow")}
-                                    >
-                                        Close
-                                    </Button>
-
-                                    <div className="flex gap-2">
-                                        {slug !== 'out-patient' && (
+                                {contentType === 'addRow' && (
+                                    <>
+                                        <div className="font-bold text-xl mb-2 uppercase text-gray-600">Add Out Patient</div>
+                                        <div className="flex justify-between py-2">
                                             <Button
-                                                bgColor="indigo"
-                                                btnIcon="add"
-                                                onClick={() => formRef.current.handleAddRow()}
+                                                paddingY="2"
+                                                btnIcon="close"
+                                                onClick={() => setActiveContent("yellow")}
                                             >
-                                                Add Row
+                                                Close
                                             </Button>
-                                        )}
+        
+                                            <div className="flex gap-2">
+                                                {slug !== 'out-patient' && (
+                                                    <Button
+                                                        bgColor="indigo"
+                                                        btnIcon="add"
+                                                        onClick={() => formRef.current.handleAddRow()}
+                                                    >
+                                                        Add Row
+                                                    </Button>
+                                                )}
+        
+                                                <Button
+                                                    bgColor={btnSpinner ? 'disable': 'emerald'}
+                                                    btnIcon={btnSpinner ? 'disable': 'submit'}
+                                                    btnLoading={btnSpinner}
+                                                    onClick={() => handleSubmitButton(slug)}
+                                                >
+                                                    {btnSpinner ? '' : 'Submit'}
+                                                </Button>
+                                            </div>
+                                        </div>
+        
+                                        <Form 
+                                            ref={formRef} 
+                                            initialFields={opdForms}
+                                            onSuccess={handleRefetch}
+                                            onLoading={(data) => setBtnSpinner(data)}
+                                            onSetAlertType={(data) => setAlertType(data)}
+                                            onCloseSlider={() => setActiveContent("yellow")}
+                                            onSetAlertMessage={(data) => setAlertMessage(data)}
+                                        />
+                                    </>
+                                )}
+                                {contentType === 'tableRow' && (
+                                    <>
+                                        <div className="flex justify-between py-2">
+                                            <Button
+                                                paddingY="2"
+                                                btnIcon="close"
+                                                onClick={() => setActiveContent("yellow")}
+                                                >
+                                                Close
+                                            </Button>
+                                        </div>
 
-                                        <Button
-                                            bgColor={btnSpinner ? 'disable': 'emerald'}
-                                            btnIcon={btnSpinner ? 'disable': 'submit'}
-                                            btnLoading={btnSpinner}
-                                            onClick={() => handleSubmitButton(slug)}
-                                        >
-                                            {btnSpinner ? '' : 'Submit'}
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={opdForms}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
-                                
+                                        <Tabs
+                                            tabsConfig={tabsConfig} 
+                                        />
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -448,7 +603,7 @@ const SubModule = () => {
             }>
             
             <Head>
-                <title>Laravel - {slug}</title>
+                <title>{slug}</title>
             </Head>
             
             <div className="p-8">
