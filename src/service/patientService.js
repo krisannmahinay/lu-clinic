@@ -110,6 +110,20 @@ export const patientApi = createApi({
                 }
             }
         }),
+
+        getMedicineList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-medication',
+                    method: 'GET',
+                    params: {
+                        slug: 'medicine',
+                        selectedDB: session
+                    }
+                }
+            }
+        })
     })
 })
 
@@ -119,5 +133,6 @@ export const {
     useGetPhysicianListQuery,
     useGetPhysicianChargeQuery,
     useGetPathologyListQuery,
-    useGetPathologyCategoryListQuery
+    useGetPathologyCategoryListQuery,
+    useGetMedicineListQuery
 } = patientApi
