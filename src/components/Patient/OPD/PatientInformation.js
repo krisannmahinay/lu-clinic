@@ -7,6 +7,7 @@ import { debounce } from 'lodash'
 import { useGetCountryDataQuery } from '@/service/countryService'
 import { useGetProvinceDataQuery, useGetMunicipalityDataQuery, useGetBarangayDataQuery } from '@/service/psgcService'
 import { useAutoSaveDataMutation } from '@/service/patientService'
+import { useGetICDDataQuery } from '@/service/icdService'
 
 const genderData = [
     {value: "male", label: "Male"},
@@ -30,8 +31,24 @@ const dispositionData = [
 ]
 
 const userDetails = {
-    identity: {last_name: "Doe", given_name: "John", middle_name: "", bed_rm: ""}
+    identity: {last_name: "Doe", given_name: "John", middle_name: "", ward_bed_rm: ""}
 }
+
+const accordionItem = [
+    {
+        id:1,
+        title: "PART I" 
+    }, 
+    {
+        id:2,
+        title: "PART II"
+    },
+    {
+        id:3,
+        title: "PART III"
+    }
+]
+
 
 // console.log(userDetails.identity)
 
@@ -52,7 +69,56 @@ const styleDropdown = {
       }),
 }
 
-const PatientInformation = () => {
+const icdDataHeaders = [
+    "icd_codes",
+    "name"
+]
+
+const labelCss = "ml-2 mb-2 text-gray-500 font-medium capitalize text-sm"
+
+const custom_label_style = "block text-gray-500 font-medium text-sm mt-4 capitalize"
+const custom_form_field_style = "border border-gray-200 px-3 py-1 focus:border-gray-500 bg-gray-200 focus:outline-none w-full"
+
+const PatientInformation = ({ipdForms, opdForms}) => {
+    const [formData, setFormData] = useState({
+        last_name: "",
+        given_name: "",
+        middle_name: "",
+        ward_bed_rm: "",
+        country: "",
+        province: "",
+        stateMunicipality: "",
+        barangay: "",
+        street: "",
+        noBlkLot: "",
+        telNo: "",
+        sex: "",
+        civilStatus: "",
+        birthday: "",
+        age: "",
+        birthPlace: "",
+        nationality: "",
+        religion: "",
+        occupation: "",
+        employer: "",
+        employerAddress: "",
+        employerTelNo: "",
+        fatherName: "",
+        fatherAddress: "",
+        fatherTelNo: "",
+        motherName: "",
+        motherAddress: "",
+        motherTelNo: "",
+        spouseName: "",
+        spouseAddress: "",
+        spouseTelNo: "",
+    })  
+
+    const [lastName, setLastName] = useState(userDetails ? userDetails.identity.last_name : '')
+    const [givenName, setGivenName] = useState(userDetails ? userDetails.identity.given_name : '')
+    const [middleName, setMiddleName] = useState(userDetails ? userDetails.identity.middle_name : '')
+    const [bedRm, setBedRm] = useState(userDetails ? userDetails.identity.bed_rm : '')
+
     const [imagePreviewUrl, setImagePreviewUrl] = useState('/path/to/default-photo.png')
     const [selectedProvince, setSelectedProvince] = useState(null)
     const [selectedMunicipal, setSelectedMunicipal] = useState(null)
@@ -66,16 +132,36 @@ const PatientInformation = () => {
     const [municipalCode, setMunicipalCode] = useState(null)
     const [initialOptions, setInitialOptions] = useState([]) 
     const [checkedItem, setCheckedItem] = useState([])
+    const [selectedSocService, setSelectedSocService] = useState(null)
+    const [selectedGovType, setSelectedGovType] = useState(null)
+    const [selectedDisposition, setSelectedDisposition] = useState(null)
+    const [selectedType, setSelectedType] = useState(null)
+    const [searchQuery, setSearchQuery] = useState("")
+    
+    const initialOpenIds = accordionItem.map(item => item.id)
+    const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
 
-    const [lastName, setLastName] = useState(userDetails ? userDetails.identity.last_name : '')
-    const [givenName, setGivenName] = useState(userDetails ? userDetails.identity.given_name : '')
-    const [middleName, setMiddleName] = useState(userDetails ? userDetails.identity.middle_name : '')
-    const [bedRm, setBedRm] = useState(userDetails ? userDetails.identity.bed_rm : '')
+    
 
     const { data: countryData } = useGetCountryDataQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
     const { data: municipalityData } = useGetMunicipalityDataQuery({provinceCode: provinceCode}, {enabled: !!provinceCode})
     const { data: barangayData } = useGetBarangayDataQuery({municipalCode: municipalCode}, {enabled: !!municipalCode})
+
+    const { data: icdResultData, isLoading, isError, error, isSuccess } = useGetICDDataQuery({
+        keywords: searchQuery
+    }, {
+        enabled: !!searchQuery
+    })
+    
+    const icdData = (icdResultData && icdResultData[3]) ? icdResultData[3] : []
+
+    const mappedIcdData = icdData.map(entry => {
+        return icdDataHeaders.reduce((obj, header, index) => {
+            obj[header] = entry[index]
+            return obj
+        }, {})
+    })
 
     const [autoSaveData] = useAutoSaveDataMutation()
 
@@ -87,7 +173,12 @@ const PatientInformation = () => {
             }))
             setInitialOptions(options)
         }
-    }, [provinceData])
+        if (userDetails) {
+            setFormData(userDetails?.identity)
+        }
+    }, [provinceData, userDetails])
+
+    // console.log(formData)
 
     const filterProvinceData = provinceData ?? []
     const loadProvince = (inputValue, callback) => {
@@ -143,20 +234,73 @@ const PatientInformation = () => {
     //     // handleAutoSave()
     // }, [handleAutoSave])
 
-    const handleBlur = useCallback(async () => {
-        const formData = {
-            lastName,
-            givenName,
-            middleName,
-            bedRm
+    const handleGovType = (type) => {
+        if(selectedGovType === type) {
+            setSelectedGovType(null)
+        } else {
+            setSelectedGovType(type)
         }
+    }
+    
+
+    const handleSocService = (type) => {
+        if (selectedSocService === type) {
+            setSelectedSocService(null) // Uncheck if already checked
+        } else {
+            // const extractRm = bedRoomData.map
+            setSelectedSocService(type)
+
+        }
+    }
+
+    const handleDisposition = (type) => {
+        if(selectedDisposition === type) {
+            setSelectedDisposition(null)
+        } else {
+            setSelectedDisposition(type)
+        }
+    }
+
+    const autoSave = debounce(async (newData) => {
         try {
-            await autoSaveData(formData).unwrap()
-            console.log("it works")
-        } catch (err) {
-            console.log("not works:", err)
+            await autoSaveData(newData)
+            console.log("it works!")
+        } catch(err) {
+            console.log(err)
         }
-    }, [lastName, givenName, middleName, bedRm, autoSaveData])
+    })
+
+    const handleFieldChange = useCallback((e) => {
+        const { name, value } = e.target
+        setFormData(prevData => ({
+            ...prevData, 
+            [name]: value
+        }))
+        autoSave({...formData, [name]: value})
+    }, [autoSave, formData])
+
+    // const handleGovType = (type) => {
+    //     if(selectedSocService === type) {
+    //         setSelectedSocService(null)
+    //     } else {
+    //         setSelectedSocService(type)
+    //     }
+    // }
+
+    // const handleBlur = useCallback(async () => {
+    //     const formData = {
+    //         lastName,
+    //         givenName,
+    //         middleName,
+    //         bedRm
+    //     }
+    //     try {
+    //         await autoSaveData(formData).unwrap()
+    //         console.log("it works")
+    //     } catch (err) {
+    //         console.log("not works:", err)
+    //     }
+    // }, [lastName, givenName, middleName, bedRm, autoSaveData])
 
     const handleProvinceChange = (selectedOption) => {
         setSelectedProvince(selectedOption?.label)
@@ -182,6 +326,10 @@ const PatientInformation = () => {
 
     const handleCivilStatusChange = (selectedOption) => {
         setSelectedCivil(selectedOption)
+    }
+
+    const handleSearchICD = (keywords) => {
+        setSearchQuery(keywords)
     }
 
     const handleCheckbox = (moduleId) => {
@@ -217,350 +365,845 @@ const PatientInformation = () => {
         if (file) {
           reader.readAsDataURL(file)
         }
-      }
+    }
+
+    const toggleAccordion = (id) => {
+        setAccordionIdOpen(prevState => {
+            if (prevState.includes(id)) {
+                return prevState.filter(accordionId => accordionId !== id)
+            } else {
+                return [...prevState, id]
+            }
+        })
+    }
 
     return (
-        <div className="bg-white rounded-md  max-w-l w-full mx-auto">
-            <div className=" flex justify-center items-center mb-6">
-                <div className="relative rounded-full border overflow-hidden w-24 h-24">
-                    <img 
-                        src={imagePreviewUrl} 
-                        alt="img" 
-                        className="w-full h-full object-cover" 
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                    {/* <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 cursor-pointer z-0"> */}
-                        <label htmlFor="photo-upload" className="cursor-pointer">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0020.07 7H21a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V9z"></path>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                        </label>
-                        <input type="file" id="photo-upload" className="hidden" onChange={handleImageChange}/>
-                    </div>
-                </div>   
-            </div>
-            
-            <div className="flex flex-col gap-4 mb-2 sm:flex-row">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">LAST NAME</label>
-                    <input type="text" name="lastName" value={lastName} onBlur={handleBlur} onChange={(e) => setLastName(e.target.value)} placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">GIVEN NAME</label>
-                    <input type="text" name="givenName" value={givenName} onBlur={handleBlur} onChange={(e) => setGivenName(e.target.value)} placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">MIDDLE NAME</label>
-                    <input type="text" name="middleName" value={middleName} onBlur={handleBlur} onChange={(e) => setMiddleName(e.target.value)} placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">WARD/RM/BED/SERVICE</label>
-                    <input type="text" name="wardRmBed" value={bedRm} onBlur={handleBlur} onChange={(e) => setBedRm(e.target.value)} placeholder="Enter warm/rm/bed/service" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+        <div className="space-y-4">
+                {accordionItem.map(item => (
+                    
+                    <div key={item.id} className="border-none overflow-hidden disable-selecting-text">
+                        <div 
+                            className="cursor-pointer text-center bg-[#15803d] p-4 sticky top-0 z-10" 
+                            onClick={() => toggleAccordion(item.id)}
+                        >
+                            <h3 className="text-white font-bold uppercase text-xs">{item.title}</h3>
+                        </div>
+                        
+                        <div className="sm:ml-[10rem] mr-[10rem] p-8">
+                            {accordionIdOpen.includes(item.id) && (
+                                item.id === 1 ? (
+                                    <>
+                                    <div className="py-3 space-y-2">
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>last name: </label>
+                                                <input 
+                                                    type="text" 
+                                                    name="last_name"
+                                                    value={formData.last_name} 
+                                                    onChange={handleFieldChange} 
+                                                    className={custom_form_field_style}
+                                                />
+                                            </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">COUNTRY</label>
-                    <Select 
-                        options={countryData?.map(country => ({ value: country.name, label: country.name }))}
-                        onChange={handleCountryChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a country..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">PROVINCE</label>
-                    <AsyncSelect 
-                        cacheOptions
-                        loadOptions={loadProvince}
-                        defaultOptions={initialOptions}
-                        onChange={handleProvinceChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a province..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">STATE/MUNICIPALITY</label>
-                    <Select 
-                        options={municipalityData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
-                        onChange={handleMunicipalityChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a state..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
+                                            <div>
+                                                <label className={custom_label_style}>given name: </label>
+                                                <input 
+                                                    type="text" 
+                                                    name="given_name"
+                                                    value={formData.given_name} 
+                                                    onChange={handleFieldChange} 
+                                                    className={custom_form_field_style}
+                                                />
+                                            </div>
 
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">BARANGAY</label>
-                    <Select 
-                        options={barangayData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
-                        onChange={handleBarangayChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a barangay..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
+                                            <div>
+                                                <label className={custom_label_style}>middle name: </label>
+                                                <input 
+                                                    type="text" 
+                                                    name="middle_name"
+                                                    value={formData.middle_name} 
+                                                    onChange={handleFieldChange} 
+                                                    className={custom_form_field_style}
+                                                />
+                                            </div>
+                                        </div>
 
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">STREET</label>
-                    <input type="text" placeholder="Enter street" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">No/blk/lot</label>
-                    <input type="text" placeholder="Enter no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>ward-rm-bed</label>
+                                                <input 
+                                                    type="text" 
+                                                    name="ward_bed_rm"
+                                                    value={formData.ward_bed_rm} 
+                                                    onChange={handleFieldChange} 
+                                                    className={custom_form_field_style}
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className={custom_label_style}>country</label>
+                                                <div className="w-full">
+                                                    <Select 
+                                                        options={countryData?.map(country => ({ value: country.name, label: country.name }))}
+                                                        onChange={handleCountryChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a country..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL no./CP no.</label>
-                    <input type="text" placeholder="Enter tel no./cp no." className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Sex</label>
-                    <Select 
-                        options={genderData?.map(country => ({ value: country.value, label: country.label }))}
-                        onChange={handleSexChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a gender..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Civil Status</label>
-                    <Select 
-                        options={civilStatusData?.map(country => ({ value: country.value, label: country.label }))}
-                        onChange={handleCivilStatusChange}
-                        isSearchable={true}
-                        isClearable={true}
-                        placeholder="Select a civil status..."
-                        classNamePrefix="react-select"
-                        styles={styleDropdown} 
-                    />
-                </div>
-            </div>
-            
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Birthday</label>
-                    <input type="date" value={birthDate} onChange={handleBirthDateChange} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">age</label>
-                    <input type="text" value={age} placeholder="Enter age" disabled className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">birth place</label>
-                    <input type="text" placeholder="Enter birth-place" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">nationality</label>
-                    <input type="text" placeholder="Enter nationality" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">religion</label>
-                    <input type="text" placeholder="Enter religion" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">occupation</label>
-                    <input type="text" placeholder="Enter occupation" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>province</label>
+                                                <div className="w-full">
+                                                    <AsyncSelect 
+                                                        cacheOptions
+                                                        loadOptions={loadProvince}
+                                                        defaultOptions={initialOptions}
+                                                        onChange={handleProvinceChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a province..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">EMPLOYER (Type of Business)</label>
-                    <input type="text" placeholder="Enter employer" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
-                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
-                    <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>state/municipality</label>
+                                                <div className="w-full">
+                                                    <Select 
+                                                        options={municipalityData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                        onChange={handleMunicipalityChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a state..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>barangay</label>
+                                                <div className="w-full">
+                                                    <Select 
+                                                        options={barangayData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                        onChange={handleBarangayChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a barangay..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>street</label>
+                                                <input type="text" placeholder="Enter street" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">FATHERS NAME</label>
-                    <input type="text" placeholder="Enter fathers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
-                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
-                    <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>No/blk/lot</label>
+                                                <input type="text" placeholder="Enter no" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>Mobile No.</label>
+                                                <input type="text" placeholder="Enter Mobile No." className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>Sex</label>
+                                                <div className="w-full">
+                                                    <Select 
+                                                        options={genderData?.map(country => ({ value: country.value, label: country.label }))}
+                                                        onChange={handleSexChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a gender..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">MOTHERS (Maiden) NAME</label>
-                    <input type="text" placeholder="Enter mothers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
-                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
-                    <input type="text" placeholder="Enter tel no/cp no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>Civil Status</label>
+                                                <div className="w-full">
+                                                    <Select 
+                                                        options={civilStatusData?.map(country => ({ value: country.value, label: country.label }))}
+                                                        onChange={handleCivilStatusChange}
+                                                        isSearchable={true}
+                                                        isClearable={true}
+                                                        placeholder="Select a civil status..."
+                                                        classNamePrefix="react-select"
+                                                        styles={styleDropdown} 
+                                                    />
+                                                </div>
+                                            </div>
 
-            <div className="flex gap-4 mb-2">
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">SPOUSE NAME</label>
-                    <input type="text" placeholder="Enter spouse name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
-                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TEL NO/CP NO</label>
-                    <input type="text" placeholder="Enter number" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>Birthday</label>
+                                                <input type="date" value={birthDate} onChange={handleBirthDateChange} className={custom_form_field_style}/>
+                                            </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admission</label>
-                    <input type="datetime-local" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">discharge</label>
-                    <input type="date" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">TOTAL NO. OF DAY</label>
-                    <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>age</label>
+                                                <input type="text" value={age} disabled className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full"/>
+                                            </div>
+                                        </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admitting Clerk</label>
-                    <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>birth place</label>
+                                                <input type="text" placeholder="Enter birth-place" className={custom_form_field_style}/>
+                                            </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Type of Admission</label>
-                    <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Referred by (Physician/ Health Facility)</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>nationality</label>
+                                                <input type="text" placeholder="Enter nationality" className={custom_form_field_style}/>
+                                            </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Data furnished by</label>
-                    <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Address of Informant</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Relation to Patient</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>religion</label>
+                                                <input type="text" placeholder="Enter religion" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Admission Diagnosis</label>
-                    <textarea type="text" placeholder="Enter Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none"/>
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>occupation</label>
+                                                <input type="text" placeholder="Enter occupation" className={custom_form_field_style}/>
+                                            </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Discharge Diagnosis</label>
-                    <textarea type="text" placeholder="Enter Principal Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none mb-4"/>
-                    <textarea type="text" placeholder="Enter Other Diagnosis" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">ICD/RUV Code</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>employer (Type of Business)</label>
+                                                <input type="text" placeholder="Enter employer" className={custom_form_field_style}/>
+                                            </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Principal Operation/Procedures</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                            <div>
+                                                <label className={custom_label_style}>address</label>
+                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Other Operation's or Procedures</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>Mobile no</label>
+                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
+                                            </div>
+                                            {ipdForms && (
+                                                <>
+                                                    <div>
+                                                        <label className={custom_label_style}>Next of Kin or Whom to Notify</label>
+                                                        <input type="text" placeholder="Enter fathers name" className={custom_form_field_style}/>
+                                                    </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Accident/injuries/poisoning</label>
-                    <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                </div>
-            </div>
+                                                    <div>
+                                                        <label className={custom_label_style}>Relationship</label>
+                                                        <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
+                                                    </div>
 
-            <div className="flex  gap-4 mb-2">
-                <div className="flex flex-col w-full mb-4">
-                    <label className="ml-2 mb-2 text-gray-500 font-bold uppercase text-xs">Disposition</label>
-                    <ul className="">
-                        {dispositionData.map((item) => (
+                                                    <div>
+                                                        <label className={custom_label_style}>Address</label>
+                                                        <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <label className={custom_label_style}>Contact No</label>
+                                                        <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
+                                                    </div>
+                                                </>
+                                            )}
+                                            <div>
+                                                <label className={custom_label_style}>fathers name</label>
+                                                <input type="text" placeholder="Enter fathers name" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>address</label>
+                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>Mobile no</label>
+                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>mothers (Maiden) NAME</label>
+                                                <input type="text" placeholder="Enter mothers name" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>address</label>
+                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>Mobile no</label>
+                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>spouse name</label>
+                                                <input type="text" placeholder="Enter spouse name" className={custom_form_field_style}/>
+                                            </div>
+                                            <div>
+                                                <label className={custom_label_style}>address</label>
+                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div>
+                                                <label className={custom_label_style}>Mobile no</label>
+                                                <input type="text" placeholder="Enter number" className={custom_form_field_style}/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="py-4 space-y-2">
+                                        {/* <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">LAST NAME: </label>
+                                            <input 
+                                                type="text" 
+                                                name="last_name"
+                                                value={formData.last_name} 
+                                                onChange={handleFieldChange} 
+                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">GIVEN NAME: </label>
+                                            <input 
+                                                type="text" 
+                                                name="given_name"
+                                                value={formData.given_name} 
+                                                onChange={handleFieldChange} 
+                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">MIDDLE NAME: </label>
+                                            <input 
+                                                type="text" 
+                                                name="middle_name"
+                                                value={formData.middle_name} 
+                                                onChange={handleFieldChange} 
+                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">WARD/RM/BED</label>
+                                            <input 
+                                                type="text" 
+                                                name="ward_bed_rm"
+                                                value={formData.ward_bed_rm} 
+                                                onChange={handleFieldChange} 
+                                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">COUNTRY</label>
+                                            <div className="w-1/2">
+                                                <Select 
+                                                    options={countryData?.map(country => ({ value: country.name, label: country.name }))}
+                                                    onChange={handleCountryChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a country..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">PROVINCE</label>
+                                            <div className="w-1/2">
+                                                <AsyncSelect 
+                                                    cacheOptions
+                                                    loadOptions={loadProvince}
+                                                    defaultOptions={initialOptions}
+                                                    onChange={handleProvinceChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a province..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">STATE/MUNICIPALITY</label>
+                                            <div className="w-1/2">
+                                                <Select 
+                                                    options={municipalityData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                    onChange={handleMunicipalityChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a state..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">BARANGAY</label>
+                                            <div className="w-1/2">
+                                                <Select 
+                                                    options={barangayData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
+                                                    onChange={handleBarangayChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a barangay..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div> 
+
+                                        <div className="flex items-center justify-between sm:flex">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">STREET</label>
+                                            <input type="text" placeholder="Enter street" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">No/blk/lot</label>
+                                            <input type="text" placeholder="Enter no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Mobile No.</label>
+                                            <input type="text" placeholder="Enter Mobile No." className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2" />
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Sex</label>
+                                            <div className="w-1/2">
+                                                <Select 
+                                                    options={genderData?.map(country => ({ value: country.value, label: country.label }))}
+                                                    onChange={handleSexChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a gender..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Civil Status</label>
+                                            <div className="w-1/2">
+                                                <Select 
+                                                    options={civilStatusData?.map(country => ({ value: country.value, label: country.label }))}
+                                                    onChange={handleCivilStatusChange}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Select a civil status..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Birthday</label>
+                                            <input type="date" value={birthDate} onChange={handleBirthDateChange} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">age</label>
+                                            <input type="text" value={age} disabled className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">birth place</label>
+                                            <input type="text" placeholder="Enter birth-place" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">nationality</label>
+                                            <input type="text" placeholder="Enter nationality" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">religion</label>
+                                            <input type="text" placeholder="Enter religion" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">occupation</label>
+                                            <input type="text" placeholder="Enter occupation" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">EMPLOYER (Type of Business)</label>
+                                            <input type="text" placeholder="Enter employer" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
+                                            <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Mobile no</label>
+                                            <input type="text" placeholder="Enter Mobile no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        {ipdForms && (
+                                            <>
+                                                <div className="flex items-center justify-between">
+                                                    <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Next of Kin or Whom to Notify</label>
+                                                    <input type="text" placeholder="Enter fathers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Relationship</label>
+                                                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Address</label>
+                                                    <input type="text" placeholder="Enter Mobile no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                                </div>
+                                                
+                                                <div className="flex items-center justify-between">
+                                                    <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Contact No</label>
+                                                    <input type="text" placeholder="Enter Mobile no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                                </div>
+                                            </>
+                                        )}
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">FATHERS NAME</label>
+                                            <input type="text" placeholder="Enter fathers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
+                                            <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Mobile no</label>
+                                            <input type="text" placeholder="Enter Mobile no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">MOTHERS (Maiden) NAME</label>
+                                            <input type="text" placeholder="Enter mothers name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
+                                            <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Mobile no</label>
+                                            <input type="text" placeholder="Enter Mobile no" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+
+
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">SPOUSE NAME</label>
+                                            <input type="text" placeholder="Enter spouse name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADDRESS</label>
+                                            <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Mobile no</label>
+                                            <input type="text" placeholder="Enter number" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                        </div>
+
+                                        
+                                        */}
+                                    </div>
+                                    </>
+                                ) : item.id === 2 ? (
+                                    <>
+                                        <div className="py-3 space-y-2">
+                                            <div className="grid grid-cols-4 gap-4">
+                                                <div>
+                                                    <label className={custom_label_style}>Admission</label>
+                                                    <input type="datetime-local" className={custom_form_field_style}/>
+                                                </div>
+
+                                                <div>
+                                                    <label className={custom_label_style}>discharge</label>
+                                                    <input type="datetime-local" className={custom_form_field_style}/>
+                                                </div>
+
+                                                <div>
+                                                    <label className={custom_label_style}>total days</label>
+                                                    <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full" disabled/>
+                                                </div>
+                                                <div>
+                                                    <label className={custom_label_style}>admitting physician</label>
+                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-4 gap-4">
+                                                <div>
+                                                    <label className={custom_label_style}>Admitting Clerk</label>
+                                                    <input type="text" className={custom_form_field_style}/>
+                                                </div>
+                                                <div>
+                                                    <label className={custom_label_style}>admitting physician</label>
+                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
+                                                </div>
+                                                <div>
+                                                    <label className={custom_label_style}>Type of Admission</label>
+                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
+                                                </div>
+                                                <div>
+                                                    <label className={custom_label_style}>Refered by (Physician/Health Facility)</label>
+                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                     <div className="py-4 space-y-2">
+                                         {/* <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Admission</label>
+                                             <input type="datetime-local" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">discharge</label>
+                                             <input type="datetime-local" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">TOTAL NO. OF DAY</label>
+                                             <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-1/2" disabled/>
+                                         </div>
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Admitting Clerk</label>
+                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Type of Admission</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Refered by (Physician/Health Facility)</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+                                      
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Social Service Classification</label>
+                                             <div className="flex w-1/2 ml-2 space-x-3">
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'a'} onChange={() => handleSocService('a')} />
+                                                 <label className={labelCss}>A</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'b'} onChange={() => handleSocService('b')} />
+                                                 <label className={labelCss}>B</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c1'} onChange={() => handleSocService('c1')} />
+                                                 <label className={labelCss}>C1</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c2'} onChange={() => handleSocService('c2')} />
+                                                 <label className={labelCss}>C2</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c3'} onChange={() => handleSocService('c3')} />
+                                                 <label className={labelCss}>C3</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'd'} onChange={() => handleSocService('d')} />
+                                                 <label className={labelCss}>D</label>
+                                             </div>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Hospitalization Plan (Company/Industrial Name)</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Health Insurance Name</label>
+                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">PHIC</label>
+                                             <div className="flex w-1/2 ml-2 space-x-3">
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'sss'} onChange={() => handleGovType('sss')} />
+                                                 <label className={labelCss}>SSS</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'sss_dependent'} onChange={() => handleGovType('sss_dependent')} />
+                                                 <label className={labelCss}>SSS Dependent</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'gsis'} onChange={() => handleGovType('gsis')} />
+                                                 <label className={labelCss}>GSIS</label>
+
+                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'gsis_dependent'} onChange={() => handleGovType('gsis_dependent')} />
+                                                 <label className={labelCss}>GSIS Dependent</label>
+                                             </div>
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Data Furnished By</label>
+                                             <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-1/2" disabled/>
+                                         </div>
+                                      
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Address of Informant</label>
+                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2" />
+                                         </div>
+
+                                         <div className="flex items-center justify-between">
+                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Contact No</label>
+                                             <input type="text" placeholder="Enter number" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2" />
+                                         </div> */}
+                                     </div>
+                                    </>
+
+                                ) : item.id === 3 ? (
+                                    <>
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Admission Diagnosis:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Discharge Diagnosis:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Principal Diagnosis:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Other Diagnosis:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Principal Operation/s Procedures:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Other Operation/s or Procedures:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>ICD Codes:</label>
+                                            <div className="w-full">
+                                                <Select 
+                                                    options={mappedIcdData?.map(icd => ({ 
+                                                        value: icd.name, 
+                                                        label: `${icd.icd_codes} ${icd.name}` 
+                                                    }))}
+                                                    onInputChange={handleSearchICD}
+                                                    isSearchable={true}
+                                                    isClearable={true}
+                                                    placeholder="Search for icd..."
+                                                    classNamePrefix="react-select"
+                                                    styles={styleDropdown} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Accident/Injuries/Poisoning:</label>
+                                            <textarea 
+                                                className={`${custom_form_field_style} h-40`}
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col w-full">
+                                            <label className={custom_label_style}>Disposition:</label>
+                                            <div className="flex flex-col w-1/2 mb-4">
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input  className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'improved'} onChange={() => handleDisposition('improved')} />
+                                                    <label className={labelCss}>Improved</label>
+                                                </div>
+                                                
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'unimproved'} onChange={() => handleDisposition('unimproved')} />
+                                                    <label className={labelCss}>Unimproved</label>
+                                                </div>
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'transferred'} onChange={() => handleDisposition('transferred')} />
+                                                    <label className={labelCss}>Transferred</label>
+                                                </div>
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'hama'} onChange={() => handleDisposition('hama')} />
+                                                    <label className={labelCss}>HAMA</label>
+                                                </div>
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'absconded'} onChange={() => handleDisposition('absconded')} />
+                                                    <label className={labelCss}>Absconded</label>
+                                                </div>
+                                                <div className="flex ml-2 space-x-2">
+                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'expired' || selectedDisposition === "u48h" || selectedDisposition === "m48h"} onChange={() => handleDisposition('expired')} />
+                                                    <label className={labelCss}>Expired</label>
+                                                </div>
+                                                {(selectedDisposition === "expired" || selectedDisposition === "u48h" || selectedDisposition === "m48h") && (
+                                                    <>
+                                                        <div className="flex ml-6 space-x-2">
+                                                            <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'u48h'} onChange={() => handleDisposition('u48h')} />
+                                                            <label className={labelCss}>under 48 hours</label>
+                                                        </div>
+                                                        
+                                                        <div className="flex ml-6 space-x-2">
+                                                            <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'm48h'} onChange={() => handleDisposition('m48h')} />
+                                                            <label className={labelCss}>more than 48 hours</label>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : ""
                             
-                            <li key={item.id}>
-                                <div className="flex items-center space-x-4 p-4 ">
-                                    <input
-                                        type="checkbox" 
-                                        className="w-5 h-5"
-                                        name=""
-                                        value={item.id}
-                                        checked={checkedItem.includes(item.id)}
-                                        onChange={() => handleCheckbox(item.id)}
-                                    />
-                                    <p className="text-lg text-gray-500">{item.name}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-            
+                            )}  
+                        </div>
+                    </div>
+                ))}
+                
         </div>
     )
 }
