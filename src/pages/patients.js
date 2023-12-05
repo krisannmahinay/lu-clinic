@@ -61,8 +61,8 @@ const Patients = () => {
         setTableRecords(e.target.value)
     }
 
-    const handleSearch = (q) => {
-        setSearchQuery(q)
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value)
     }
 
     const handleSelectedRecordChange = (e) => {
