@@ -60,6 +60,7 @@ const Form = forwardRef(({
     const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
 
     // console.log(physicianChargeMaster[0].standard_charge)
+    console.log(formData)
     
     useImperativeHandle(ref, () => ({
         handleSubmit: (actionType) => handleSubmit(actionType),
@@ -123,9 +124,8 @@ const Form = forwardRef(({
                     prev.map((row, index) =>
                         index === rowIndex ? { ...row, fields: {
                                 ...row.fields,
-                                standard_charge: physicianChargeMaster?.find(
-                                    charge => charge.doctor_id === e?.value
-                                )?.standard_charge
+                                [fieldName]: e?.value,
+                                standard_charge: physicianChargeMaster?.find(charge => charge.doctor_id === e?.value)?.standard_charge
                             }
                         } : row 
                     ) 

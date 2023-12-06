@@ -248,6 +248,8 @@ const SubModule = () => {
         label: `Dr. ${ph.identity?.first_name} ${ph.identity?.last_name}`,
     }))
 
+    console.log(phyisicianOptions)
+
     const opdForms = [
         {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
         {name: 'first_name', type: 'text', label: 'Given Name', placeholder: 'Type...'},
