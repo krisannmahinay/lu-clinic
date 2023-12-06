@@ -36,6 +36,7 @@ const Module = ({data, menuGroup}) => {
     return (
         <>
             {menus.map((item, index) => {
+                console.log(item)
                     const isPatientRoute = router.asPath === `/patients/${item.module?.module_id}`
                     const isPatientSpecificRouteActive = router.asPath.startsWith(`/patients/${item.module?.module_id}/`)
                     const isPatientActive = isPatientRoute || isPatientSpecificRouteActive
@@ -48,15 +49,15 @@ const Module = ({data, menuGroup}) => {
                     const isInventorySpecificRouteActive = router.asPath.startsWith(`/inventory/${item.module?.module_id}/`)
                     const isInventoryActive = isInventoryRoute || isInventorySpecificRouteActive
                 
-                    const baseClasses = 'flex px-2 py-[4px] cursor-pointer rounded-lg text-[16px]'
+                    const baseClasses = 'flex items-center py-[5px] my-1 px-2 cursor-pointer rounded-lg text-sm'
                     const activeClasses = 'bg-[#5e6064] text-[#fff]'
                     const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#fff] text-[#c2c7d0]'
-                    const subModuleClasses = item.module?.type === 'sub' ? 'pl-9' : ''
+                    const subModuleClasses = item.module?.type === 'sub' ? 'pl-6' : ''
 
                     return (
                         // console.log(item)
                         <nav className="bg-[#343a40]">
-                            <ul className="mx-4 my-2">
+                            <ul className="mx-1 my-2">
                                 {item.module?.type === 'sub' ? (
                                     <>
                                         {menuGroup === 'patients' && (
@@ -68,7 +69,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.5em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
+                                                        style={{ width: '2em', height: '2em', marginTop: '', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -86,7 +87,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.6em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
+                                                        style={{ width: '2em', height: '2em', marginTop: '', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -104,7 +105,7 @@ const Module = ({data, menuGroup}) => {
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                        style={{ width: '1.6em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
+                                                        style={{ width: '2em', height: '2em', marginTop: '', marginRight: '5px'}}>
                                                     </svg>
                                                     {item.module?.name}
                                                 </div>
@@ -121,14 +122,15 @@ const Module = ({data, menuGroup}) => {
                                                 {/* ${router.pathname === `/${item.module?.module_id}`  */}
                                             <div
                                                 className={`${router.pathname.startsWith(`/${item.module?.module_id}`)
-                                                        ? 'bg-[#5e6064] flex px-2 py-[4px] cursor-pointer text-[#fff] rounded-lg text-[16px]' 
-                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] flex px-2 py-1 cursor-pointer text-[#c2c7d0] rounded-lg text-[16px]' }
-                                                        ${item.module?.type === 'sub' ? 'pl-9' : ''}`}>
+                                                        ? 'bg-[#5e6064] cursor-pointer text-[#fff] rounded-lg text-sm ' 
+                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] cursor-pointer text-[#c2c7d0] rounded-lg text-sm' }
+                                                        ${item.module?.type === 'sub' ? 'pl-9' : ''} flex items-center py-[5px] my-1 px-2`}>
                                                 <svg 
                                                     className="" 
                                                     dangerouslySetInnerHTML={{__html: item.module?.icon}} 
-                                                    style={{ width: '1.5em', height: '1.5em', marginTop: '2px', marginRight: '5px'}}>
+                                                    style={{ width: '2em', height: '2em', marginTop: '', marginRight: '5px'}}>
                                                 </svg>
+                                                
                                                 {item.module?.name}
                                             </div>
                                             
