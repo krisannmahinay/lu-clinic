@@ -36,7 +36,6 @@ const Module = ({data, menuGroup}) => {
     return (
         <>
             {menus.map((item, index) => {
-                console.log(item)
                     const isPatientRoute = router.asPath === `/patients/${item.module?.module_id}`
                     const isPatientSpecificRouteActive = router.asPath.startsWith(`/patients/${item.module?.module_id}/`)
                     const isPatientActive = isPatientRoute || isPatientSpecificRouteActive
