@@ -137,7 +137,8 @@ const Navigation = ({ ...props }) => {
     return (
         
         <div className=" bg-gray-100">
-            <div className="h-screen flex flex-row justify-start overflow-hidden">
+            {/* <div className="h-screen flex flex-row justify-start overflow-hidden"> */}
+            <div className="h-screen justify-start overflow-hidden">
                 <div className="flex w-full">
                     <aside className="bg-[#343a40] transition-transform ease-out duration-300 z-50">
                         {!sidebarOpen && (
@@ -152,7 +153,7 @@ const Navigation = ({ ...props }) => {
                     </aside>
                     
                     <aside 
-                        className={`w-[15rem] sm:max-md:hidden phone:hidden bg-[#343a40] fixed h-full top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 z-50
+                        className={`w-[200px] sm:max-md:hidden phone:hidden bg-[#343a40] fixed h-full top-0 left-0 transform max-w-xs transition-transform ease-in-out duration-300 shadow-xl shadow-gray-500 z-50
                         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:max-lg:hidden md:max-lg:w-full`}
                     >
                             
@@ -179,9 +180,11 @@ const Navigation = ({ ...props }) => {
 
                     {/* <!-- Main content --> */}
                     {/* <div className={`flex-grow bg-gray-100 overflow-y-auto scroll-custom ${sidebarOpen ? 'ml-[15rem]' : 'w-full'}`}> */}
-                    <div className={`flex-grow bg-gray-100 ${sidebarOpen ? 'ml-[15rem] sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}>
+                    {/* <div className={`col-span-1 md:col-span-3  ${sidebarOpen ? 'sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}> */}
+                    <div className={`flex-1 bg-gray-100 ${sidebarOpen ? 'ml-[12rem] sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}>
                         <nav className="bg-[#15803d] border-b border-gray-100 fixed w-full top-0 left-0 z-10">
                             <div className={`${sidebarOpen ? 'ml-[15rem]  phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}>
+                            {/* <div className={`${sidebarOpen ? 'ml-[15rem]  phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}> */}
                                 <div className="flex justify-between h-16">
                                     <div className="flex">
                                         {/* Logo */}
