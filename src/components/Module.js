@@ -49,7 +49,7 @@ const Module = ({data, menuGroup}) => {
                     const isInventorySpecificRouteActive = router.asPath.startsWith(`/inventory/${item.module?.module_id}/`)
                     const isInventoryActive = isInventoryRoute || isInventorySpecificRouteActive
                 
-                    const baseClasses = 'flex items-center py-[5px] my-1 px-2 cursor-pointer rounded-lg text-sm'
+                    const baseClasses = 'flex items-center py-[4px] my-1 px-2 cursor-pointer rounded-lg text-sm'
                     const activeClasses = 'bg-[#5e6064] text-[#fff]'
                     const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#fff] text-[#c2c7d0]'
                     const subModuleClasses = item.module?.type === 'sub' ? 'pl-6' : ''
@@ -57,7 +57,7 @@ const Module = ({data, menuGroup}) => {
                     return (
                         // console.log(item)
                         <nav className="bg-[#343a40]">
-                            <ul className="mx-1 my-2">
+                            <ul className="mx-1 my-1">
                                 {item.module?.type === 'sub' ? (
                                     <>
                                         {menuGroup === 'patients' && (
