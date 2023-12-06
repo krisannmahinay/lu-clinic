@@ -12,8 +12,17 @@ import { userLogin } from '@/store/actions/authActions'
 import SystemError from '@/components/SystemError'
 import { useLoginMutation } from '@/service/loginService'
 
-import { useLogoutMutation, useGetUserModulesQuery, useGetUserDetailsQuery } from '@/service/authService'
-import { useGetUserListQuery, useGetPermissionListQuery, useGetModuleListQuery } from '@/service/settingService'
+import { 
+    useLogoutMutation, 
+    useGetUserModulesQuery, 
+    useGetUserDetailsQuery 
+} from '@/service/authService'
+import { 
+    useGetUserListQuery, 
+    useGetPermissionListQuery, 
+    useGetModuleListQuery 
+} from '@/service/settingService'
+import Button from '@/components/Button'
 
 const options = [
     { label: 'Lu Clinic', value: 'db_lu' },
@@ -34,11 +43,30 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('')
     const [database, setDatabase] = useState(options[0])
+    const [btnSpinner, setBtnSpinner] = useState(false)
     const selectedDB = database.value
     
     // const [shouldRemember, setShouldRemember] = useState(false)
     // const [status, setStatus] = useState(null)
+    useEffect(() => {
+        if(isLoading) {
+            setBtnSpinner(true)
+        }
 
+        let spinnerTimer
+        if(btnSpinner) {
+            spinnerTimer = setTimeout(() => {
+                setBtnSpinner(false)
+            }, 500)
+        }
+
+        return () => {
+            if(spinnerTimer) {
+                clearTimeout(spinnerTimer)
+            }
+            // clearTimeout(highlightTimeout)
+        }
+    }, [btnSpinner])
 
     const handleAlertClose = () => {
         setAlertMessage([])
@@ -57,7 +85,6 @@ export default function Login() {
         try {
             const res = await login({email, password, selectedDB})
             // const res = await login({email, password})
-            console.log(res)
             if(!res.data && !res.data.token) {
                 throw new Error("Token not found in response")
             }
@@ -80,25 +107,25 @@ export default function Login() {
 
     return (
         <GuestLayout>
-            <div className='flex items-center justify-center h-[80vh] '>
-                {alertMessage &&
-                    <Alert 
-                        alertType={alertType}
-                        isOpen={alertType !== null}
-                        onClose={handleAlertClose}
-                        message={alertMessage} 
-                        duration={3000}
-                    /> 
-                }
+            {alertMessage &&
+                <Alert 
+                    alertType={alertType}
+                    isOpen={alertType !== null}
+                    onClose={handleAlertClose}
+                    message={alertMessage} 
+                    duration={3000}
+                /> 
+            }
+            <div className='flex items-center justify-center max-h-full '>
 
                 <div className="bg-white p-8 border border-gray-300 rounded">
                     <div className="flex flex-col items-center mb-6 ">
                         {/* <img src="https://i.imgur.com/WyzP2gd.png" alt="Logo" className="mb-4 w-28 h-30" /> */}
-                        <h2 className="text-2xl uppercase">Login</h2>
+                        <h2 className="text-lg font-medium uppercase">Login</h2>
                     </div>
                     
 
-                    <form onSubmit={handleSubmit}>
+                    <form>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="email">Email</label>
                             <input 
@@ -142,10 +169,19 @@ export default function Login() {
                             </div>
                         </div>
                         <div className="flex justify-center">
-                            <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                            <Button
+                                bgColor={btnSpinner ? 'disable': 'blue'}
+                                btnIcon={btnSpinner ? 'disable': 'submit'}
+                                btnLoading={btnSpinner}
+                                onClick={(e) => handleSubmit(e)}
+                            >
+                                {btnSpinner ? '' : 'Login'}
+                            </Button>
+
+                            {/* <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
                                 type="submit">
-                                {/* {loading ? 'Loading' : 'Login'} */}  Login
-                            </button>
+                                     Login
+                            </button> */}
                         </div>
                     </form>
 

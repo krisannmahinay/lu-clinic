@@ -79,45 +79,44 @@ const labelCss = "ml-2 mb-2 text-gray-500 font-medium capitalize text-sm"
 const custom_label_style = "block text-gray-500 font-medium text-sm mt-4 capitalize"
 const custom_form_field_style = "border border-gray-200 px-3 py-1 focus:border-gray-500 bg-gray-200 focus:outline-none w-full"
 
-const PatientInformation = ({ipdForms, opdForms}) => {
+const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
     const [formData, setFormData] = useState({
         last_name: "",
-        given_name: "",
+        first_name: "",
         middle_name: "",
         ward_bed_rm: "",
         country: "",
         province: "",
-        stateMunicipality: "",
+        state_municipality: "",
         barangay: "",
         street: "",
-        noBlkLot: "",
+        no_blk_lot: "",
         telNo: "",
         sex: "",
-        civilStatus: "",
-        birthday: "",
+        civil_status: "",
+        birth_date: "",
         age: "",
-        birthPlace: "",
+        birth_place: "",
         nationality: "",
         religion: "",
         occupation: "",
         employer: "",
-        employerAddress: "",
-        employerTelNo: "",
-        fatherName: "",
-        fatherAddress: "",
-        fatherTelNo: "",
-        motherName: "",
-        motherAddress: "",
-        motherTelNo: "",
-        spouseName: "",
-        spouseAddress: "",
-        spouseTelNo: "",
-    })  
+        employer_address: "",
+        employer_contact: "",
+        father_name: "",
+        father_address: "",
+        father_contact: "",
+        mother_name: "",
+        mother_address: "",
+        mother_contact: "",
+        spouse_name: "",
+        spouse_address: "",
+        spouse_contact: "",
 
-    const [lastName, setLastName] = useState(userDetails ? userDetails.identity.last_name : '')
-    const [givenName, setGivenName] = useState(userDetails ? userDetails.identity.given_name : '')
-    const [middleName, setMiddleName] = useState(userDetails ? userDetails.identity.middle_name : '')
-    const [bedRm, setBedRm] = useState(userDetails ? userDetails.identity.bed_rm : '')
+        admitting_physician: "",
+        admitting_clerk: "",
+
+    })  
 
     const [imagePreviewUrl, setImagePreviewUrl] = useState('/path/to/default-photo.png')
     const [selectedProvince, setSelectedProvince] = useState(null)
@@ -141,8 +140,6 @@ const PatientInformation = ({ipdForms, opdForms}) => {
     const initialOpenIds = accordionItem.map(item => item.id)
     const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
 
-    
-
     const { data: countryData } = useGetCountryDataQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
     const { data: municipalityData } = useGetMunicipalityDataQuery({provinceCode: provinceCode}, {enabled: !!provinceCode})
@@ -165,6 +162,7 @@ const PatientInformation = ({ipdForms, opdForms}) => {
 
     const [autoSaveData] = useAutoSaveDataMutation()
 
+    console.log(patientDataMaster)
     useEffect(() => {
         if (provinceData) {
             const options = provinceData.map(item => ({
@@ -176,7 +174,19 @@ const PatientInformation = ({ipdForms, opdForms}) => {
         if (userDetails) {
             setFormData(userDetails?.identity)
         }
-    }, [provinceData, userDetails])
+        if(patientDataMaster) {
+            setFormData({
+                last_name: patientDataMaster?.patient_identity?.last_name || "",
+                first_name: patientDataMaster?.patient_identity?.first_name || "",
+                middle_name: patientDataMaster?.patient_identity?.middle_name || "",
+                gender: patientDataMaster?.patient_identity?.gender || "",
+                admitting_physician: `Dr. ${patientDataMaster?.physician_identity?.first_name} ${patientDataMaster?.physician_identity?.last_name}` || "",
+                standard_charge: "",
+                birth_date: patientDataMaster?.patient_identity?.birth_date || "",
+                age: patientDataMaster?.patient_identity?.age || ""
+            })
+        }   
+    }, [provinceData, userDetails, patientDataMaster])
 
     // console.log(formData)
 
@@ -380,16 +390,15 @@ const PatientInformation = ({ipdForms, opdForms}) => {
     return (
         <div className="space-y-4">
                 {accordionItem.map(item => (
-                    
-                    <div key={item.id} className="border-none overflow-hidden disable-selecting-text">
+                    <div key={item.id} className="border-none overflow-hidden disable-selecting-text sm:ml-[10rem] mr-[10rem] py-2 px-4">
                         <div 
-                            className="cursor-pointer text-center bg-[#15803d] p-4 sticky top-0 z-10" 
+                            className="cursor-pointer text-center bg-[#15803d] p-4" 
                             onClick={() => toggleAccordion(item.id)}
                         >
                             <h3 className="text-white font-bold uppercase text-xs">{item.title}</h3>
                         </div>
                         
-                        <div className="sm:ml-[10rem] mr-[10rem] p-8">
+                        <div className=" ">
                             {accordionIdOpen.includes(item.id) && (
                                 item.id === 1 ? (
                                     <>
@@ -410,8 +419,8 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                                 <label className={custom_label_style}>given name: </label>
                                                 <input 
                                                     type="text" 
-                                                    name="given_name"
-                                                    value={formData.given_name} 
+                                                    name="first_name"
+                                                    value={formData.first_name} 
                                                     onChange={handleFieldChange} 
                                                     className={custom_form_field_style}
                                                 />
@@ -522,13 +531,16 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                                 <label className={custom_label_style}>Sex</label>
                                                 <div className="w-full">
                                                     <Select 
-                                                        options={genderData?.map(country => ({ value: country.value, label: country.label }))}
+                                                        options={genderData?.map(gender => ({ value: gender.value, label: gender.label }))}
                                                         onChange={handleSexChange}
                                                         isSearchable={true}
                                                         isClearable={true}
                                                         placeholder="Select a gender..."
                                                         classNamePrefix="react-select"
-                                                        styles={styleDropdown} 
+                                                        styles={styleDropdown}
+                                                        value={genderData.find(option =>
+                                                            option.value === formData.gender 
+                                                        )}
                                                     />
                                                 </div>
                                             </div>
@@ -546,18 +558,19 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                                         placeholder="Select a civil status..."
                                                         classNamePrefix="react-select"
                                                         styles={styleDropdown} 
+                                                        value={formData.civil_status}
                                                     />
                                                 </div>
                                             </div>
 
                                             <div>
                                                 <label className={custom_label_style}>Birthday</label>
-                                                <input type="date" value={birthDate} onChange={handleBirthDateChange} className={custom_form_field_style}/>
+                                                <input type="date" value={formData.birth_date} onChange={handleBirthDateChange} className={custom_form_field_style}/>
                                             </div>
 
                                             <div>
                                                 <label className={custom_label_style}>age</label>
-                                                <input type="text" value={age} disabled className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full"/>
+                                                <input type="text" value={formData.age} disabled className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full"/>
                                             </div>
                                         </div>
 
@@ -953,20 +966,16 @@ const PatientInformation = ({ipdForms, opdForms}) => {
                                                     <label className={custom_label_style}>total days</label>
                                                     <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full" disabled/>
                                                 </div>
-                                                <div>
-                                                    <label className={custom_label_style}>admitting physician</label>
-                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
-                                                </div>
                                             </div>
 
                                             <div className="grid grid-cols-4 gap-4">
                                                 <div>
                                                     <label className={custom_label_style}>Admitting Clerk</label>
-                                                    <input type="text" className={custom_form_field_style}/>
+                                                    <input type="text" value={formData.admitting_clerk} className={custom_form_field_style}/>
                                                 </div>
                                                 <div>
                                                     <label className={custom_label_style}>admitting physician</label>
-                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
+                                                    <input type="text" placeholder="" value={formData.admitting_physician} className={custom_form_field_style}/>
                                                 </div>
                                                 <div>
                                                     <label className={custom_label_style}>Type of Admission</label>

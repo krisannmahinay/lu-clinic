@@ -23,7 +23,6 @@ const styleDropdown = {
       }),
 }
 
-
 const Form = forwardRef(({
         initialFields = [], 
         loginBtn,
@@ -61,7 +60,6 @@ const Form = forwardRef(({
     const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
 
     // console.log(physicianChargeMaster[0].standard_charge)
-    // console.log(formData)
     
     useImperativeHandle(ref, () => ({
         handleSubmit: (actionType) => handleSubmit(actionType),
@@ -94,7 +92,7 @@ const Form = forwardRef(({
 
 
     const calculatedAge = (birthdate) => {
-        const birthDate = new Date(birthdate);
+        const birthDate = new Date(birthdate)
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
@@ -114,6 +112,7 @@ const Form = forwardRef(({
                     index === rowIndex ? { ...row, fields: {
                             ...row.fields,
                             age: age,
+                            birth_date: e.target.value
                         }
                     } : row
                 ) 
@@ -380,24 +379,9 @@ const Form = forwardRef(({
                                 option.value === row.fields[field.name]
                             )}
                         />
-
-                        {/* <select
-                            name={field.name}
-                            value={row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                        >
-                            <option value="">Select option</option>
-                            {field.options?.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select> */}
                     </div>
                 )}
              </div>
- 
          ))
      }
  
