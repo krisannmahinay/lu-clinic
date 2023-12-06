@@ -91,6 +91,10 @@ const Button = ({
             bgColorChange = 'bg-emerald-500 hover:bg-emerald-600'
             break
 
+        case 'blue':
+            bgColorChange = 'bg-blue-500 hover:bg-blue-600'
+            break
+
         default:
             bgColorChange = 'bg-slate-500 hover:bg-slate-600'
             break

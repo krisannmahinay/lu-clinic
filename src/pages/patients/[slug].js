@@ -28,6 +28,8 @@ import Soap from '@/components/Patient/OPD/Soap'
 import LabResult from '@/components/Patient/OPD/LabResult'
 import ImagingResult from '@/components/ImagingResult'
 import Prescription from '@/components/Prescription'
+import ProfileInformation from '@/components/ProfileInformation'
+import Profile from '@/components/Profile'
 
 const patientOPD = [
     {
@@ -171,6 +173,8 @@ const SubModule = () => {
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [updateForm, setUpdateForm] = useState({})
     const [contentType, setContentType] = useState("")
+    const [selectedInformation, setSelectedInformation] = useState({})
+    const [searchMedicine, setSearchMedicine] = useState("")
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -195,7 +199,11 @@ const SubModule = () => {
 
     const { data: physicianList } = useGetPhysicianListQuery()
     const { data: pathologyList } = useGetPathologyListQuery()
-    const { data: medicineList } = useGetMedicineListQuery()
+    const { data: medicineList } = useGetMedicineListQuery({
+        keywords: searchMedicine
+    }, {
+        enabled: !!searchMedicine
+    })
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
     const patientData = patientList?.data ?? []
     const pagination = patientList?.pagination ?? []
@@ -281,6 +289,11 @@ const SubModule = () => {
         }
     }
 
+    
+    const handleSearchMedQuery = (e) => {
+        setSearchMedicine(e)
+    }
+
     const handleSearch = (e) => {
         setSearchQuery(e.target.value)
     }
@@ -290,8 +303,8 @@ const SubModule = () => {
         setAlertMessage([])
     }
 
-    const handleActiveContent = (type, any) => {
-        console.log(any)
+    const handleActiveContent = (type, data) => {
+        setSelectedInformation(data)
         setActiveContent("green")
         setContentType(type)
     }
@@ -302,7 +315,7 @@ const SubModule = () => {
 
     const handleOpenModal = (e, userId) => {
         e.stopPropagation()
-        const patienData = patientData?.find(e=> e.patient_identity?.user_id === userId)
+        const patienData = patientData?.find(e => e.patient_identity?.user_id === userId)
         setUpdateForm(patienData)
         setIsModalOpen(true)
     }
@@ -316,7 +329,9 @@ const SubModule = () => {
         {
             id: 'tab1',
             label: 'Patient Information and Consent',
-            content: () => <PatientInformation />
+            content: () => <PatientInformation
+                                patientDataMaster={selectedInformation} 
+                            />
         },
         {
             id: 'tab2',
@@ -326,6 +341,7 @@ const SubModule = () => {
                                 soapHeaders={soapHeaders} 
                                 dummyData={dummyData}
                                 medicineMaster={medicineList}
+                                onSearchQuery={(data) => handleSearchMedQuery(data)}
                             />
         },
         {
@@ -391,7 +407,7 @@ const SubModule = () => {
                             patientData.map((tblBody, tblBodyIndex) => (
                                 // console.log(tblBody)
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBodyIndex} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleActiveContent('tableRow',tblBody?.patient_identity?.user_id)}>
+                                <tr key={tblBodyIndex} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleActiveContent('tableRow', tblBody)}>
                                     {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblHeader === 'admitting_physician' ? (
@@ -569,7 +585,7 @@ const SubModule = () => {
                                 )}
                                 {contentType === 'tableRow' && (
                                     <>
-                                        <div className="flex justify-between py-2">
+                                        <div className="flex items-center py-2">
                                             <Button
                                                 paddingY="2"
                                                 btnIcon="close"
@@ -577,7 +593,13 @@ const SubModule = () => {
                                                 >
                                                 Close
                                             </Button>
+
+                                            <div className="-space-x-5 border border-gray-300 rounded mb-2 w-full">
+                                                <Profile data={selectedInformation}/>
+                                            </div>
+                                            
                                         </div>
+
 
                                         <Tabs
                                             tabsConfig={tabsConfig} 

@@ -3,7 +3,7 @@ import CustomTextarea from "@/components/CustomTextarea"
 import { useState, useEffect } from "react"
 import HighlightWithinTextarea from 'react-highlight-within-textarea'
 
-const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster}) => {
+const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster,onSearchQuery}) => {
     
 
     const [checkedItem, setCheckedItem] = useState([])
@@ -12,6 +12,7 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
     const [accordionIdOpen, setAccordionIdOpen] = useState(false)
     const [otherRequest, setOtherRequest] = useState({})
     const [othersSelected, setOthersSelected] = useState({})
+    const [searchQuery, setSearchQuery] = useState("")
 
     const [isShowMedForm, setIsShowMedForm] = useState(false)
     const [selectedMedicine, setSelectedMedicine] = useState(null)
@@ -76,19 +77,23 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
     const selectMedicine = (medicine) => {
         setSelectedMedicine(medicine);
         setIsShowMedForm(true)
-      };
+    }
     
-      const addMedicine = () => {
+    const addMedicine = () => {
         if (selectedMedicine) {
-          setAddedMedicines((current) => [...current, selectedMedicine]);
-          setIsShowMedForm(false)
+            setAddedMedicine((current) => [...current, selectedMedicine])
+            setIsShowMedForm(false)
         }
-      };
+    }
+
+    const handleSearch = (e) => {
+        onSearchQuery(e.target.value)
+    }
     
-      const backToList = () => {
+    const backToList = () => {
         setSelectedMedicine(null)
         setIsShowMedForm(false)
-      };
+    }
   
     const highlightAll = (content) => content
     const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
@@ -196,6 +201,8 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
                                         <>
                                             <input
                                                 type="search"
+                                                value={searchQuery}
+                                                onChange={(e) => handleSearch(e)}
                                                 placeholder="Search..."
                                                 className="p-2 border-b-2 border-gray-200 w-full"
                                             />
@@ -272,8 +279,13 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
                                                     value={selectedMedicine.qty}
                                                     readOnly
                                                 />
-
                                             </div>
+                                            <button
+                                                onClick={addMedicine}
+                                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                                                >
+                                                Add
+                                            </button>
                                         </>
                                     )}
                                     </div>
@@ -281,13 +293,15 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
 
                                 <div className="flex-col w-full h-58 border border-l-slate-600">
                                     <div className="overflow-y-auto scroll-custom h-full">
-                                        <ul className="space-y-2">
-                                            {addedMedicine.map((medicine, index) => {
-                                                <li key={index} className="p-2 bg-gray-100 rounded">    
-                                                    {`${medicine.generic_name} (${medicine.dosage})`}
-                                                </li>
-                                            })}
-                                        </ul>
+                                        {addedMedicine.map((medicine, index) => (
+                                            <div 
+                                                key={medicine.id} 
+                                                className="p-2 hover:bg-gray-200 cursor-pointer"
+                                                // onClick={() => moveItemToLeft(item.id)}
+                                            >
+                                                {`${medicine.generic_name} (${medicine.dosage})`}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
