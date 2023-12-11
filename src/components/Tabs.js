@@ -5,7 +5,7 @@ const Tabs = ({tabsConfig}) => {
     const [activeTab, setActiveTab] = useState(tabsConfig[0].id)
 
     return (
-        <div className="bg-white overflow-hidden mx-auto sm:w-full">
+        <div className="bg-white mx-auto sm:w-full">
             <div className="border border-gray-300 rounded">
                 <div className="flex justify-items-center">
                     <div className="rounded-tl-lg py-3 ml-3">
@@ -21,7 +21,7 @@ const Tabs = ({tabsConfig}) => {
                     </div>
                 </div>
 
-                <div className="tab-content px-3 max-h-[65vh] overflow-y-auto scroll-custom">
+                <div className="tab-content px-3 ">
                         {tabsConfig.map(tab => {
                             if(activeTab === tab.id) {
                                 return <div key={tab.id}>{tab.content()}</div>

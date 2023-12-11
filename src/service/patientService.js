@@ -125,6 +125,20 @@ export const patientApi = createApi({
                     }
                 }
             }
+        }),
+
+        getIcd10List: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-icd10',
+                    method: 'GET',
+                    params: {
+                        slug: 'icd10',
+                        selectedDB: session
+                    }
+                }
+            }
         })
     })
 })
@@ -136,5 +150,6 @@ export const {
     useGetPhysicianChargeQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
-    useGetMedicineListQuery
+    useGetMedicineListQuery,
+    useGetIcd10ListQuery
 } = patientApi

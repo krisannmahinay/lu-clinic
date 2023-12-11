@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import styles from '../../../public/assets/css/notification.module.css'
 
 import Cookies from 'js-cookie'
-// stores
 import { useDispatch, useSelector } from 'react-redux'
 // import { logout, setModules } from '@/store/reducers/authSlice'
 // import { userGrants } from '@/store/actions/authActions'
@@ -83,10 +82,29 @@ const Navigation = ({ ...props }) => {
     const [notificationCount, setNotificationCount] = useState(7);
     const authToken = Cookies.get('token') 
     const [refetchAttempts, setRefetchAttempts] = useState(0)
+    const [scrollY, setScrollY] = useState(0)
+    const yellowBoxRef = useRef(null)
+
+    useEffect(() => {
+        const yellowBox = yellowBoxRef.current
+    
+        window.addEventListener("scroll", () => {
+          yellowBox.style.transform = `translateY(${window.scrollY}px)`
+        });
+    
+        return () => {
+          window.removeEventListener("scroll", () => {})
+        }
+    }, [yellowBoxRef])
 
     
     const [logout, { isLoading, isError, error, isSuccess }] = useLogoutMutation()
-    const { data: module, isLoading: moduleIsLoading, isError: moduleIsError, refetch: refetchUserModules } = useGetUserModulesQuery({
+    const { 
+        data: module, 
+        isLoading: moduleIsLoading, 
+        isError: moduleIsError, 
+        refetch: refetchUserModules 
+    } = useGetUserModulesQuery({
         moduleId: props.moduleId
     })
     
@@ -138,7 +156,7 @@ const Navigation = ({ ...props }) => {
         
         <div className=" bg-gray-100">
             {/* <div className="h-screen flex flex-row justify-start overflow-hidden"> */}
-            <div className="h-screen justify-start overflow-hidden">
+            <div className="h-screen justify-start overflow-y-auto">
                 <div className="flex w-full">
                     <aside className="bg-[#343a40] transition-transform ease-out duration-300 z-50">
                         {!sidebarOpen && (
@@ -181,7 +199,7 @@ const Navigation = ({ ...props }) => {
                     {/* <!-- Main content --> */}
                     {/* <div className={`flex-grow bg-gray-100 overflow-y-auto scroll-custom ${sidebarOpen ? 'ml-[15rem]' : 'w-full'}`}> */}
                     {/* <div className={`col-span-1 md:col-span-3  ${sidebarOpen ? 'sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}> */}
-                    <div className={`flex-1 bg-gray-100 ${sidebarOpen ? 'ml-[12rem] sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}>
+                    <div className={`flex-1 bg-gray-100 overflow-y-auto ${sidebarOpen ? 'ml-[12rem] sm:max-lg:ml-0 phone:ml-0' : 'w-full'}`}>
                         <nav className="bg-[#15803d] border-b border-gray-100 fixed w-full top-0 left-0 z-10">
                             <div className={`${sidebarOpen ? 'ml-[15rem]  phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}>
                             {/* <div className={`${sidebarOpen ? 'ml-[15rem]  phone:ml-0' : 'ml-20'} mx-auto px-4 sm:px-6`}> */}
@@ -357,7 +375,7 @@ const Navigation = ({ ...props }) => {
                                 </div>
                             )}
                         </nav>
-                        <main className="p-2 sm:p-4 lg:p-2 mt-[3rem]">{props.children}</main>
+                        <main className="p-2 sm:p-4 lg:p-2 mt-[3rem]" ref={yellowBoxRef}>{props.children}</main>
                     </div>
                 </div>
                 

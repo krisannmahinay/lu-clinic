@@ -19,7 +19,8 @@ import {
     useGetPhysicianListQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
-    useGetMedicineListQuery
+    useGetMedicineListQuery,
+    useGetIcd10ListQuery
 } from '@/service/patientService'
 import Alert from '@/components/Alert'
 import Tabs from '@/components/Tabs'
@@ -198,6 +199,7 @@ const SubModule = () => {
     })
 
     const { data: physicianList } = useGetPhysicianListQuery()
+    const { data: icd10List } = useGetIcd10ListQuery()
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: medicineList } = useGetMedicineListQuery({
         keywords: searchMedicine
@@ -332,7 +334,8 @@ const SubModule = () => {
             id: 'tab1',
             label: 'Patient Information and Consent',
             content: () => <PatientInformation
-                                patientDataMaster={selectedInformation} 
+                                patientDataMaster={selectedInformation}
+                                icd10={icd10List}
                             />
         },
         {

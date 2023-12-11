@@ -79,7 +79,7 @@ const labelCss = "ml-2 mb-2 text-gray-500 font-medium capitalize text-sm"
 const custom_label_style = "block text-gray-500 font-medium text-sm mt-4 capitalize"
 const custom_form_field_style = "border border-gray-200 px-3 py-1 focus:border-gray-500 bg-gray-200 focus:outline-none w-full"
 
-const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
+const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10}) => {
     const [formData, setFormData] = useState({
         last_name: "",
         first_name: "",
@@ -161,6 +161,8 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
     })
 
     const [autoSaveData] = useAutoSaveDataMutation()
+
+    // console.log(icd10)
 
     useEffect(() => {
         if (provinceData) {
@@ -825,9 +827,9 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
                                             <label className={custom_label_style}>ICD Codes:</label>
                                             <div className="w-full">
                                                 <Select 
-                                                    options={mappedIcdData?.map(icd => ({ 
-                                                        value: icd.name, 
-                                                        label: `${icd.icd_codes} ${icd.name}` 
+                                                    options={icd10?.map(icd => ({ 
+                                                        value: icd.icd10_code, 
+                                                        label: `${icd.icd10_code} ${icd.icd10_desc}` 
                                                     }))}
                                                     onInputChange={handleSearchICD}
                                                     isSearchable={true}
