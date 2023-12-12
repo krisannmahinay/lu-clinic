@@ -24,6 +24,13 @@ import {
     useGetHosptlChargeCategoryQuery, 
 } from '@/service/settingService'
 
+import {
+    useGetStatisticalReportQuery,
+    useGetInfoClassificationQuery
+} from '@/service/dohService'
+
+import DOHReport from '@/components/Settings/DOHReport'
+
 
 const itemCategory = [
     {item_category: ""}
@@ -42,6 +49,7 @@ const SubModule = () => {
     const router = useRouter()
     const { slug } = router.query
     const menuGroup = "settings"
+    const [accordionSlug, setAccordionSlug] = useState("")
     
     const { 
         data: data, 
@@ -53,14 +61,16 @@ const SubModule = () => {
     const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery()
     const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery()
     const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery()
+    const {data: statisticalReport} = useGetInfoClassificationQuery()
 
+    console.log(statisticalReport)
     const [activeTab, setActiveTab] = useState('tab1')
     const [editorData, setEditorData] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
 
-    console.log(hosptlChargeCategoryMaster)
+    // console.log(hosptlChargeCategoryMaster)
     
     const userDetails = data?.data ?? []
 
@@ -68,6 +78,10 @@ const SubModule = () => {
     
     const [isModalOpen, setIsModalOpen] = useState(false)
     
+    const handleAccordion = (data) => {
+        setAccordionSlug(data)
+    }
+
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
     }
@@ -329,13 +343,7 @@ const SubModule = () => {
                 {slug === "doh-report" && (
                     
                     <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">DOH Annual Health Facility Statistical Report</div>
-                    
-                        <div className="max-h-[70vh] overflow-y-auto scroll-custom">
-                            <Accordion title="General Information">
-                                <p>Testing Accordion 1</p>
-                            </Accordion>
-                        </div>
+                        <DOHReport onAccordionClicked={(data) => handleAccordion(data)}/>
                     </div>
                 )}
             </div>
