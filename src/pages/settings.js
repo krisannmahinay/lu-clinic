@@ -367,7 +367,7 @@ const Setting = () => {
                                         bgColor={btnSpinner ? 'disable': 'emerald'}
                                         btnIcon={btnSpinner ? 'disable': 'submit'}
                                         btnLoading={btnSpinner}
-                                        onClick={() => formRef.current.handleSubmit()}
+                                        onClick={() => formRef.current.handleSubmit('createUser')}
                                     >
                                         {btnSpinner ? '' : 'Submit'}
                                     </Button>
