@@ -1,6 +1,6 @@
 /* Custom scrollbar styles */
 .scroll-custom::-webkit-scrollbar {
-    width: 12px; /* Width of vertical scrollbars */
+    width: 0; /* Width of vertical scrollbars */
     height: 12px; /* Height of horizontal scrollbars */
 }
 
