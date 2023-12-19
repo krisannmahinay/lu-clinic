@@ -81,53 +81,53 @@ const patientIPD = [
 const soapData = [
     {
         hematology: [
-            {id:1, type:"hematology", name: "Complete Blood Count with platelet count(CBC with platelet)"},
-            {id:2, type:"hematology", name: "Peripheral Blood Smear"},
-            {id:3, type:"hematology", name: "Clotting Time(CT)"},
-            {id:4, type:"hematology", name: "Bleeding Time(BT)"},
-            {id:5, type:"hematology", name: "Prothrombin Time(PT)"},
-            {id:6, type:"hematology", name: "Partial Thromboplastin Time(PTT)"},
-            {id:7, type:"hematology", name: "Dengue NS1"},
-            {id:8, type:"hematology", name: "Crossmatching"},
-            {id:9, type:"hematology", name: "Blood Typing"},
-            {id:10, type:"hematology", name: "Others"}
+            // {id:1, type:"hematology", name: "Complete Blood Count with platelet count(CBC with platelet)"},
+            // {id:2, type:"hematology", name: "Peripheral Blood Smear"},
+            // {id:3, type:"hematology", name: "Clotting Time(CT)"},
+            // {id:4, type:"hematology", name: "Bleeding Time(BT)"},
+            // {id:5, type:"hematology", name: "Prothrombin Time(PT)"},
+            // {id:6, type:"hematology", name: "Partial Thromboplastin Time(PTT)"},
+            // {id:7, type:"hematology", name: "Dengue NS1"},
+            // {id:8, type:"hematology", name: "Crossmatching"},
+            // {id:9, type:"hematology", name: "Blood Typing"},
+            // {id:10, type:"hematology", name: "Others"}
         ], 
         urine_stool_studies: [
-            {id:11, type:"stool", name: "Urinalysis(midstream, clean catch)"},
-            {id:12, type:"stool", name: "Pregnancy Test"},
-            {id:13, type:"stool", name: "Fecalysis"},
-            {id:14, type:"stool", name: "Others"},
+            // {id:11, type:"stool", name: "Urinalysis(midstream, clean catch)"},
+            // {id:12, type:"stool", name: "Pregnancy Test"},
+            // {id:13, type:"stool", name: "Fecalysis"},
+            // {id:14, type:"stool", name: "Others"},
         ],
         cardiac_studies: [
-            {id:15, type:"cardiac", name: "Electrocardiogram(ECG)"},
-            {id:16, type:"cardiac", name: "Others",}
+            // {id:15, type:"cardiac", name: "Electrocardiogram(ECG)"},
+            // {id:16, type:"cardiac", name: "Others",}
         ], 
         chemistry: [
-            {id:17, type:"chemistry", name: "Lipid Profile"},
-            {id:18, type:"chemistry", name: "Serum Sodium(Na)"},
-            {id:19, type:"chemistry", name: "Serum Potassium(K)"},
-            {id:20, type:"chemistry", name: "Blood Urea Nitrogen(BUN)"},
-            {id:21, type:"chemistry", name: "Ionized Calcium(iCa)"},
-            {id:22, type:"chemistry", name: "Uric Acid"},
-            {id:23, type:"chemistry", name: "ALT/SGPT"},
-            {id:24, type:"chemistry", name: "AST/SGOT"},
-            {id:25, type:"chemistry", name: "Hepatitis Test"},
-            {id:26, type:"chemistry", name: "Syphilis"},
-            {id:27, type:"chemistry", name: "TSH"},
-            {id:28, type:"chemistry", name: "Ft4"},
-            {id:29, type:"chemistry", name: "Ft3"},
-            {id:30, type:"chemistry", name: "TT4"},
-            {id:31, type:"chemistry", name: "TT3"},
-            {id:32, type:"chemistry", name: "PSA"},
-            {id:33, type:"chemistry", name: "Rapid Antigen Test(COVID-19)"},
-            {id:45, type:"chemistry", name: "Others"},
+            // {id:17, type:"chemistry", name: "Lipid Profile"},
+            // {id:18, type:"chemistry", name: "Serum Sodium(Na)"},
+            // {id:19, type:"chemistry", name: "Serum Potassium(K)"},
+            // {id:20, type:"chemistry", name: "Blood Urea Nitrogen(BUN)"},
+            // {id:21, type:"chemistry", name: "Ionized Calcium(iCa)"},
+            // {id:22, type:"chemistry", name: "Uric Acid"},
+            // {id:23, type:"chemistry", name: "ALT/SGPT"},
+            // {id:24, type:"chemistry", name: "AST/SGOT"},
+            // {id:25, type:"chemistry", name: "Hepatitis Test"},
+            // {id:26, type:"chemistry", name: "Syphilis"},
+            // {id:27, type:"chemistry", name: "TSH"},
+            // {id:28, type:"chemistry", name: "Ft4"},
+            // {id:29, type:"chemistry", name: "Ft3"},
+            // {id:30, type:"chemistry", name: "TT4"},
+            // {id:31, type:"chemistry", name: "TT3"},
+            // {id:32, type:"chemistry", name: "PSA"},
+            // {id:33, type:"chemistry", name: "Rapid Antigen Test(COVID-19)"},
+            // {id:45, type:"chemistry", name: "Others"},
         ],
         glucose: [
-            {id:46, type:"glucose", name: "Fasting Blood Sugar(FBS)"},
-            {id:47, type:"glucose", name: "Hba1c"},
-            {id:48, type:"glucose", name: "Random Blood Sugar"},
-            {id:49, type:"glucose", name: "75g Oral Glucose Tolerance Test(OGTT)"},
-            {id:50, type:"glucose", name: "Others"}
+            // {id:46, type:"glucose", name: "Fasting Blood Sugar(FBS)"},
+            // {id:47, type:"glucose", name: "Hba1c"},
+            // {id:48, type:"glucose", name: "Random Blood Sugar"},
+            // {id:49, type:"glucose", name: "75g Oral Glucose Tolerance Test(OGTT)"},
+            // {id:50, type:"glucose", name: "Others"}
         ]
     }
 ]
@@ -179,6 +179,7 @@ const SubModule = () => {
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
+    const [contentHeight, setContentHeight] = useState(0)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -211,7 +212,23 @@ const SubModule = () => {
     const pagination = patientList?.pagination ?? []
     const header = patientList?.columns ?? []
 
-    // console.log(pathologyList)
+    const panthologyCategoryListData = pathologyCategoryList?.map(el => el.category_name)
+    // console.log(soapData[0])
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
+
     useEffect(() => {
         // const newRows = new Set()
 
@@ -245,12 +262,49 @@ const SubModule = () => {
 
     }, [btnSpinner])
 
+    const organizedData = {}
+
+    pathologyList?.forEach(item => {
+        const category = item.panthology_category?.category_name || 'unknown'
+        if(!organizedData[category]) {
+            organizedData[category] = []
+        }
+
+        organizedData[category].push({
+            id: item.id,
+            type: category,
+            name: item.test_name
+        })
+    })
+
+    const resultData = Object.keys(organizedData).map(category => ({
+        [category]: organizedData[category]
+    }))
+
+    console.log(resultData)
+
+    // const organizedData = pathologyList?.reduce((acc, item) => {
+    //     const category = item.panthology_category?.category_name || 'unknown'
+    //     if (!acc[category]) {
+    //         acc[category] = []
+    //     }
+    //     acc[category].push({
+    //         id: item.id,
+    //         type: category,
+    //         name: item.test_name,
+    //     })
+    //     return acc
+    // }, {})
+
+    // const mergedData = [{ ...organizedData, ...soapData[0]}]
+    // console.log(mergedData)
+
     const phyisicianOptions = physicianList?.map(ph => ({
         value: ph.user_id,
         label: `Dr. ${ph.identity?.first_name} ${ph.identity?.last_name}`,
     }))
 
-    console.log(phyisicianOptions)
+    // console.log(phyisicianOptions)
 
     const opdForms = [
         {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
@@ -449,7 +503,7 @@ const SubModule = () => {
         switch(slug) {
             case 'in-patient':
                 return (
-                    <div className="flex relative overflow-hidden h-screen">
+                    <div className="flex relative min-h-screen">
                         <div className="absolute inset-0 w-full">
 
                         </div>
@@ -457,8 +511,8 @@ const SubModule = () => {
                 )
             case 'out-patient':
                 return (
-                    <div className="flex h-96">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
+                    <div>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                         <div className="font-bold text-xl mb-2 uppercase text-gray-600">Out Patient</div>
                             <div className="flex justify-between py-1">
                                 <Button
@@ -541,7 +595,7 @@ const SubModule = () => {
                             </div>
                         </div>
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
                                     <div className="font-bold text-xl mb-2 uppercase text-gray-600">Add Out Patient</div>
@@ -553,7 +607,7 @@ const SubModule = () => {
                                         >
                                             Close
                                         </Button>
-    
+
                                         <div className="flex gap-2">
                                             {slug !== 'out-patient' && (
                                                 <Button
@@ -564,7 +618,7 @@ const SubModule = () => {
                                                     Add Row
                                                 </Button>
                                             )}
-    
+
                                             <Button
                                                 bgColor={btnSpinner ? 'disable': 'emerald'}
                                                 btnIcon={btnSpinner ? 'disable': 'submit'}
@@ -575,7 +629,7 @@ const SubModule = () => {
                                             </Button>
                                         </div>
                                     </div>
-    
+
                                     <Form 
                                         ref={formRef} 
                                         initialFields={opdForms}
@@ -612,16 +666,6 @@ const SubModule = () => {
                             )}
                         </div>
                     </div>
-
-                    // <div className="flex overflow-hidden z-50">
-                        
-                    // </div>
-
-                    // <div className="flex relative overflow-hidden h-screen">
-                    //     <div className="absolute inset-0 w-full">
-                            
-                    //     </div>
-                    // </div>
                 )
         default:
             return null
@@ -642,7 +686,7 @@ const SubModule = () => {
                 <title>{slug}</title>
             </Head>
             
-            <div className="p-8">
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
                 <Modal 
                     // title={title}
                     // charges={true} 
