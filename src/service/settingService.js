@@ -83,6 +83,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedList']
         }),
 
         getBedFloorList: builder.query({
@@ -97,6 +98,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['FloorList']
         }),
 
         getBedTypeList: builder.query({
@@ -111,6 +113,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedTypeList']
         }),
 
         getBedGroupList: builder.query({
@@ -125,6 +128,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedGroupList']
         }),
 
         getHosptlCharge: builder.query({
@@ -139,6 +143,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeList']
         }),
 
         getHosptlChargeType: builder.query({
@@ -153,6 +158,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeTypeList']
         }),
 
         getHosptlChargeCategory: builder.query({
@@ -167,6 +173,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeCategoryList']
         }),
 
         createUserBatch: builder.mutation({
@@ -303,7 +310,16 @@ export const settingApi = createApi({
                     method: 'POST',
                     body: body
                 }
-            }
+            },
+            invalidatesTags: [
+                'BedList',
+                'FloorList',
+                'BedTypeList',
+                'BedGroupList',
+                'HospitalChargeList',
+                'HospitalChargeTypeList',
+                'HospitalChargeCategoryList',
+            ],
         })
     })
 })
