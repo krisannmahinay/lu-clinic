@@ -134,6 +134,7 @@ const Form = forwardRef(({
          } else if([
                 'gender',
                 'roles',
+                'bed',
                 'bed_type',
                 'bed_group',
                 'bed_floor',
