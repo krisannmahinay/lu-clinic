@@ -63,20 +63,36 @@ const SubModule = () => {
     const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery()
     const {data: statisticalReport} = useGetInfoClassificationQuery()
 
-    console.log(statisticalReport)
+    // console.log(statisticalReport?.data)
     const [activeTab, setActiveTab] = useState('tab1')
     const [editorData, setEditorData] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
-
+    
+    const [contentHeight, setContentHeight] = useState(0)
     // console.log(hosptlChargeCategoryMaster)
     
     const userDetails = data?.data ?? []
+    const header = statisticalReport?.data[0] ?? []
 
     // console.log(userDetails.roles)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
     
     const handleAccordion = (data) => {
         setAccordionSlug(data)
@@ -193,7 +209,7 @@ const SubModule = () => {
             <Head>
                 <title>Laravel - {slug}</title>
             </Head>
-            <div className="p-8">
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
                 <Modal 
                     // title={title}
                     // charges={true} 
@@ -343,7 +359,10 @@ const SubModule = () => {
                 {slug === "doh-report" && (
                     
                     <div>
-                        <DOHReport onAccordionClicked={(data) => handleAccordion(data)}/>
+                        <DOHReport 
+                            onAccordionClicked={(data) => handleAccordion(data)}
+                            dohData={statisticalReport?.data}
+                        />
                     </div>
                 )}
             </div>
