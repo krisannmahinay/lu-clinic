@@ -20,8 +20,12 @@ import {
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
     useGetMedicineListQuery,
-    useGetIcd10ListQuery
+    useGetIcd10ListQuery,
+    useGetActiveBedListQuery
 } from '@/service/patientService'
+import { 
+    useGetModuleListQuery
+} from '@/service/settingService'
 import Alert from '@/components/Alert'
 import Tabs from '@/components/Tabs'
 import PatientInformation from '@/components/Patient/OPD/PatientInformation'
@@ -176,12 +180,17 @@ const SubModule = () => {
     const [contentType, setContentType] = useState("")
     const [selectedInformation, setSelectedInformation] = useState({})
     const [searchMedicine, setSearchMedicine] = useState("")
+    const [refetchRTK, setRefetchRTK] = useState(false)
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
     const [contentHeight, setContentHeight] = useState(0)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
+    
+    const { 
+        isLoading: moduleListLoading
+    } = useGetModuleListQuery()
 
     const { 
         data: patientList, 
@@ -199,15 +208,20 @@ const SubModule = () => {
         enabled: !!searchQuery
     })
 
-    const { data: physicianList } = useGetPhysicianListQuery()
-    const { data: icd10List } = useGetIcd10ListQuery()
-    const { data: pathologyList } = useGetPathologyListQuery()
-    const { data: medicineList } = useGetMedicineListQuery({
+
+    const { data: activeBedList } = useGetActiveBedListQuery(undefined, {skip: !refetchRTK})
+    const { data: physicianList } = useGetPhysicianListQuery(undefined, {skip: !refetchRTK})
+    const { data: icd10List } = useGetIcd10ListQuery(undefined, {skip: !refetchRTK})
+    const { data: pathologyList } = useGetPathologyListQuery(undefined, {skip: !refetchRTK})
+    const { data: medicineList } = useGetMedicineListQuery(
+        undefined, {
+            skip: !refetchRTK
+    }, {
         keywords: searchMedicine
     }, {
         enabled: !!searchMedicine
     })
-    const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
+    const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery(undefined, {skip: !refetchRTK})
     const patientData = patientList?.data ?? []
     const pagination = patientList?.pagination ?? []
     const header = patientList?.columns ?? []
@@ -281,7 +295,7 @@ const SubModule = () => {
         [category]: organizedData[category]
     }))
 
-    console.log(resultData)
+    // console.log(resultData)
 
     // const organizedData = pathologyList?.reduce((acc, item) => {
     //     const category = item.panthology_category?.category_name || 'unknown'
@@ -304,12 +318,47 @@ const SubModule = () => {
         label: `Dr. ${ph.identity?.first_name} ${ph.identity?.last_name}`,
     }))
 
-    // console.log(phyisicianOptions)
+    const activeBedOptions = activeBedList?.map(bed => ({
+        value: bed.id,
+        label: `${bed.name} | ${bed.bed_group?.name} - ${bed.bed_group?.bed_floor?.floor}`
+    })) 
+
+    // console.log(activeBedList)
 
     const opdForms = [
         {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
         {name: 'first_name', type: 'text', label: 'Given Name', placeholder: 'Type...'},
         {name: 'middle_name', type: 'text', label: 'Middle Name', placeholder: 'Type...'},
+        {name: 'birth_date', type: 'date', label: 'Birthdate'},
+        {name: 'age', type: 'text', label: 'Age', disabled: true},
+        {
+            name: 'gender',
+            type: 'dropdown',
+            label: 'Gender',
+            options: [
+                {value: 'male', label: 'Male'},
+                {value: 'female', label: 'Female'}
+            ]
+        },
+        {
+            name: 'admiting_physician',
+            type: 'dropdown',
+            label: 'Physician',
+            options: phyisicianOptions
+        },
+        {name: 'standard_charge', type: 'text', label: 'Standard Charge', disabled: true}
+    ]
+
+    const ipdForms = [
+        {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
+        {name: 'first_name', type: 'text', label: 'Given Name', placeholder: 'Type...'},
+        {name: 'middle_name', type: 'text', label: 'Middle Name', placeholder: 'Type...'},
+        {
+            name: 'bed', 
+            type: 'dropdown', 
+            label: 'Bed', 
+            options: activeBedOptions, 
+        },
         {name: 'birth_date', type: 'date', label: 'Birthdate'},
         {name: 'age', type: 'text', label: 'Age', disabled: true},
         {
@@ -420,6 +469,11 @@ const SubModule = () => {
         }
     ]
 
+    const handleActiveTab = (id) => {
+        console.log(id)
+        setActiveTab(id)
+    }
+
     const renderTableContent = () => {
         return (
             patientListLoading ? (
@@ -466,7 +520,10 @@ const SubModule = () => {
                             patientData.map((tblBody, tblBodyIndex) => (
                                 // console.log(tblBody)
                                 // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBodyIndex} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleActiveContent('tableRow', tblBody)}>
+                                <tr key={tblBodyIndex} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => {
+                                    handleActiveContent('tableRow', tblBody),
+                                    setRefetchRTK(true)
+                                }}>
                                     {header.map((tblHeader) => (
                                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                             {tblHeader === 'admitting_physician' ? (
@@ -503,9 +560,136 @@ const SubModule = () => {
         switch(slug) {
             case 'in-patient':
                 return (
-                    <div className="flex relative min-h-screen">
-                        <div className="absolute inset-0 w-full">
+                    <div>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className="font-bold text-xl mb-2 uppercase text-gray-600">In Patient</div>
+                            <div className="flex justify-between py-1">
+                                <Button
+                                    btnIcon="add"
+                                    onClick={() => {
+                                        handleActiveContent('addRow', '')
+                                        setRefetchRTK(true)
+                                    }}
+                                >
+                                Add
+                                </Button>
 
+                                <SearchExport>
+                                    <div className="flex items-center">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={searchQuery}
+                                                // onChange={e => setSearchQuery(e.target.value)}
+                                                onChange={(e) => handleSearch(e)}
+                                                className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
+                                                placeholder="Search..."
+                                            />
+                                            <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                            </svg>
+                                        </div>
+
+                                        <Dropdown
+                                            align="right"
+                                            width="48"
+                                            trigger={
+                                                <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                                    <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                                    </svg>
+                                                </button>
+                                            }>
+                                            <DropdownExport>
+                                                Export as PDF
+                                            </DropdownExport>
+                                            <DropdownExport>
+                                                Export as JSON
+                                            </DropdownExport>
+                                        </Dropdown>
+                                    </div>
+                                </SearchExport>
+                            </div>
+
+                            <Table 
+                                title="Patient List" 
+                                action={false}
+                                slug={slug}
+                                tableHeader={Object.keys(patientIPD[0])}
+                                tableData={patientIPD} 
+                            />
+
+                            <div className="flex flex-wrap py-1">
+                                <div className="flex items-center justify-center flex-grow">
+                                    <Pagination 
+                                        currentPage={currentPage} 
+                                        totalPages={totalPages}
+                                        // onPageChange={newPage => setCurrentPage(newPage)}
+                                        onPageChange={(newPage) => handleNewPage(newPage)}
+                                    />
+                                </div>
+
+                                <ItemPerPage className="flex flex-grow">
+                                    <div className="flex items-center justify-end">
+                                        <span className="mr-2 mx-2 text-gray-500 uppercase font-medium text-xs">Per Page:</span>
+                                        <select
+                                            value={itemsPerPage}
+                                            onChange={(e) => handleItemsPerPageChange(e)}
+                                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
+                                            <option value="5">5</option>
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </div>
+                                </ItemPerPage>
+                            </div>
+                        </div>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                            {contentType === 'addRow' && (
+                                <>
+                                    <div className="font-bold text-lg mb-2 uppercase text-gray-600">Add In Patient</div>
+                                    <div className="flex justify-between py-2">
+                                        <Button
+                                            paddingY="2"
+                                            btnIcon="close"
+                                            onClick={() => setActiveContent("yellow")}
+                                        >
+                                            Close
+                                        </Button>
+
+                                        <div className="flex gap-2">
+                                            {slug !== 'out-patient' && (
+                                                <Button
+                                                    bgColor="indigo"
+                                                    btnIcon="add"
+                                                    onClick={() => formRef.current.handleAddRow()}
+                                                >
+                                                    Add Row
+                                                </Button>
+                                            )}
+
+                                            <Button
+                                                bgColor={btnSpinner ? 'disable': 'emerald'}
+                                                btnIcon={btnSpinner ? 'disable': 'submit'}
+                                                btnLoading={btnSpinner}
+                                                onClick={() => handleSubmitButton(slug)}
+                                            >
+                                                {btnSpinner ? '' : 'Submit'}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <Form 
+                                        ref={formRef} 
+                                        initialFields={ipdForms}
+                                        onSuccess={handleRefetch}
+                                        onLoading={(data) => setBtnSpinner(data)}
+                                        onSetAlertType={(data) => setAlertType(data)}
+                                        onCloseSlider={() => setActiveContent("yellow")}
+                                        onSetAlertMessage={(data) => setAlertMessage(data)}
+                                    />
+                                </>
+                            )}             
                         </div>
                     </div>
                 )
@@ -647,7 +831,10 @@ const SubModule = () => {
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
-                                            onClick={() => setActiveContent("yellow")}
+                                            onClick={() => {
+                                                setActiveContent("yellow")
+                                                setRefetchRTK(false)
+                                            }}
                                             >
                                             Close
                                         </Button>
@@ -660,7 +847,8 @@ const SubModule = () => {
 
 
                                     <Tabs
-                                        tabsConfig={tabsConfig} 
+                                        tabsConfig={tabsConfig}
+                                        onActiveTab={(id) => handleActiveTab(id)}
                                     />
                                 </>
                             )}
@@ -676,6 +864,7 @@ const SubModule = () => {
         <AppLayout
             moduleId={slug}
             menuGroup={menuGroup}
+            isLoading={moduleListLoading}
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                     {slug}
@@ -698,102 +887,16 @@ const SubModule = () => {
                     // selectedRowId={selectedRows}
                 />
 
-            {alertMessage &&
-                <Alert 
-                    alertType={alertType}
-                    isOpen={alertType !== ""}
-                    onClose={handleAlertClose}
-                    message={alertMessage} 
-                /> 
-            }
+                {alertMessage &&
+                    <Alert 
+                        alertType={alertType}
+                        isOpen={alertType !== ""}
+                        onClose={handleAlertClose}
+                        message={alertMessage} 
+                    /> 
+                }
 
                 {renderContent(slug)}
-
-                {slug === 'in-patient' && (
-                     <>
-                        <div className="flex justify-between py-4">
-                            <Button>
-                                <button onClick={() => setIsModalOpen(true)} className="flex items-center bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none px-4">
-                                    <svg width="20" height="20" className="mr-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Add
-                                </button>
-                            </Button>
-
-                            <SearchExport>
-                                <div className="flex items-center">
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={searchQuery}
-                                            // onChange={e => setSearchQuery(e.target.value)}
-                                            onChange={handleSearch}
-                                            className="border border-gray-300 w-full px-2 py-2 focus:outline-none flex-grow pl-10"
-                                            placeholder="Search..."
-                                        />
-                                        <svg fill="none" stroke="currentColor" className="mx-2 h-6 w-6 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                        </svg>
-                                    </div>
-
-                                    <Dropdown
-                                        align="right"
-                                        width="48"
-                                        trigger={
-                                            <button className="border border-gray-300 bg-white rounded px-4 py-2 ml-4 focus:outline-none" aria-labelledby="Export">
-                                                <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                                </svg>
-                                            </button>
-                                        }>
-                                        <DropdownExport>
-                                            Export as PDF
-                                        </DropdownExport>
-                                        <DropdownExport>
-                                            Export as JSON
-                                        </DropdownExport>
-                                    </Dropdown>
-                                </div>
-                            </SearchExport>
-                        </div>
-                     
-
-                     <Table 
-                         title="Patient List" 
-                         action={false}
-                         slug={slug}
-                         tableHeader={Object.keys(patientIPD[0])}
-                         tableData={patientIPD} 
-                     />
-
-
-                    <div className="flex flex-wrap py-4">
-                        <div className="flex items-center justify-center flex-grow">
-                            <Pagination 
-                                currentPage={currentPage} 
-                                totalPages={totalPages}
-                                // onPageChange={newPage => setCurrentPage(newPage)}
-                                onPageChange={(newPage) => handleNewPage(newPage)}
-                            />
-                        </div>
-
-                        <ItemPerPage className="flex flex-grow">
-                            <div className="flex items-center justify-end">
-                                <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
-                                <select
-                                    value={itemsPerPage}
-                                    onChange={handleItemsPerPageChange}
-                                    className="border border-gray-300 rounded px-4 py-2 focus:outline-none">
-                                    <option value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                </select>
-                            </div>
-                        </ItemPerPage>
-                    </div>
-                 </>
-                )}
             </div>
         </AppLayout>
     )

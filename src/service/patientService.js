@@ -127,6 +127,21 @@ export const patientApi = createApi({
             }
         }),
 
+        getActiveBedList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-bed-list',
+                    method: 'GET',
+                    params: {
+                        tabs: 'bed-list',
+                        selectedDB: session
+                    }
+                }
+            },
+            providesTags: ['ActiveBedList']
+        }),
+
         getIcd10List: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -151,5 +166,6 @@ export const {
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
     useGetMedicineListQuery,
-    useGetIcd10ListQuery
+    useGetIcd10ListQuery,
+    useGetActiveBedListQuery
 } = patientApi
