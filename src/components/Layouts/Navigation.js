@@ -88,29 +88,18 @@ const Navigation = ({ ...props }) => {
     const { 
         data: module, 
         isLoading: moduleIsLoading, 
+        isFetching: moduleIsFetching,
         isError: moduleIsError, 
-        refetch: refetchUserModules 
+        refetch: moduleRefetch 
     } = useGetUserModulesQuery({
         moduleId: props.moduleId
     })
 
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         const elementHeight = document.getElementById('myElement').offsetHeight
-    //         const windowHeight = window.innerHeight;
-      
-    //         if (elementHeight > windowHeight) {
-    //           setOverflow('auto')
-    //         } else {
-    //           setOverflow('hidden')
-    //         }
-    //     }
-      
-    //     window.addEventListener('resize', handleResize)
-    //     handleResize()
-      
-    //     return () => window.removeEventListener('resize', handleResize)
-    // }, [])
+    useEffect(() => {
+       if(moduleIsFetching) {
+        moduleRefetch()
+       }
+    }, [])
     
     const { data: userData, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
 
