@@ -65,10 +65,15 @@ const Setting = () => {
     const [reInitFields, setReIinitFields] = useState(true)
     const [btnSpinner, setBtnSpinner] = useState(true)
     const [highlightedRows, setHighlightedRows] = useState(new Set())
-    // const [totalPages, setTotalPages] = useState(0)
-    // const [perPage, setPerPage] = useState(0)
+
+    const [contentHeight, setContentHeight] = useState(0)
     
-    const { data: permission, isLoading: permissionListLoading, isError: permissionErr } = useGetPermissionListQuery()
+    // const { 
+    //     data: permission, 
+    //     isLoading: permissionListLoading, 
+    //     isError: permissionErr 
+    // } = useGetPermissionListQuery()
+
     const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
     const { 
         data: userList, 
@@ -86,11 +91,15 @@ const Setting = () => {
 
     // console.log(moduleList)
     
-    const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+    const { 
+        data: userDetails, 
+        isError: dataError, 
+        refetch: refetchUserDetails 
+    } = useGetUserDetailsQuery()
 
     const userData = userList?.data ?? []
     const pagination = userList?.pagination ?? []
-    const permissionData = permission?.permission ?? []
+    // const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
     const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
@@ -102,6 +111,21 @@ const Setting = () => {
         const now = new Date()
         return (now - rowDate) / 1000 <= 5
     }
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
+
 
     useEffect(() => {
         // const newRows = new Set()
@@ -258,133 +282,129 @@ const Setting = () => {
     const renderContent = () => {
         return (
             <>
-                <div className="flex relative overflow-hidden h-screen">
-                    <div className="absolute inset-0 w-full">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
-                            <div className="flex justify-between py-1">
-                                <Button
-                                    bgColor=""
-                                    btnIcon="user"
-                                    onClick={() => setActiveContent("green")}
-                                >
-                                    New User
-                                </Button>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="flex justify-between py-1">
+                        <Button
+                            bgColor=""
+                            btnIcon="user"
+                            onClick={() => setActiveContent("green")}
+                        >
+                            New User
+                        </Button>
 
-                                <SearchExport>
-                                    <div className="flex items-center">
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={searchQuery}
-                                                // onChange={e => setSearchQuery(e.target.value)}
-                                                onChange={(e) => handleSearch(e)}
-                                                className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
-                                                placeholder="Search..."
-                                            />
-                                            <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                            </svg>
-                                        </div>
-
-                                        <Dropdown
-                                            align="right"
-                                            width="48"
-                                            trigger={
-                                                <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
-                                                    <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                                    </svg>
-                                                </button>
-                                            }>
-                                            <DropdownExport>
-                                                Export as PDF
-                                            </DropdownExport>
-                                            <DropdownExport>
-                                                Export as JSON
-                                            </DropdownExport>
-                                        </Dropdown>
-                                    </div>
-                                </SearchExport>
-                            </div>
-
-                            <div className="border border-gray-300 rounded">
-                                <Table 
-                                    title="User List" 
-                                    disableTable={true}
-                                    onOpenModal={(id) => setModalId(id)}
-                                >
-                                    {renderTableContent()}
-                                </Table>
-                            </div>
-                
-                            <div className="flex flex-wrap py-1">
-                                <div className="flex items-center justify-center flex-grow">
-                                    <Pagination 
-                                        currentPage={pagination.current_page} 
-                                        totalPages={pagination.total_pages}
-                                        // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleNewPage(newPage)}
+                        <SearchExport>
+                            <div className="flex items-center">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        // onChange={e => setSearchQuery(e.target.value)}
+                                        onChange={(e) => handleSearch(e)}
+                                        className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
+                                        placeholder="Search..."
                                     />
+                                    <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                    </svg>
                                 </div>
-                
-                                <ItemPerPage className="flex flex-grow">
-                                    <div className="flex items-center justify-end">
-                                        <span className="mr-2 mx-2 text-gray-700 text-sm">Per Page:</span>
-                                        <select
-                                            value={itemsPerPage}
-                                            onChange={(e) => handleItemsPerPageChange(e)}
-                                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
-                                            <option value="5">5</option>
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                        </select>
-                                    </div>
-                                </ItemPerPage>
+
+                                <Dropdown
+                                    align="right"
+                                    width="48"
+                                    trigger={
+                                        <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                            <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                            </svg>
+                                        </button>
+                                    }>
+                                    <DropdownExport>
+                                        Export as PDF
+                                    </DropdownExport>
+                                    <DropdownExport>
+                                        Export as JSON
+                                    </DropdownExport>
+                                </Dropdown>
                             </div>
-                        </div>
-                        
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
-                            <div className="flex justify-between py-2">
-                                <Button
-                                    paddingY="1"
-                                    btnIcon="close"
-                                    // onClick={() => setActiveContent("yellow")}
-                                    onClick={handleCloseSlider}
-                                >
-                                    Close
-                                </Button>
+                        </SearchExport>
+                    </div>
 
-                                <div className="flex gap-2">
-                                    <Button
-                                        bgColor="indigo"
-                                        btnIcon="add"
-                                        onClick={() => formRef.current.handleAddRow()}
-                                    >
-                                        Add Row
-                                    </Button>
-
-                                    <Button
-                                        bgColor={btnSpinner ? 'disable': 'emerald'}
-                                        btnIcon={btnSpinner ? 'disable': 'submit'}
-                                        btnLoading={btnSpinner}
-                                        onClick={() => formRef.current.handleSubmit('createUser')}
-                                    >
-                                        {btnSpinner ? '' : 'Submit'}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <Form 
-                                ref={formRef} 
-                                initialFields={userRegistration}
-                                onSuccess={handleRefetch}
-                                onCloseSlider={() => setActiveContent("yellow")}
-                                onLoading={(data) => setBtnSpinner(data)}
-                                onSetAlertType={(data) => setAlertType(data)}
-                                onSetAlertMessage={(data) => setAlertMessage(data)}
+                    <div className="border border-gray-300 rounded">
+                        <Table 
+                            title="User List" 
+                            disableTable={true}
+                            onOpenModal={(id) => setModalId(id)}
+                        >
+                            {renderTableContent()}
+                        </Table>
+                    </div>
+        
+                    <div className="flex flex-wrap py-1">
+                        <div className="flex items-center justify-center flex-grow">
+                            <Pagination 
+                                currentPage={pagination.current_page} 
+                                totalPages={pagination.total_pages}
+                                // onPageChange={newPage => setCurrentPage(newPage)}
+                                onPageChange={(newPage) => handleNewPage(newPage)}
                             />
                         </div>
+        
+                        <ItemPerPage className="flex flex-grow">
+                            <div className="flex items-center justify-end">
+                                <span className="mr-2 mx-2 text-gray-700 text-sm">Per Page:</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => handleItemsPerPageChange(e)}
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                        </ItemPerPage>
                     </div>
+                </div>
+                
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="flex justify-between py-2">
+                        <Button
+                            paddingY="1"
+                            btnIcon="close"
+                            // onClick={() => setActiveContent("yellow")}
+                            onClick={handleCloseSlider}
+                        >
+                            Close
+                        </Button>
+
+                        <div className="flex gap-2">
+                            <Button
+                                bgColor="indigo"
+                                btnIcon="add"
+                                onClick={() => formRef.current.handleAddRow()}
+                            >
+                                Add Row
+                            </Button>
+
+                            <Button
+                                bgColor={btnSpinner ? 'disable': 'emerald'}
+                                btnIcon={btnSpinner ? 'disable': 'submit'}
+                                btnLoading={btnSpinner}
+                                onClick={() => formRef.current.handleSubmit('createUser')}
+                            >
+                                {btnSpinner ? '' : 'Submit'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Form 
+                        ref={formRef} 
+                        initialFields={userRegistration}
+                        onSuccess={handleRefetch}
+                        onCloseSlider={() => setActiveContent("yellow")}
+                        onLoading={(data) => setBtnSpinner(data)}
+                        onSetAlertType={(data) => setAlertType(data)}
+                        onSetAlertMessage={(data) => setAlertMessage(data)}
+                    />
                 </div>
             </>
         )
@@ -404,7 +424,7 @@ const Setting = () => {
                 <title>Laravel - Setting</title>
             </Head>
 
-            <div className="p-8">
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
                 {alertMessage &&
                     <Alert 
                         alertType={alertType}
