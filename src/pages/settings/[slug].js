@@ -57,11 +57,15 @@ const SubModule = () => {
         refetch: refetchUserDetails 
     } = useGetUserDetailsQuery()
     
+    const hospitalChargeSlug = slug === 'charges'
+    const dohReportSlug = slug === 'doh-report'
+    // const hospitalChargeSlug = slug === 'charges'
+
     const {data: hosptlChargeMaster} = useGetHosptlChargeQuery()
-    const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery()
-    const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery()
-    const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery()
-    const {data: statisticalReport} = useGetInfoClassificationQuery()
+    const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: statisticalReport} = useGetInfoClassificationQuery(undefined, {skip: !dohReportSlug})
 
     // console.log(statisticalReport?.data)
     const [activeTab, setActiveTab] = useState('tab1')
