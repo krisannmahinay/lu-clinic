@@ -319,6 +319,7 @@ export const settingApi = createApi({
                 'HospitalChargeList',
                 'HospitalChargeTypeList',
                 'HospitalChargeCategoryList',
+                'ActiveBedList'
             ],
         })
     })
