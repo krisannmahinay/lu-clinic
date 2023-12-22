@@ -42,14 +42,7 @@ const Form = forwardRef(({
     const [resetFormTimer, setResetFormTimer] = useState(false)
 
     const [physicianChargeId, setPhysicianChargeId] = useState(0)
-
-    // const [createUserBatch, { 
-    //     isLoading: createUserLoading, 
-    //     isError, 
-    //     error, 
-    //     isSuccess: createUserSuccess 
-    // }] = useCreateUserBatchMutation()
-
+    
     const [createBulk, { 
         isLoading: createBulkLoading, 
         isError, 
@@ -59,8 +52,7 @@ const Form = forwardRef(({
 
     const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
 
-    // console.log(physicianChargeMaster[0].standard_charge)
-    console.log(formData)
+    // console.log(formData)
     
     useImperativeHandle(ref, () => ({
         handleSubmit: (actionType) => handleSubmit(actionType),
@@ -103,8 +95,6 @@ const Form = forwardRef(({
         return age
     }
     
-    
-    // console.log(formData)
      const handleInputChange = (e, rowIndex, fieldName) => {
          if(fieldName === 'birth_date') {
             const age = calculatedAge(e.target.value)
@@ -196,33 +186,7 @@ const Form = forwardRef(({
          setFormData((prev) => 
              prev.filter((_, index) => index !== rowIndex))
      }
-
-    //  const handleSubmit = () => {
-    //     createUserBatch(formData)
-    //         .unwrap()
-    //         .then(response => {
-    //             if(response.status === "success") {
-    //                 onLoading(true)
-    //                 setResetFormTimer(true)
-    //                 onSuccess(1)
-    //                 // onSetAlertType("success")
-    //                 // onSetAlertMessage(response.message)
-    //                 // setAlertMessage(response.message)
-    //                 // setAlertOpen(true)
-    //             }
-    //         })
-    //         .catch(error => {
-    //         //  console.log(error)
-    //             if(error.status === 500) {
-    //                 onSetAlertType("error")
-    //                 onSetAlertMessage("Unsuccessful")
-    //                 setAlertMessage("Unsuccessful")
-    //                 setAlertOpen(true)
-    //             }
-    //         })
-    //  }
-
-    //  console.log(formData)
+     
      const handleSubmit = (actionType) => {
         createBulk({actionType: actionType, data: formData})
             .unwrap()
