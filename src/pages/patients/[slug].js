@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/router"
 import AppLayout from "@/components/Layouts/AppLayout"
 import NavTab from "@/components/NavTab"
-import CustomCKEditor from '@/components/CustomCKEditor'
 import Form from '@/components/Form'
 import Table from '@/components/Table'
 import Pagination from '@/components/Pagination'
@@ -12,7 +11,6 @@ import SearchExport from '@/components/SearchExport'
 import Dropdown from '@/components/Dropdown'
 import Button from '@/components/Button'
 import ItemPerPage from '@/components/ItemPerPage'
-import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from '@/components/DropdownLink'
 import { 
     useGetOutPatientListQuery,
@@ -432,6 +430,10 @@ const SubModule = () => {
         setIsModalOpen(false)
     }
 
+    const handleNewPage = (newPage) => {
+        setCurrentPage(newPage)
+    }
+
     const tabsConfig = [
         {
             id: 'tab1',
@@ -701,7 +703,10 @@ const SubModule = () => {
                             <div className="flex justify-between py-1">
                                 <Button
                                     btnIcon="add"
-                                    onClick={() => handleActiveContent('addRow', '')}
+                                    onClick={() => {
+                                        handleActiveContent('addRow', ''),
+                                        setRefetchRTK(true)
+                                    }}
                                 >
                                 Add
                                 </Button>
@@ -787,7 +792,10 @@ const SubModule = () => {
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
-                                            onClick={() => setActiveContent("yellow")}
+                                            onClick={() => {
+                                                setActiveContent("yellow"),
+                                                setRefetchRTK(false)
+                                            }}
                                         >
                                             Close
                                         </Button>

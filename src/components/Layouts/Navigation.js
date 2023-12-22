@@ -7,7 +7,14 @@ import Cookies from 'js-cookie'
 import { useDispatch, useSelector } from 'react-redux'
 // import { logout, setModules } from '@/store/reducers/authSlice'
 // import { userGrants } from '@/store/actions/authActions'
-import { useLogoutMutation, useGetUserModulesQuery, useGetUserDetailsQuery } from '@/service/authService'
+import { 
+    useLogoutMutation, 
+    useGetUserModulesQuery, 
+    useGetUserDetailsQuery 
+} from '@/service/authService'
+
+import { useGetNotificationQuery } from '@/service/settingService'
+
 import withAuth from '@/pages/withAuth'
 
 // components
@@ -95,6 +102,9 @@ const Navigation = ({ ...props }) => {
         moduleId: props.moduleId
     })
 
+    const { data: notification } = useGetNotificationQuery()
+    console.log(notification)
+
     useEffect(() => {
        if(moduleIsFetching) {
         moduleRefetch()
@@ -109,8 +119,8 @@ const Navigation = ({ ...props }) => {
 
     const userDetails = userData?.data[0] ?? []
     
-    const elapsedTime = (time) => {
-        const seconds = Math.floor((Date.now() - time) / 1000);
+    const elapsedTime = (timestamp) => {
+        const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
     
         if (seconds < 60) return `${seconds} sec${seconds !== 1 ? 's' : ''} ago`;
     
@@ -210,36 +220,48 @@ const Navigation = ({ ...props }) => {
                                             </svg>
 
 
-                                            {notificationCount > 0 && (
+                                            {notification?.notifications.length > 0 && (
                                             <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
-                                                {notificationCount}
+                                                {notification?.notifications.length}
                                             </div>
                                             )}
                                         </div>
                                     }>
                                         
-                                    {notifications.map(notification => (
-                                        <DropdownNotification key={notification.id} onClick={handleClickedNotif}>
-                                            <div className="flex items-start p-2">
-                                                <img
-                                                    src={notification.userImage}
-                                                    alt="User"
-                                                    className="w-12 h-12 rounded-full mr-4 flex-shrink-0"
-                                                />
-                                                <div className="flex-grow">
-                                                    <span className="font-medium">{notification.userName}</span> {notification.action}
-                                                    <div className="text-gray-600">{notification.description}</div>
-                                                    <div className="text-xs text-gray-500 w-full">
-                                                        {elapsedTime(notification.time)}
+                                    <div className="divide-y divide-gray-200">
+                                        <div className="font-bold text-sm uppercase text-gray-600 ml-2 p-2">Notifications</div>
+                                        {notification?.notifications.length > 0 ? (
+                                            notification?.notifications.map((notification, index) => (
+                                                
+                                                <DropdownNotification key={index} onClick={handleClickedNotif}>
+                                                    <div className="flex items-start">
+                                                        <img
+                                                            src={notification.iconUrl}
+                                                            alt="User"
+                                                            className="w-12 h-12 rounded-full mr-4 flex-shrink-0"
+                                                        />
+                                                        <div className="flex-grow ">
+                                                            <span className="font-large">{notification.title}</span>
+                                                            <p className="text-xs text-gray-600 italic">{notification.message}</p>
+                                                            <div className="text-xs text-gray-500 w-full">
+                                                                {elapsedTime(notification.timestamp)}
+                                                            </div>
+                                                        </div>
+                                                        {!notification.isRead && 
+                                                            <div className="ml-2 w-4 h-4 bg-blue-500 rounded-full"></div>
+                                                        }
                                                     </div>
-                                                </div>
-                                                {!notification.viewed && 
-                                                    <div className="ml-2 w-4 h-4 bg-blue-500 rounded-full"></div>
-                                                }
-                                            </div>
-                                            
-                                        </DropdownNotification>
-                                    ))}
+                                                </DropdownNotification>
+                                            ))
+                                        ) : (
+                                            <DropdownNotification>
+                                                <div className="text-md text-gray-500 ">No Records</div>
+                                            </DropdownNotification>
+                                        )}      
+                                    </div>
+                                    
+
+                                    
                                 </Dropdown>
                                         
                                 <Dropdown
