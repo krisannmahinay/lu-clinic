@@ -55,7 +55,7 @@ const Module = ({data, menuGroup}) => {
 
                     return (
                         // console.log(item)
-                        <nav className="bg-[#343a40]">
+                        <nav className="bg-[#343a40]" key={index}>
                             <ul className="mx-1 my-1">
                                 {item.module?.type === 'sub' ? (
                                     <>
