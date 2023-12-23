@@ -15,7 +15,7 @@ export const patientApi = createApi({
             }
          }
     }),
-    
+    tagTypes: ['UpdateOPDtoLatest', 'ActiveBedList'],
     endpoints: (builder) => ({
         autoSaveData: builder.mutation({
             query: dataArray => {
