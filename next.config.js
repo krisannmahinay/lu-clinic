@@ -15,7 +15,8 @@ const nextConfig = {
     env: {
         API_URL: 'http://localhost/api',
         NEXT_PUBLIC_PUSHER_APP_KEY: '1bfa0e4b900a03079829',
-        NEXT_PUBLIC_WS_HOST: 'http://localhost',
+        NEXT_PUBLIC_PUSHER_APP_CLUSTER: 'ap1',
+        NEXT_PUBLIC_WS_HOST: 'localhost:80',
         NEXT_PUBLIC_WS_PORT: 6001,
         NEXT_PUBLIC_WSS_PORT: 443
     },
