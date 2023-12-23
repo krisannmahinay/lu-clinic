@@ -49,7 +49,8 @@ export const patientApi = createApi({
                         selectedDB: session
                     }
                 }
-            }
+            },
+            providesTags: ['UpdateOPDtoLatest']
         }),
 
         getPhysicianList: builder.query({
