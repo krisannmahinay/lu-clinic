@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node server.js",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
     "eslint-config-next": "13.4.7",
     "glob": "^10.3.3",
     "js-cookie": "^3.0.5",
+    "laravel-echo": "^1.15.3",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "next": "13.4.7",
@@ -34,6 +35,7 @@
     "pdf-lib": "^1.17.1",
     "pdfmake": "^0.2.7",
     "postcss": "8.4.24",
+    "pusher-js": "^8.4.0-rc2",
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
