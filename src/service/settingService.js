@@ -17,6 +17,7 @@ export const settingApi = createApi({
          }
     }),
 
+    tagTypes: ['BedList', 'FloorList', 'BedTypeList', 'BedGroupList', 'HospitalChargeList', 'HospitalChargeTypeList', 'HospitalChargeCategoryList'],
     endpoints: (builder) => ({
         getUserList: builder.query({
             query: (args) => {
@@ -176,6 +177,20 @@ export const settingApi = createApi({
             providesTags: ['HospitalChargeCategoryList']
         }),
 
+        getNotification: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-all-notification',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session,
+                        sort: 'created_at',
+                    }
+                }
+            }
+        }),
+
         createUserBatch: builder.mutation({
             query: dataArray => {
                 const data = dataArray.map(item => item.fields)
@@ -296,6 +311,22 @@ export const settingApi = createApi({
                     case 'createOutPatient':
                         url = '/create-out-patient',
                         body = {
+                            // notifications
+                            title: 'Newly Added Patient',
+                            message: 'need for consultations',
+                            action: 'admitted',
+                            
+                            patientType: 'new',
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createInPatient':
+                        url = '/create-in-patient',
+                        body = {
+                            patientType: 'new',
                             actionType: actionType,
                             data: data.map(item => item.fields),
                             selectedDB: session
@@ -319,7 +350,8 @@ export const settingApi = createApi({
                 'HospitalChargeList',
                 'HospitalChargeTypeList',
                 'HospitalChargeCategoryList',
-                'ActiveBedList'
+                'ActiveBedList',
+                'UpdateOPDtoLatest'
             ],
         })
     })
@@ -338,5 +370,6 @@ export const {
     useGetBedGroupListQuery,
     useGetHosptlChargeQuery,
     useGetHosptlChargeTypeQuery,
-    useGetHosptlChargeCategoryQuery
+    useGetHosptlChargeCategoryQuery,
+    useGetNotificationQuery
 } = settingApi
