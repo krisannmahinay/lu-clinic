@@ -315,7 +315,7 @@ const Navigation = ({ ...props }) => {
 
 
             <div className="sm:ml-64 top-0 bg-gray-100">
-                <main>{props.children}</main>
+                <main className="container mx-auto">{props.children}</main>
             </div>
         </>
     )
