@@ -39,7 +39,7 @@ const Dropdown = ({
         <Menu as="div" className="relative">
             {({ open }) => (
                 <>
-                    <Menu.Button as={React.Fragment}>{trigger}</Menu.Button>
+                    <Menu.Button as={React.Fragment} className="h-8">{trigger}</Menu.Button>
 
                     <Transition
                         show={open}
