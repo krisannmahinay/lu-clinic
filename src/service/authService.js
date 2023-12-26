@@ -75,6 +75,21 @@ export const authApi = createApi({
             }
         }),
 
+        getGrantModule: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { user_id } = args
+                return {
+                    url: '/grant-module',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session,
+                        user_id: user_id
+                    }
+                }
+            }
+        }),
+
         logout: builder.mutation({
             query: () => ({
                 url: "/logout",
@@ -89,6 +104,7 @@ export const {
     useGetUserByIdQuery, 
     useLogoutMutation, 
     useGetUserModulesQuery ,
+    useGetGrantModuleQuery,
     useGrantUserModuleMutation
 } = authApi
 // export const { authApi }
