@@ -104,7 +104,7 @@ const Setting = () => {
     const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
     
-    console.log(userList)
+    // console.log(userList)
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)

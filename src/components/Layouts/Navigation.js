@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import Echo from 'laravel-echo'
+import Pusher from 'pusher-js'
 import { useRouter } from 'next/router'
 import { useEffect, useState, useRef } from 'react'
 import styles from '../../../public/assets/css/notification.module.css'
@@ -28,57 +30,6 @@ import ResponsiveNavLink,
 { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 import SkeletonSidebarScreen from '../SkeletonSidbarScreen'
 import ProfilePicture from '../ProfilePicture'
-import Notification from '../Notification'
-
-const notifications = [
-    {
-        id: 1,
-        userName: "John Doe",
-        userImage: "https://i.imgur.com/r5pe7aJ.png",
-        action: "commented on",
-        description: "your post",
-        time: Date.now() - 3600000, // 1 hour ago
-        viewed: false,
-    },
-    {
-        id: 2,
-        userName: "John Cena",
-        userImage: "https://i.imgur.com/r5pe7aJ.png",
-        action: "requested",
-        description: "your post",
-        time: Date.now() - 3600000, // 1 hour ago
-        viewed: false,
-    },
-    {
-        id: 3,
-        userName: "John Lenon",
-        userImage: "https://i.imgur.com/r5pe7aJ.png",
-        action: "requested",
-        description: "your post",
-        time: Date.now() - 3600000, // 1 hour ago
-        viewed: false,
-    },
-    {
-        id: 4,
-        userName: "John Wick",
-        userImage: "https://i.imgur.com/r5pe7aJ.png",
-        action: "requested",
-        description: "your post",
-        time: Date.now() - 3600000, // 1 hour ago
-        viewed: false,
-    },
-    {
-        id: 5,
-        userName: "John Brodey",
-        userImage: "https://i.imgur.com/r5pe7aJ.png",
-        action: "requested",
-        description: "your post",
-        time: Date.now() - 3600000, // 1 hour ago
-        viewed: false,
-    },
-    
-    // ... add more notifications as needed
-];
 
 const Navigation = ({ ...props }) => {
     // props: user, children, moduleId, menuGroup
@@ -86,10 +37,11 @@ const Navigation = ({ ...props }) => {
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
     const [sidebarOpen, setSidebarOpen] = useState(true)
-    const [notificationCount, setNotificationCount] = useState(7);
     const authToken = Cookies.get('token') 
     const [refetchAttempts, setRefetchAttempts] = useState(0)
     const [overflow, setOverflow] = useState('hidden')
+    const [notificationData, setNotificationData] = useState({})
+    const [notificationCount, setNotificationCount] = useState(0)
     
     const [logout, { isLoading, isError, error, isSuccess }] = useLogoutMutation()
     const { 
@@ -102,16 +54,85 @@ const Navigation = ({ ...props }) => {
         moduleId: props.moduleId
     })
 
-    const { data: notification } = useGetNotificationQuery()
-    console.log(notification)
+    const { data: prevNotification } = useGetNotificationQuery()
+    const [notifications, setNotifications] = useState(prevNotification)
+    
+    // console.log(notifications)
 
     useEffect(() => {
-       if(moduleIsFetching) {
-        moduleRefetch()
-       }
-    }, [])
-    
-    const { data: userData, isError: dataError, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+        if(moduleIsFetching) {
+            moduleRefetch()
+        }
+
+        if(notifications) {
+            setNotificationCount(notifications?.length)
+        }
+
+        if(prevNotification) {
+            setNotifications(prevNotification)
+        }
+
+        // if(Array.isArray(prevNotification)) {
+        //     // setNotifications([...new Set([...prevNotification, ...notifications])])
+        //     setNotifications((prev) => {
+        //         const allNotifications = [...prevNotification, ...prev]
+        //         console.log(allNotifications)
+        //         // const uniqueNotifications = Array.from(new Set(allNotifications.map(JSON.stringify))).map(JSON.parse)
+        //         // return uniqueNotifications
+        //     })
+        //     // const combineNotification = [
+        //     //     ...prevNotification,
+        //     //     ...notifications.filter(
+        //     //         (newNotif) => !prevNotification.some((prev) => prev.id === newNotif.id)
+        //     //     )
+        //     // ]
+        //     // setNotifications(combineNotification)
+        // }
+
+        const echo = new Echo({
+            broadcaster: 'pusher',
+            key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
+            cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+            wsHost: process.env.NEXT_PUBLIC_WS_HOST,
+            wsPort: parseInt(process.env.NEXT_PUBLIC_WS_PORT, 10),
+            wssPort: parseInt(process.env.NEXT_PUBLIC_WSS_PORT, 10),
+            disabledStats: true,
+            encrypted: true,
+            enabledTransports: ['ws', 'wss'],
+        })
+      
+          echo
+            .channel('notifications')
+            .subscribed(() => {console.log('You are subscribed')})
+            .listen('NewNotification', (data) => {
+                setNotifications((prev) => {
+                    // if(Array.isArray(prev) && !prev.some(notif => notif.timestamp === data.timestamp )) {
+                    // // if(Array.isArray(prev) && !prev.some(notif => console.log(notif))) {
+                    //     return [...prev, data]
+                    // }
+                    // return prev
+                    if(Array.isArray(prev) && !prev.some(notif => notif.timestamp === data.timestamp)) {
+                        const updateNotification = [data, ...prev]
+                        updatedNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        return updatedNotifications
+                    }
+                    return prev
+                })
+            })
+        
+        return () => {
+            echo.disconnect()
+        }
+
+    }, [notifications, prevNotification])
+
+    // console.log(notifications)
+
+    const { 
+        data: userData, 
+        isError: dataError, 
+        refetch: refetchUserDetails 
+    } = useGetUserDetailsQuery()
 
     const toggleSidebar = () => { 
         setSidebarOpen(!sidebarOpen) 
@@ -155,6 +176,8 @@ const Navigation = ({ ...props }) => {
 
     const imgSrc = "https://i.imgur.com/bqRsTjB.png"
 
+    // console.log(notifications)
+
     return (
         <>
             <aside className="bg-[#343a40] transition-transform ease-out duration-300 z-50">
@@ -171,9 +194,8 @@ const Navigation = ({ ...props }) => {
 
            
 
-            <nav className={`fixed top-0 z-50 bg-white border-b border-gray-200 dark:bg-[#15803c] dark:border-gray-700 w-full`}>
-                
-            <img className="ml-7 top-5 absolute z-50" src="https://i.imgur.com/jCxmwrq.png" width={65} height={0} />
+            <nav className={`fixed top-0 z-50 bg-white border-b border-gray-200 dark:bg-[#15803c] dark:border-gray-700 w-full`}> 
+                <img className="ml-7 top-5 absolute z-50" src="https://i.imgur.com/jCxmwrq.png" width={65} height={0} />
                 <aside className={`transform max-w-xs ease-in-out duration-300 fixed top-0 left-0 z-40 w-64 h-screen pt-[3.5rem] transition-transform bg-white border-r border-gray-200 dark:bg-[#343a40] dark:border-gray-700 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-[#343a40]">
                         {props.isLoading ? (
@@ -203,65 +225,55 @@ const Navigation = ({ ...props }) => {
                         </div>
                     
                         <div className="flex items-center">
-                            <div className="hidden sm:flex sm:items-center sm:ml-6">
+                            <div className="hidden sm:flex sm:items-center sm:ml-6 max-h-60">
                                 <Dropdown
                                     align="right"
                                     width="80"
                                     trigger={
                                         <div className="mr-5">
-                                            <svg
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="1.5"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-7 w-7 text-white cursor-pointer">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0M3.124 7.5A8.969 8.969 0 015.292 3m13.416 0a8.969 8.969 0 012.168 4.5" />
+                                            <svg onClick={() => setNotificationCount(0)} dataSlot="icon" fill="currentColor" className="h-7 w-7 text-white cursor-pointer" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path clipRule="evenodd" fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" />
                                             </svg>
 
-
-                                            {notification?.notifications.length > 0 && (
-                                            <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
-                                                {notification?.notifications.length}
-                                            </div>
+                                            {notifications?.length > 0 && (
+                                                <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
+                                                    {notifications?.length}
+                                                </div>
                                             )}
                                         </div>
                                     }>
                                         
-                                    <div className="divide-y divide-gray-200">
-                                        <div className="font-bold text-sm uppercase text-gray-600 ml-2 p-2">Notifications</div>
-                                        {notification?.notifications.length > 0 ? (
-                                            notification?.notifications.map((notification, index) => (
+                                    <div className="font-bold text-sm uppercase text-gray-600 ml-2 p-2">Notifications</div>
+                                    <div className="divide-y divide-gray-200 overflow-x-hidden scroll-custom max-h-[30vh]">
+                                        {/* {notificationCount > 0 ? (
                                                 
-                                                <DropdownNotification key={index} onClick={handleClickedNotif}>
-                                                    <div className="flex items-start">
-                                                        <img
-                                                            src={notification.iconUrl}
-                                                            alt="User"
-                                                            className="w-12 h-12 rounded-full mr-4 flex-shrink-0"
-                                                        />
-                                                        <div className="flex-grow ">
-                                                            <span className="font-large">{notification.title}</span>
-                                                            <p className="text-xs text-gray-600 italic">{notification.message}</p>
-                                                            <div className="text-xs text-gray-500 w-full">
-                                                                {elapsedTime(notification.timestamp)}
-                                                            </div>
-                                                        </div>
-                                                        {!notification.isRead && 
-                                                            <div className="ml-2 w-4 h-4 bg-blue-500 rounded-full"></div>
-                                                        }
-                                                    </div>
+                                            ) : (
+                                                <DropdownNotification>
+                                                    <div className="text-md text-gray-500 ">No Records</div>
                                                 </DropdownNotification>
-                                            ))
-                                        ) : (
-                                            <DropdownNotification>
-                                                <div className="text-md text-gray-500 ">No Records</div>
+                                            )}   */}
+                                        {notifications?.notifications.map((notification, index) => (
+                                            <DropdownNotification key={index} onClick={handleClickedNotif}>
+                                                <div className="flex items-start">
+                                                    <img
+                                                        src={notification.iconUrl}
+                                                        alt="User"
+                                                        className="w-12 h-12 rounded-full mr-4 flex-shrink-0"
+                                                    />
+                                                    <div className="flex-grow ">
+                                                        <span className="font-large">{notification.title}</span>
+                                                        <p className="text-xs text-gray-600 italic">{notification.message}</p>
+                                                        <div className="text-xs text-gray-500 w-full">
+                                                            {elapsedTime(notification.timestamp)}
+                                                        </div>
+                                                    </div>
+                                                    {!notification.isRead && 
+                                                        <div className="ml-2 w-4 h-4 bg-blue-500 rounded-full"></div>
+                                                    }
+                                                </div>
                                             </DropdownNotification>
-                                        )}      
+                                        ))}
                                     </div>
-                                    
-
-                                    
                                 </Dropdown>
                                         
                                 <Dropdown
@@ -302,7 +314,7 @@ const Navigation = ({ ...props }) => {
             </nav>
 
 
-            <div className="sm:ml-64 top-0">
+            <div className="sm:ml-64 top-0 bg-gray-100">
                 <main>{props.children}</main>
             </div>
         </>
