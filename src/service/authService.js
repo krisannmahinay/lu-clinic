@@ -59,9 +59,6 @@ export const authApi = createApi({
                     }
                 }
             },
-            providesTags: (result, error, args) => [
-                { type: 'UserDetails', id: 'LIST' }
-            ]
         }),
 
         grantUserModule: builder.mutation({
