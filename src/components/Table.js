@@ -124,6 +124,10 @@ const Table = forwardRef(({
     title, 
     tableData, 
     tableHeader, 
+    onChecked,
+    onClick,
+    onEdit,
+
     isLoading, 
     permission, 
     module, 
@@ -149,6 +153,8 @@ const Table = forwardRef(({
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState([])
     const [inpatientAction, setInpatientAction] = useState("")
+    const [checked, setChecked] = useState([])
+    const [lastCheckedUserId, setLastCheckedUserId] = useState(null)
 
     // state for dynamic table
     // const [formData, setFormData] = useState([])
@@ -167,7 +173,11 @@ const Table = forwardRef(({
         if(tableData?.length > 0) {
             setFormData(tableData)
         }
-    }, [tableData])
+
+        if(lastCheckedUserId !== null) {
+            onEdit(lastCheckedUserId)
+        }
+    }, [tableData, lastCheckedUserId])
 
     let adjustFontSize
 
@@ -192,15 +202,6 @@ const Table = forwardRef(({
             adjustFontSize = 'text-base'
             break
     }
-
-    // useEffect(() => {
-    //     if(alertType !== "") {
-    //         closeModal()
-    //         setSelectedRows([])
-    //     }
-    // }, [alertType])
-
-    // console.log(tableData)
     
     const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
     const moduleData = moduleList?.moduleList ?? []
@@ -342,6 +343,48 @@ const Table = forwardRef(({
     const handleRemoveRow = (rowIndex, formRowId) => {
         setFormData((prev) => 
             prev.filter((_, index) => index !== rowIndex))
+    }
+
+    const handleOnclick = (type, e, data) => {
+        switch(type) {
+            case 'tickedCheckbox':
+                e.stopPropagation()
+                break
+
+            case 'clickedRow':
+                onClick(e)
+                break
+            default:
+                break
+        }
+    }
+
+    const handleOnchange = (type, e, ids, userId) => {
+        switch(type) {
+            case 'tblSelectRow':
+                const newChecked = e.target.checked
+                    ? [...checked, ids]
+                    : checked.filter((sid) => sid !== ids)
+                
+                setChecked(newChecked)
+                onChecked(newChecked)
+
+                if(e.target.checked) { setLastCheckedUserId(userId) }
+                break
+            
+            case 'tblSelectAll':
+                if (e.target.checked) {
+                    const allIds = tableData?.map((pd) => pd.id) // assuming each patientData has a unique id
+                    setChecked(allIds)
+                    onChecked(allIds)
+                } else {
+                    setChecked([])
+                }
+                break
+
+            default:
+                break
+        }
     }
 
     const renderForm = (fieldName, formRow, index) => {
@@ -537,27 +580,28 @@ const Table = forwardRef(({
                                         ))
                                     )}
                                 </tbody>
-
                             </table>
                         ) : (
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input
+                                                type="checkbox"
+                                                checked={checked.length === tableData.length && tableData.length !== 0}
+                                                onChange={(e) => handleOnchange('tblSelectAll', e)}
+                                            />
+                                        </th>
+
                                         {tableHeader.map((tblHeader, tblHeaderIndex) => (
                                             <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 {tblHeader}
                                             </th>
 
                                         ))}
-
-                                        {action && (
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Action
-                                            </th>
-                                        )}
-                                        
                                     </tr>
                                 </thead>
+
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {tableData.length === 0 ? (
                                         <tr>
@@ -567,93 +611,140 @@ const Table = forwardRef(({
                                         </tr>
                                     ) : (
                                         tableData.map((tblBody, tblBodyIndex) => (
-                                            <tr key={tblBodyIndex}>
+                                            // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
+                                            <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
+                                                <td className="px-6 py-2 whitespace-nowrap text-sm">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked.includes(tblBody.id)}
+                                                        onChange={(e) => handleOnchange('tblSelectRow', e, tblBody.id, tblBody.user_id)}
+                                                        onClick={(e) => handleOnclick('tickedCheckbox', e)}
+                                                    />
+                                                </td>
+
+
                                                 {tableHeader.map((tblHeader) => (
                                                     <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                                        {tblHeader === 'patient_id' ? (
-                                                            // console.log(slug)
-                                                            slug === 'out-patient' || slug === 'in-patient' ? (
-                                                                <a href={`/patients/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
-                                                                    {tblBody[tblHeader]}
-                                                                </a>
-                                                            ) : slug === 'laboratory' ? (
-                                                                <a href={`/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
-                                                                    {tblBody[tblHeader]}
-                                                                </a>
-                                                            ) : (
-                                                                <></>
-                                                            )
-                                                        ) : tblHeader === 'ancillary' ? (
-                                                                tblBody[tblHeader] === "None" && (
-                                                                    <span className="p-2 bg-slate-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                )  
-                                                        ) : tblHeader === 'laboratory_status' ? (
-                                                                tblBody[tblHeader] === "Pending" ? (
-                                                                    <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                ) : 
-
-                                                                tblBody[tblHeader] === "Available" && (
-                                                                    <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                )
-                                                        ) : tblHeader === 'imaging_status' ? (
-                                                                tblBody[tblHeader] === "Pending" ? (
-                                                                    <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                ) : 
-
-                                                                tblBody[tblHeader] === "Available" && (
-                                                                    <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                )
-                                                        ) : tblHeader === 'disposition' ? (
-                                                                tblBody[tblHeader] === "Admission" ? (
-                                                                    <span className="p-2 bg-blue-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                ) : 
-
-                                                                tblBody[tblHeader] === "Discharged" && (
-                                                                    <span className="p-2 bg-yellow-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                                                                )
-                                                        ) : tblHeader === 'physicians_order' ? (
-                                                            <td className="flex items-center space-x-2">
-                                                                <textarea 
-                                                                    type="text" 
-                                                                    name="lastName" 
-                                                                    placeholder="Click for physicians order" 
-                                                                    onClick={() => handleClickedPO("po")}
-                                                                    className="border border-gray-300 px-3 py-2 w-[20rem] focus:border-gray-500 focus:outline-none" 
-                                                                />
-                                                                <button onClick={() => handleClickedPublish("publish")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Publish</button>
-                                                                <button onClick={() => handleClickedRefer("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Refer</button>
-                                                                <button onClick={() => handleClickedMGH("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">MGH</button>
-                                                                
-                                                            </td>
-                                                        ) : tblHeader === 'result_image' ? (
-                                                            <a href="javascript:void(0)" onClick={() => handleImageView("imgView", tblBody?.result_image)} className="text-blue-500 hover:underline">
-                                                                {tblBody?.image_type}
-                                                            </a>
-                                                        ) : (
-                                                            tblBody[tblHeader]
-                                                        )}
+                                                        {tblBody[tblHeader]}
                                                     </td>
                                                 ))}
-
-                                                {action && (
-                                                    <td className="px-6 py-2 whitespace-nowrap">    
-                                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
-                                                            {/* <span>ADD</span> */}
-                                                            <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                                            </svg>
-
-                                                            {/* <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg> */}
-                                                        </button>
-                                                    </td>
-                                                )}
                                             </tr>
                                         ))
                                     )}
                                 </tbody>
                             </table>
+
+
+                            // <table className="min-w-full divide-y divide-gray-200">
+                            //     <thead>
+                            //         <tr>
+                            //             {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                            //                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            //                     {tblHeader}
+                            //                 </th>
+
+                            //             ))}
+
+                            //             {action && (
+                            //                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            //                     Action
+                            //                 </th>
+                            //             )}
+                                        
+                            //         </tr>
+                            //     </thead>
+                            //     <tbody className="bg-white divide-y divide-gray-200">
+                            //         {tableData.length === 0 ? (
+                            //             <tr>
+                            //                 <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                            //                     No records found.
+                            //                 </td>
+                            //             </tr>
+                            //         ) : (
+                            //             tableData.map((tblBody, tblBodyIndex) => (
+                            //                 <tr key={tblBodyIndex}>
+                            //                     {tableHeader.map((tblHeader) => (
+                            //                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                            //                             {tblHeader === 'patient_id' ? (
+                            //                                 // console.log(slug)
+                            //                                 slug === 'out-patient' || slug === 'in-patient' ? (
+                            //                                     <a href={`/patients/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
+                            //                                         {tblBody[tblHeader]}
+                            //                                     </a>
+                            //                                 ) : slug === 'laboratory' ? (
+                            //                                     <a href={`/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
+                            //                                         {tblBody[tblHeader]}
+                            //                                     </a>
+                            //                                 ) : (
+                            //                                     <></>
+                            //                                 )
+                            //                             ) : tblHeader === 'ancillary' ? (
+                            //                                     tblBody[tblHeader] === "None" && (
+                            //                                         <span className="p-2 bg-slate-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     )  
+                            //                             ) : tblHeader === 'laboratory_status' ? (
+                            //                                     tblBody[tblHeader] === "Pending" ? (
+                            //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     ) : 
+
+                            //                                     tblBody[tblHeader] === "Available" && (
+                            //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     )
+                            //                             ) : tblHeader === 'imaging_status' ? (
+                            //                                     tblBody[tblHeader] === "Pending" ? (
+                            //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     ) : 
+
+                            //                                     tblBody[tblHeader] === "Available" && (
+                            //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     )
+                            //                             ) : tblHeader === 'disposition' ? (
+                            //                                     tblBody[tblHeader] === "Admission" ? (
+                            //                                         <span className="p-2 bg-blue-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     ) : 
+
+                            //                                     tblBody[tblHeader] === "Discharged" && (
+                            //                                         <span className="p-2 bg-yellow-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                            //                                     )
+                            //                             ) : tblHeader === 'physicians_order' ? (
+                            //                                 <td className="flex items-center space-x-2">
+                            //                                     <textarea 
+                            //                                         type="text" 
+                            //                                         name="lastName" 
+                            //                                         placeholder="Click for physicians order" 
+                            //                                         onClick={() => handleClickedPO("po")}
+                            //                                         className="border border-gray-300 px-3 py-2 w-[20rem] focus:border-gray-500 focus:outline-none" 
+                            //                                     />
+                            //                                     <button onClick={() => handleClickedPublish("publish")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Publish</button>
+                            //                                     <button onClick={() => handleClickedRefer("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Refer</button>
+                            //                                     <button onClick={() => handleClickedMGH("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">MGH</button>
+                                                                
+                            //                                 </td>
+                            //                             ) : tblHeader === 'result_image' ? (
+                            //                                 <a href="javascript:void(0)" onClick={() => handleImageView("imgView", tblBody?.result_image)} className="text-blue-500 hover:underline">
+                            //                                     {tblBody?.image_type}
+                            //                                 </a>
+                            //                             ) : (
+                            //                                 tblBody[tblHeader]
+                            //                             )}
+                            //                         </td>
+                            //                     ))}
+
+                            //                     {action && (
+                            //                         <td className="px-6 py-2 whitespace-nowrap">    
+                            //                             <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
+                            //                                 <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            //                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                            //                                 </svg>
+
+                            //                             </button>
+                            //                         </td>
+                            //                     )}
+                            //                 </tr>
+                            //             ))
+                            //         )}
+                            //     </tbody>
+                            // </table>
                         )}
                         
                     </>
