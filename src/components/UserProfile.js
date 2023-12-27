@@ -1,4 +1,4 @@
-import { debounce } from "lodash"
+import { debounce, identity } from "lodash"
 import { useState, useEffect } from "react"
 
 const UserProfile = ({data, type, module, permission}) => {
@@ -11,18 +11,48 @@ const UserProfile = ({data, type, module, permission}) => {
     }, [module, permission])
 
     const handleOnchange = (moduleId) => {
-        setPermissions(prevPermissions => ({
-            ...prevPermissions,
-            [moduleId]: !prevPermissions[moduleId],
-        }))
+        setPermissions(prevPermission => {
+            const updatedPermission = {
+                ...prevPermission,
+                [moduleId]: !prevPermission[moduleId]
+            }
+            handleAutoSave(modules?.module, updatedPermission)
+            return updatedPermission
+        })
     }
 
-    const handleAutoSave = debounce((moduleId) => {
-        const toggledModule = modules?.module.find(module => module.module_id === moduleId)
-        
-    })
+    const prepareLogData = (currentModules, currentPermission) => {
+        const toggledModules = currentModules?.filter(m => currentPermission[m.module_id])
 
-    console.log(modules)
+        const menuGrouMapping = {
+            "dashboard": ["patients", "emergency-room", "laboratory", "pharmacy", "finance", "ambulance", "certificate-record", "human-resource", "inventory", "settings"],
+            "patients": ["in-patient", "out-patient", "telumed"],
+            "inventory": ["item", "issue-item"],
+            "settings": ["system", "hr", "charges", "bed", "symptoms", "pharmacy-config", "panthology", "radiology", "certificate", "item-stock", "doh-report"]
+        }
+
+        const toggleData = toggledModules?.map(toggled => {
+            let assignedMenuGroup = null
+            if(toggled.menu_group) {
+                assignedMenuGroup = toggled.module_id
+            } else {
+                Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
+                    if(moduleIds.includes(toggled.module_id)) {
+                        assignedMenuGroup = menuGroupId
+                    }
+                })
+            }
+            return {
+                permission_id: toggled.module_id,
+                identity_id: data?.user_id,
+                menu_group: assignedMenuGroup
+            }
+        })
+
+        console.log(toggleData)
+    }
+
+    const handleAutoSave = debounce(prepareLogData)
 
     return (
         <div>
@@ -69,7 +99,7 @@ const UserProfile = ({data, type, module, permission}) => {
                                                 checked={permissions[mod.module_id] || false} 
                                                 onChange={() => {
                                                     handleOnchange(mod.module_id)
-                                                    handleAutoSave(mod.module_id)
+                                                    handleAutoSave()
                                                 }}
                                                 className="sr-only peer"
                                             />
