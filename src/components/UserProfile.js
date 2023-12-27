@@ -1,19 +1,27 @@
 import { debounce } from "lodash"
 import { useState, useEffect } from "react"
 
-const UserProfile = ({data, type, module}) => {
+const UserProfile = ({data, type, module, permission}) => {
     const [modules, setModules] = useState(module)
-    const [selectedPermission, setSelectedPermission] = useState({})
+    const [permissions, setPermissions] = useState(permission)
+
+    useEffect(() => {
+        setModules(module)
+        setPermissions(permission)
+    }, [module, permission])
 
     const handleOnchange = (moduleId) => {
-        setModules(modules?.module.map(module =>
-            module.module_id === moduleId ? {...module, isToggled: !module.isToggled} : module
-        ))
+        setPermissions(prevPermissions => ({
+            ...prevPermissions,
+            [moduleId]: !prevPermissions[moduleId],
+        }))
     }
 
     const handleAutoSave = debounce((moduleId) => {
         console.log(moduleId)
     })
+
+    // console.log(modules)
 
     return (
         <div>
@@ -52,12 +60,12 @@ const UserProfile = ({data, type, module}) => {
                         <div className="bg-white border border-gray-300 rounded-md w-full divide-y divide-gray-200">
                             <h2 className="font-bold text-sm uppercase text-gray-600 px-4 py-2">Modules</h2>
                             <div className="p-4 space-y-2">
-                                {modules?.module.map(mod => (
+                                {modules?.module?.map(mod => (
                                     <div className="flex ">
                                         <label key={mod.module_id} className="relative inline-flex items-center cursor-pointer">
                                             <input 
                                                 type="checkbox" 
-                                                checked={mod.isToggled} 
+                                                checked={permissions[mod.module_id] || false} 
                                                 onChange={() => {
                                                     handleOnchange(mod.module_id)
                                                     handleAutoSave(mod.module_id)
