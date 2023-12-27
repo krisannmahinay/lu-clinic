@@ -1,10 +1,19 @@
 import { debounce, identity } from "lodash"
 import { useState, useEffect } from "react"
+import { 
+    useGrantUserModuleMutation
+} from "@/service/authService"
 
 const UserProfile = ({data, type, module, permission}) => {
     const [modules, setModules] = useState(module)
     const [permissions, setPermissions] = useState(permission)
 
+    const [
+        grantUserModule, { 
+            isLoading: grantModuleLoading
+        }
+    ] = useGrantUserModuleMutation()
+    
     useEffect(() => {
         setModules(module)
         setPermissions(permission)
@@ -49,7 +58,22 @@ const UserProfile = ({data, type, module, permission}) => {
             }
         })
 
-        console.log(toggleData)
+
+        // console.log(toggleData)
+
+        grantUserModule({toggleData, identity_id:data?.user_id})
+            .unwrap()
+            .then(res => {
+                console.log(res)
+            })
+            .catch(error => {
+                console.log(error)
+                // if(error.status === 500) {
+                //     onSetAlertType("error")
+                //     onSetAlertMessage("Unsuccessful")
+                //     setAlertOpen(true)
+                // }
+            })
     }
 
     const handleAutoSave = debounce(prepareLogData)
