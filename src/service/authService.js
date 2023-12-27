@@ -72,7 +72,9 @@ export const authApi = createApi({
                         selectedDB: session
                     }
                 }
-            }
+            },
+            invalidatesTags: ['UpdateModulesToLatest']
+            
         }),
 
         getGrantModule: builder.query({
@@ -87,7 +89,9 @@ export const authApi = createApi({
                         user_id: user_id
                     }
                 }
-            }
+            },
+            providesTags: ['UpdateModulesToLatest']
+            
         }),
 
         logout: builder.mutation({
