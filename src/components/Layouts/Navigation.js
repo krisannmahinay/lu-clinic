@@ -42,7 +42,7 @@ const Navigation = ({ ...props }) => {
     const [overflow, setOverflow] = useState('hidden')
     const [notificationData, setNotificationData] = useState({})
     const [notificationCount, setNotificationCount] = useState(0)
-    
+
     const [logout, { isLoading, isError, error, isSuccess }] = useLogoutMutation()
     const { 
         data: module, 
@@ -71,23 +71,6 @@ const Navigation = ({ ...props }) => {
         if(prevNotification) {
             setNotifications(prevNotification)
         }
-
-        // if(Array.isArray(prevNotification)) {
-        //     // setNotifications([...new Set([...prevNotification, ...notifications])])
-        //     setNotifications((prev) => {
-        //         const allNotifications = [...prevNotification, ...prev]
-        //         console.log(allNotifications)
-        //         // const uniqueNotifications = Array.from(new Set(allNotifications.map(JSON.stringify))).map(JSON.parse)
-        //         // return uniqueNotifications
-        //     })
-        //     // const combineNotification = [
-        //     //     ...prevNotification,
-        //     //     ...notifications.filter(
-        //     //         (newNotif) => !prevNotification.some((prev) => prev.id === newNotif.id)
-        //     //     )
-        //     // ]
-        //     // setNotifications(combineNotification)
-        // }
 
         const echo = new Echo({
             broadcaster: 'pusher',
@@ -245,13 +228,6 @@ const Navigation = ({ ...props }) => {
                                         
                                     <div className="font-bold text-sm uppercase text-gray-600 ml-2 p-2">Notifications</div>
                                     <div className="divide-y divide-gray-200 overflow-x-hidden scroll-custom max-h-[30vh]">
-                                        {/* {notificationCount > 0 ? (
-                                                
-                                            ) : (
-                                                <DropdownNotification>
-                                                    <div className="text-md text-gray-500 ">No Records</div>
-                                                </DropdownNotification>
-                                            )}   */}
                                         {notifications?.notifications.map((notification, index) => (
                                             <DropdownNotification key={index} onClick={handleClickedNotif}>
                                                 <div className="flex items-start">
@@ -315,7 +291,7 @@ const Navigation = ({ ...props }) => {
 
 
             <div className="sm:ml-64 top-0 bg-gray-100">
-                <main className="container mx-auto">{props.children}</main>
+                <main>{props.children}</main>
             </div>
         </>
     )
