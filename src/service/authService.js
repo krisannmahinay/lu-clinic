@@ -72,8 +72,7 @@ export const authApi = createApi({
                         selectedDB: session
                     }
                 }
-            },
-            invalidatesTags: ['UpdateModulesToLatest']
+            }
             
         }),
 
@@ -89,8 +88,7 @@ export const authApi = createApi({
                         user_id: user_id
                     }
                 }
-            },
-            providesTags: ['UpdateModulesToLatest']
+            }
             
         }),
 
