@@ -1,10 +1,10 @@
 import { debounce, identity } from "lodash"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { 
     useGrantUserModuleMutation
 } from "@/service/authService"
 
-const UserProfile = ({data, type, module, permission}) => {
+const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => {
     const [modules, setModules] = useState(module)
     const [permissions, setPermissions] = useState(permission)
 
@@ -19,7 +19,7 @@ const UserProfile = ({data, type, module, permission}) => {
         setPermissions(permission)
     }, [module, permission])
 
-    const handleOnchange = (moduleId) => {
+    const handleOnchange = useCallback((moduleId) => {
         setPermissions(prevPermission => {
             const updatedPermission = {
                 ...prevPermission,
@@ -28,9 +28,9 @@ const UserProfile = ({data, type, module, permission}) => {
             handleAutoSave(modules?.module, updatedPermission)
             return updatedPermission
         })
-    }
+    }, [permissions])
 
-    const prepareLogData = (currentModules, currentPermission) => {
+    const prepareLogData = async (currentModules, currentPermission) => {
         const toggledModules = currentModules?.filter(m => currentPermission[m.module_id])
 
         const menuGrouMapping = {
@@ -61,7 +61,7 @@ const UserProfile = ({data, type, module, permission}) => {
 
         // console.log(toggleData)
 
-        grantUserModule({toggleData, identity_id:data?.user_id})
+        await grantUserModule({toggleData, identity_id:data?.user_id})
             .unwrap()
             .then(res => {
                 console.log(res)
@@ -74,6 +74,7 @@ const UserProfile = ({data, type, module, permission}) => {
                 //     setAlertOpen(true)
                 // }
             })
+            onRefetch()
     }
 
     const handleAutoSave = debounce(prepareLogData)
@@ -121,13 +122,10 @@ const UserProfile = ({data, type, module, permission}) => {
                                             <input 
                                                 type="checkbox" 
                                                 checked={permissions[mod.module_id] || false} 
-                                                onChange={() => {
-                                                    handleOnchange(mod.module_id)
-                                                    handleAutoSave()
-                                                }}
+                                                onChange={() => handleOnchange(mod.module_id)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-300 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-300 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                                             <span className="ms-3 text-sm font-medium text-gray-700">{mod.type === 'sub' ? `--- ${mod.name}` : mod.name}</span>
                                         </label>
                                     </div>
@@ -148,6 +146,6 @@ const UserProfile = ({data, type, module, permission}) => {
             </div>
         </div>
     )
-}
+})
 
 export default UserProfile
