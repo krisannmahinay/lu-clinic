@@ -9,7 +9,11 @@ import {
 
 import loadinSpinner from '../../public/assets/svg/image2vector.svg'
 
-import { useGetUserDetailsQuery } from '@/service/authService'
+import { 
+    useGetUserDetailsQuery,
+    useGetUserByIdQuery,
+    useGetGrantModuleQuery
+} from '@/service/authService'
 
 
 import { useGetUserById } from "@/service/authService"
@@ -30,6 +34,7 @@ import Dropdown from "@/components/Dropdown"
 import SearchExport from '@/components/SearchExport'
 import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from "@/components/DropdownLink"
+import UserProfile from '@/components/UserProfile'
 
 const userRegistration = [
     {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
@@ -64,7 +69,12 @@ const Setting = () => {
     const [refetchData, setRefetchData] = useState(false)
     const [reInitFields, setReIinitFields] = useState(true)
     const [btnSpinner, setBtnSpinner] = useState(true)
+    const [isOptionDisabled, setIsOptionDisabled] = useState(true)
+    const [isOptionEditDisabled, setIsOptionEditDisabled] = useState(true)
     const [highlightedRows, setHighlightedRows] = useState(new Set())
+    const [contentType, setContentType] = useState("")
+    const [profileData, setProfileData] = useState({})
+    const [checkIds, setCheckIds] = useState(0)
 
     const [contentHeight, setContentHeight] = useState(0)
     
@@ -89,7 +99,29 @@ const Setting = () => {
         enabled: !!searchQuery
     })
 
-    // console.log(moduleList)
+    const {
+        data: profileDetails
+    } = useGetUserByIdQuery({
+        user_id: profileData?.user_id || checkIds
+    }, {
+        enabled: !!profileData?.user_id
+    })
+
+    const {
+        data: moduleMaster,
+        refetch: refetchModules
+    } = useGetGrantModuleQuery({
+        user_id: checkIds
+    }, {
+        enabled: !!checkIds
+    })
+
+    const initModule = moduleMaster?.module.reduce((acc, module) => {
+        acc[module.module_id] = module.isToggled
+        return acc
+    }, {})
+
+    // console.log(initModule)
     
     const { 
         data: userDetails, 
@@ -104,7 +136,7 @@ const Setting = () => {
     const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
     
-    // console.log(userList)
+    // console.log(moduleList)
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)
@@ -165,118 +197,85 @@ const Setting = () => {
 
     }, [userSuccess, btnSpinner])
 
-
-    const handleSearch = (e) => {
-        setSearchQuery(e.target.value)
-    }
-
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
-        // setRefetchData(true)
-        // setItemsPerPage(prev => prev + 1)
-    }
-
-    const handleCurrentPage = (page) => {
-        setCurrentPage(page)
-    }
-
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(e.target.value)
     }
 
     const handleExportToPDF = () => {
         
     }
 
-    const handleAlertClose = () => {
-        setAlertType("")
-        setAlertMessage([])
-    }
-
-    const handleAlert = (data) => {
-        setAlertType(data)
-    }
-
-    const handleAlerMessage = (data) => {
-        // setAlertMessage(data)
-        console.log(data)
-    }
-
-    const handleAlertType = (data) => {
-        setAlertType(data)
-    }
-
-    const closeModal = () => {
-        // setSelectedRows([])
-        setIsModalOpen(false)
-    }
-
     const handleRefetch = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
-    const handleLoadingSpinner = (data) => {
-        setBtnSpinner(data)
+    const handleOnchecked = (data) => {
+        // console.log(data)
+        // console.log(data.length)
+        setIsOptionEditDisabled(data.length > 1)
+        setIsOptionDisabled(data.length === 0)
     }
 
-    const handleCloseSlider = () => {
-        setActiveContent("yellow")
+    const handleOnchange = (type, e) => {
+        switch(type) {
+            case 'itemsPerPage':
+                setItemsPerPage(e.target.value)
+                break
+
+            case 'search':
+                setSearchQuery(e.target.value)
+            
+            default:
+                break
+        }
     }
 
-    const renderTableContent = () => {
-        return (
-            <>
-            {userListLoading ? (
-                <SkeletonScreen rowCount={userData?.length} columnCount={header?.length}/> 
-            ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr>
-                            {header.map((tblHeader, tblHeaderIndex) => (
-                                <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    {tblHeader}
-                                </th>
+    const handleOnclose = (type) => {
+        switch(type) {
+            case 'closeAlert':
+                setAlertType("")
+                setAlertMessage([])
+                break
 
-                            ))}
+            case 'closeModal':
+                setIsModalOpen(false)
+                break
 
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Action
-                            </th>
-                        </tr>
-                    </thead>
-                    
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {userData.length === 0 ? (
-                            <tr>
-                                <td colSpan={header.length + 1} className="px-6 py-2 text-center">
-                                    No records found.
-                                </td>
-                            </tr>
-                        ) : (
-                            userData.map((tblBody, tblBodyIndex) => (
-                                <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                    {header.map((tblHeader) => (
-                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                            {tblBody[tblHeader]}
-                                        </td>
-                                    ))}
+            default:
+                break
+        }
+    }
 
-                                    <td className="px-6 py-2 whitespace-nowrap">    
-                                        <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
-                                            {/* <span>ADD</span> */}
-                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-                )}
-            </>
-        )
+    const handleOnclick = (type, data) => {
+        switch(type) {
+            case 'addRowBtn':
+                formRef.current.handleAddRow()
+                break
+
+            case 'addUserBtn':
+                formRef.current.handleSubmit('createUser')
+                break
+
+            case 'closeDrawer':
+                setActiveContent("yellow")
+                // setProfileData([])
+                break
+
+            case 'editUserBtn':
+                setProfileData(data)
+                setActiveContent("green")
+                setContentType("editUser")
+                break
+
+            case 'clickedRows':
+                setProfileData(data)
+                setActiveContent("green")
+                setContentType("viewUser")
+                break
+
+            default:
+                break
+        }
     }
 
     const renderContent = () => {
@@ -284,13 +283,47 @@ const Setting = () => {
             <>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     <div className="flex justify-between py-1">
-                        <Button
-                            bgColor=""
-                            btnIcon="user"
-                            onClick={() => setActiveContent("green")}
-                        >
-                            New User
-                        </Button>
+                        <div className="flex space-x-1">
+                            <Button
+                                bgColor=""
+                                btnIcon="user"
+                                onClick={() => {
+                                    setActiveContent("green")
+                                    setContentType("addUser")
+                                }}
+                            >
+                                New User
+                            </Button>
+
+                            <Dropdown
+                                align="left"
+                                width="48"
+                                trigger={
+                                    <button 
+                                        onClick="" 
+                                        className={`${isOptionDisabled 
+                                            ? 'bg-gray-300' 
+                                            : 'bg-indigo-500 hover:bg-indigo-600'
+                                        } flex items-center text-white text-sm px-2 gap-2 rounded focus:outline-none`} 
+                                        disabled={isOptionDisabled}>
+                                        
+                                        <svg dataSlot="icon" fill="none" className="h-4 w-4" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        </svg>
+
+                                        Options
+                                    </button>
+                                }>
+                                <button onClick={() => handleOnclick('editUserBtn')} 
+                                    className={`${isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`}
+                                    disabled={isOptionEditDisabled}>
+                                    Edit
+                                </button>
+                                <button className="w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out">
+                                    Delete
+                                </button>
+                            </Dropdown>
+                        </div>
 
                         <SearchExport>
                             <div className="flex items-center">
@@ -299,7 +332,7 @@ const Setting = () => {
                                         type="text"
                                         value={searchQuery}
                                         // onChange={e => setSearchQuery(e.target.value)}
-                                        onChange={(e) => handleSearch(e)}
+                                        onChange={(e) => handleOnchange('search',e)}
                                         className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
                                         placeholder="Search..."
                                     />
@@ -312,7 +345,7 @@ const Setting = () => {
                                     align="right"
                                     width="48"
                                     trigger={
-                                        <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                        <button className="border h-8 border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
                                             <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                                             </svg>
@@ -330,13 +363,20 @@ const Setting = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        <Table 
+                        {/* <Table 
                             title="User List" 
                             disableTable={true}
                             onOpenModal={(id) => setModalId(id)}
                         >
                             {renderTableContent()}
-                        </Table>
+                        </Table> */}
+                        <Table
+                            tableData={userData}
+                            tableHeader={header}
+                            onChecked={(data) => handleOnchecked(data)}
+                            onClick={(data) => handleOnclick('clickedRows', data)}
+                            onEdit={(id) => setCheckIds(id)}
+                        />
                     </div>
         
                     <div className="flex flex-wrap py-1">
@@ -354,7 +394,7 @@ const Setting = () => {
                                 <span className="mr-2 mx-2 text-gray-700 text-sm">Per Page:</span>
                                 <select
                                     value={itemsPerPage}
-                                    onChange={(e) => handleItemsPerPageChange(e)}
+                                    onChange={(e) => handleOnchange('itemsPerPage',e)}
                                     className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
                                     <option value="5">5</option>
                                     <option value="10">10</option>
@@ -366,45 +406,86 @@ const Setting = () => {
                 </div>
                 
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
-                    <div className="flex justify-between py-2">
-                        <Button
-                            paddingY="1"
-                            btnIcon="close"
-                            // onClick={() => setActiveContent("yellow")}
-                            onClick={handleCloseSlider}
-                        >
-                            Close
-                        </Button>
+                    {contentType === 'addUser' && (
+                        <div>
+                            <div className="flex justify-between py-2">
+                                <Button
+                                    paddingY="1"
+                                    btnIcon="close"
+                                    // onClick={() => setActiveContent("yellow")}
+                                    onClick={() => handleOnclick('closeDrawer')}
+                                >
+                                    Close
+                                </Button>
 
-                        <div className="flex gap-2">
-                            <Button
-                                bgColor="indigo"
-                                btnIcon="add"
-                                onClick={() => formRef.current.handleAddRow()}
-                            >
-                                Add Row
-                            </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        bgColor="indigo"
+                                        btnIcon="add"
+                                        onClick={() => handleOnclick('addRowBtn')}
+                                    >
+                                        Add Row
+                                    </Button>
 
-                            <Button
-                                bgColor={btnSpinner ? 'disable': 'emerald'}
-                                btnIcon={btnSpinner ? 'disable': 'submit'}
-                                btnLoading={btnSpinner}
-                                onClick={() => formRef.current.handleSubmit('createUser')}
-                            >
-                                {btnSpinner ? '' : 'Submit'}
-                            </Button>
+                                    <Button
+                                        bgColor={btnSpinner ? 'disable': 'emerald'}
+                                        btnIcon={btnSpinner ? 'disable': 'submit'}
+                                        btnLoading={btnSpinner}
+                                        onClick={() => handleOnclick('addUserBtn')}
+                                    >
+                                        {btnSpinner ? '' : 'Submit'}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <Form 
+                                ref={formRef} 
+                                initialFields={userRegistration}
+                                onSuccess={handleRefetch}
+                                onCloseSlider={() => setActiveContent("yellow")}
+                                onLoading={(data) => setBtnSpinner(data)}
+                                onSetAlertType={(data) => setAlertType(data)}
+                                onSetAlertMessage={(data) => setAlertMessage(data)}
+                            />
                         </div>
-                    </div>
+                    )}
 
-                    <Form 
-                        ref={formRef} 
-                        initialFields={userRegistration}
-                        onSuccess={handleRefetch}
-                        onCloseSlider={() => setActiveContent("yellow")}
-                        onLoading={(data) => setBtnSpinner(data)}
-                        onSetAlertType={(data) => setAlertType(data)}
-                        onSetAlertMessage={(data) => setAlertMessage(data)}
-                    />
+                    {contentType === 'editUser' && (
+                        <div>
+                            <Button
+                                paddingY="1"
+                                btnIcon="close"
+                                onClick={() => handleOnclick('closeDrawer')}
+                            >
+                                Close
+                            </Button>
+                            
+                            <UserProfile 
+                                data={profileDetails?.user[0]}
+                                type="edit"
+                                module={moduleMaster}
+                                permission={initModule}
+                                onRefetch={refetchModules}
+                            />
+                        </div>
+                    )}
+
+                    {contentType === 'viewUser' && (
+                        <div>
+                            <Button
+                                paddingY="1"
+                                btnIcon="close"
+                                onClick={() => handleOnclick('closeDrawer')}
+                            >
+                                Close
+                            </Button>
+
+                            <UserProfile 
+                                data={profileDetails?.user[0]}
+                                type="view"
+                            />
+                        </div>
+                    )}
                 </div>
             </>
         )
@@ -429,7 +510,7 @@ const Setting = () => {
                     <Alert 
                         alertType={alertType}
                         isOpen={alertType !== ""}
-                        onClose={handleAlertClose}
+                        onClose={() => handleOnclose('closeAlert')}
                         message={alertMessage} 
                     /> 
                 }
@@ -441,7 +522,7 @@ const Setting = () => {
                     isOpen={isModalOpen} 
                     initialFields={userRegistration}
                     addUserBtn={true}
-                    onClose={closeModal}
+                    onClose={() => handleOnclose('closeModal')}
                     onSuccess={handleRefetch}
                     onSetAlertType={(data) => setAlertType(data)}
                     onSetAlertMessage={(data) => setAlertMessage(data)}
