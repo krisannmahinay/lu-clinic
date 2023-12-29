@@ -351,7 +351,6 @@ export const settingApi = createApi({
                 'HospitalChargeTypeList',
                 'HospitalChargeCategoryList',
                 'ActiveBedList',
-                'UpdateOPDtoLatest'
             ],
         })
     })
