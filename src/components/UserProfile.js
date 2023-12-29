@@ -31,35 +31,88 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
     }, [permissions])
 
     const prepareLogData = async (currentModules, currentPermission) => {
-        const toggledModules = currentModules?.filter(m => currentPermission[m.module_id])
-
         const menuGrouMapping = {
             "dashboard": ["patients", "emergency-room", "laboratory", "pharmacy", "finance", "ambulance", "certificate-record", "human-resource", "inventory", "settings"],
             "patients": ["in-patient", "out-patient", "telumed"],
             "inventory": ["item", "issue-item"],
             "settings": ["system", "hr", "charges", "bed", "symptoms", "pharmacy-config", "panthology", "radiology", "certificate", "item-stock", "doh-report"]
         }
-
-        const toggleData = toggledModules?.map(toggled => {
-            let assignedMenuGroup = null
-            if(toggled.menu_group) {
-                assignedMenuGroup = toggled.module_id
-            } else {
-                Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
-                    if(moduleIds.includes(toggled.module_id)) {
-                        assignedMenuGroup = menuGroupId
+        
+        const toggledModules = currentModules?.filter(m => currentPermission[m.module_id])
+        const toggleMenuGroups = new Set(toggledModules.filter(m => m.menu_group).map(m => m.module_id))
+        const toggleData = []
+        toggledModules.forEach(module => {
+            if(module.menu_group) {
+                toggleData.push({
+                    permission_id: module.module_id,
+                    identity_id: data?.user_id,
+                    menu_group: module.module_id
+                })
+                // Also link this menu group with all other toggled menu groups
+                toggleMenuGroups.forEach(toggledGroup => {
+                    if (module.module_id !== toggledGroup) { // Avoid linking to itself
+                        toggleData.push({
+                            permission_id: module.module_id,
+                            identity_id: data?.user_id,
+                            menu_group: toggledGroup
+                        })
                     }
                 })
             }
-            return {
-                permission_id: toggled.module_id,
-                identity_id: data?.user_id,
-                menu_group: assignedMenuGroup
-            }
+            // For each menu group, link the current module to it
+            toggleMenuGroups.forEach(menuGroupId => {
+                toggleData.push({
+                    permission_id: module.module_id,
+                    identity_id: data?.user_id,
+                    menu_group: menuGroupId
+                })
+            })
         })
 
 
-        // console.log(toggleData)
+        // const toggleData = toggledModules?.map(toggled => {
+        //     let assignedMenuGroup = null
+        //     if(toggled.menu_group) {
+        //         assignedMenuGroup = toggled.module_id
+        //     } else {
+        //         Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
+        //             if(moduleIds.includes(toggled.module_id)) {
+        //                 assignedMenuGroup = menuGroupId
+        //             }
+        //         })
+        //     }
+        //     return {
+        //         permission_id: toggled.module_id,
+        //         identity_id: data?.user_id,
+        //         menu_group: assignedMenuGroup
+        //     }
+        // })
+
+        // const toggleData = currentModules?.filter(m => currentPermission[m.module_id]).map(toggled => {
+        //     const isMenuGroup = toggled.menu_group
+        //     const assignedMenuGroup = []
+        //     if(isMenuGroup) {
+        //         assignedMenuGroup.push({
+        //             permission_id: toggled.module_id,
+        //             identity_id: data?.user_id,
+        //             menu_group: toggled.module_id
+        //         })
+        //     }
+        //     Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
+        //         if(moduleIds.includes(toggled.module_id)) {
+        //             assignedMenuGroup.push({
+        //                 permission_id: toggled.module_id,
+        //                 identity_id: data?.user_id,
+        //                 menu_group: menuGroupId,
+        //             })
+        //         }
+        //     })
+        //     console.log(assignedMenuGroup)
+        //     return assignedMenuGroup
+        // }).flat()
+
+
+        console.log(toggleData)
 
         await grantUserModule({toggleData, identity_id:data?.user_id})
             .unwrap()
@@ -116,9 +169,9 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
                         <div className="bg-white border border-gray-300 rounded-md w-full divide-y divide-gray-200">
                             <h2 className="font-bold text-sm uppercase text-gray-600 px-4 py-2">Modules</h2>
                             <div className="p-4 space-y-2">
-                                {modules?.module?.map(mod => (
-                                    <div className="flex ">
-                                        <label key={mod.module_id} className="relative inline-flex items-center cursor-pointer">
+                                {modules?.module?.map((mod, index) => (
+                                    <div className="flex">
+                                        <label key={index} className="relative inline-flex items-center cursor-pointer">
                                             <input 
                                                 type="checkbox" 
                                                 checked={permissions[mod.module_id] || false} 
