@@ -14,7 +14,7 @@ const nextConfig = {
     reactStrictMode: true,
     env: {
         NEXT_SOCKET_IO: 'http://127.0.0.1:6001',
-        NODE_ENV: 'development',
+        NEXT_ENV: 'development',
         API_URL: 'http://localhost/api',
         NEXT_PUBLIC_PUSHER_APP_KEY: '1bfa0e4b900a03079829',
         NEXT_PUBLIC_PUSHER_APP_CLUSTER: 'ap1',
