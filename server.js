@@ -1,53 +1,31 @@
-// const { createServer } = require('http')
-// const { join } = require('path')
-// const { parse } = require('url')
-// const next = require('next')
-
-// const app = next({ dev: process.env.NODE_ENV !== 'production' })
-// const handle = app.getRequestHandler()
-
-// app.prepare().then(() => {
-//   createServer((req, res) => {
-//     const parsedUrl = parse(req.url, true)
-//     const { pathname } = parsedUrl
-
-//     if (pathname === '/sw.js' || /^\/(workbox|worker|fallback)-\w+\.js$/.test(pathname)) {
-//       const filePath = join(__dirname, '.next', pathname)
-//       app.serveStatic(req, res, filePath)
-//     } else {
-//       handle(req, res, parsedUrl)
-//     }
-//   }).listen(3000, () => {
-//     console.log(`> Ready on http://localhost:${3000}`)
-//   })
-// })
-
-const { createServer } = require('http')
+const express = require('express')
 const next = require('next')
-const WebSocket = require('ws')
+const http = require('http')
+const socketIO = require('socket.io')
+const Redis = require('ioredis')
 
-const port = parseInt(process.env.PORT, 10) || 3003
 const dev = process.env.NODE_ENV !== 'production'
-const app = next({ dev })
-const handle = app.getRequestHandler()
+const nextApp = next({ dev })
+const handle = nextApp.getRequestHandler() // Next.js request handler
 
-app.prepare().then(() => {
-  const server = createServer((req, res) => {
-    handle(req, res)
+nextApp.prepare().then(() => {
+  const app = express()
+  const server = http.createServer(app)
+  const io = socketIO(server)
+  const redis = new Redis()
+
+  redis.subscribe('notifications', () => {
+      console.log('Subscribed to "notifications" channel')
   })
 
-  const wss = new WebSocket.Server({ server })
-
-  wss.on('connection', (ws) => {
-    console.log('Client connected')
-    ws.on('message', (message) => {
-      console.log(`Received: ${message}`)
-    });
-    ws.send('Hello! Connected to WebSocket Server')
-  });
-
-  server.listen(port, (err) => {
-    if (err) throw err;
-    console.log(`> Ready on http://localhost:${port}`)
+  redis.on('message', (channel, message) => {
+      console.log(`Message received from ${channel}: ${message}`)
+      io.sockets.emit('notification', message)
   })
+
+  app.all('*', (req, res) => {
+      return handle(req, res) // handling the request with Next.js
+  })
+
+  server.listen(6001, () => console.log(`Server is running on port 6001`))
 })
