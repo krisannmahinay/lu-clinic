@@ -7,6 +7,7 @@ import {
 const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => {
     const [modules, setModules] = useState(module)
     const [permissions, setPermissions] = useState(permission)
+    const [moduleLoading, setModuleLoading] = useState(true)
 
     const [
         grantUserModule, { 
@@ -17,6 +18,7 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
     useEffect(() => {
         setModules(module)
         setPermissions(permission)
+
     }, [module, permission])
 
     const handleOnchange = useCallback((moduleId) => {
@@ -48,69 +50,31 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
                     identity_id: data?.user_id,
                     menu_group: module.module_id
                 })
-                // Also link this menu group with all other toggled menu groups
-                toggleMenuGroups.forEach(toggledGroup => {
-                    if (module.module_id !== toggledGroup) { // Avoid linking to itself
+                
+                toggledModules.filter(m=>m.menu_group).forEach(mod => {
+                    if(module.module_id !== mod.module_id) {
                         toggleData.push({
                             permission_id: module.module_id,
                             identity_id: data?.user_id,
-                            menu_group: toggledGroup
+                            menu_group: mod.module_id
                         })
                     }
                 })
-            }
-            // For each menu group, link the current module to it
-            toggleMenuGroups.forEach(menuGroupId => {
+
+            } else {
+                let assignedMenuGroup = null
+                Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
+                    if(moduleIds.includes(module.module_id)) {
+                        assignedMenuGroup = menuGroupId
+                    }
+                })
                 toggleData.push({
                     permission_id: module.module_id,
                     identity_id: data?.user_id,
-                    menu_group: menuGroupId
+                    menu_group: assignedMenuGroup
                 })
-            })
+            }
         })
-
-
-        // const toggleData = toggledModules?.map(toggled => {
-        //     let assignedMenuGroup = null
-        //     if(toggled.menu_group) {
-        //         assignedMenuGroup = toggled.module_id
-        //     } else {
-        //         Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
-        //             if(moduleIds.includes(toggled.module_id)) {
-        //                 assignedMenuGroup = menuGroupId
-        //             }
-        //         })
-        //     }
-        //     return {
-        //         permission_id: toggled.module_id,
-        //         identity_id: data?.user_id,
-        //         menu_group: assignedMenuGroup
-        //     }
-        // })
-
-        // const toggleData = currentModules?.filter(m => currentPermission[m.module_id]).map(toggled => {
-        //     const isMenuGroup = toggled.menu_group
-        //     const assignedMenuGroup = []
-        //     if(isMenuGroup) {
-        //         assignedMenuGroup.push({
-        //             permission_id: toggled.module_id,
-        //             identity_id: data?.user_id,
-        //             menu_group: toggled.module_id
-        //         })
-        //     }
-        //     Object.entries(menuGrouMapping).forEach(([menuGroupId, moduleIds]) => {
-        //         if(moduleIds.includes(toggled.module_id)) {
-        //             assignedMenuGroup.push({
-        //                 permission_id: toggled.module_id,
-        //                 identity_id: data?.user_id,
-        //                 menu_group: menuGroupId,
-        //             })
-        //         }
-        //     })
-        //     console.log(assignedMenuGroup)
-        //     return assignedMenuGroup
-        // }).flat()
-
 
         console.log(toggleData)
 
@@ -121,13 +85,7 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
             })
             .catch(error => {
                 console.log(error)
-                // if(error.status === 500) {
-                //     onSetAlertType("error")
-                //     onSetAlertMessage("Unsuccessful")
-                //     setAlertOpen(true)
-                // }
             })
-            onRefetch()
     }
 
     const handleAutoSave = debounce(prepareLogData)
@@ -167,7 +125,18 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
                     
                     {type === 'edit' && (
                         <div className="bg-white border border-gray-300 rounded-md w-full divide-y divide-gray-200">
-                            <h2 className="font-bold text-sm uppercase text-gray-600 px-4 py-2">Modules</h2>
+                            <div className="flex justify-between">
+                                <div className="px-4 py-2 mt-1">
+                                    <h2 className="font-bold text-sm uppercase text-gray-600">Modules</h2>
+                                </div>
+                                {grantModuleLoading ? (
+                                    <div className="px-4 py-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-6 animate-spin text-gray-700' viewBox="0 0 100 100" fill="none">
+                                            <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
+                                        </svg>
+                                    </div>
+                                ): ""}
+                            </div>
                             <div className="p-4 space-y-2">
                                 {modules?.module?.map((mod, index) => (
                                     <div className="flex">
@@ -190,7 +159,9 @@ const UserProfile = React.memo(({data, type, module, permission, onRefetch}) => 
 
 
                     <div className="bg-white border border-gray-300 rounded-md w-full divide-y divide-gray-200">
-                        <h2 className="font-bold text-sm uppercase text-gray-600 px-4 py-2">Activities</h2>
+                        <div className="px-4 py-2 mt-1">
+                            <h2 className="font-bold text-sm uppercase text-gray-600">Activities</h2>
+                        </div>
                         <div className="p-4">
 
                         </div>
