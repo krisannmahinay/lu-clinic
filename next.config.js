@@ -13,7 +13,7 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
     reactStrictMode: true,
     env: {
-        NEXT_SOCKET_IO: 'http://localhost:6001',
+        NEXT_SOCKET_IO: 'http://127.0.0.1:6001',
         NEXT_ENV: 'development',
         API_URL: 'http://localhost/api',
         // NEXT_PUBLIC_PUSHER_APP_KEY: '1bfa0e4b900a03079829',
