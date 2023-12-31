@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import React, { useImperativeHandle, forwardRef, useEffect, useState } from 'react'
+import React, { useImperativeHandle, forwardRef, useEffect, useState, useCallback } from 'react'
 import { useCreateUserBatchMutation, useCreateBulkMutation } from '@/service/settingService'
 import { useGetPhysicianChargeQuery } from '@/service/patientService'
 import Select from 'react-select'
@@ -30,7 +30,8 @@ const Form = forwardRef(({
         onCloseSlider,
         onSetAlertMessage,
         onSetAlertType,
-        onLoading
+        onLoading,
+        enableAutoSave
     }, ref) => {
     const router = useRouter()
     const [formData, setFormData] = useState([])
@@ -59,7 +60,7 @@ const Form = forwardRef(({
         handleAddRow
     }));
  
-     useEffect(() => {
+    useEffect(() => {
         setFormData([{ 
             id: '_' + Date.now() + Math.random(), 
             fields: initialFields.reduce((acc, field) => ({ 
@@ -95,68 +96,72 @@ const Form = forwardRef(({
         return age
     }
     
-     const handleInputChange = (e, rowIndex, fieldName) => {
-         if(fieldName === 'birth_date') {
-            const age = calculatedAge(e.target.value)
-            setFormData((prev) =>
-                prev.map((row, index) =>
-                    index === rowIndex ? { ...row, fields: {
-                            ...row.fields,
-                            age: age,
-                            birth_date: e.target.value
-                        }
-                    } : row
-                ) 
-            )
-         } else if(fieldName === 'admiting_physician') {
-            if(physicianChargeMaster) {
+     const handleInputChange = useCallback((e, rowIndex, fieldName) => {
+        if(enableAutoSave) {
+
+        } else {
+            if(fieldName === 'birth_date') {
+                const age = calculatedAge(e.target.value)
+                setFormData((prev) =>
+                    prev.map((row, index) =>
+                        index === rowIndex ? { ...row, fields: {
+                                ...row.fields,
+                                age: age,
+                                birth_date: e.target.value
+                            }
+                        } : row
+                    ) 
+                )
+             } else if(fieldName === 'admiting_physician') {
+                if(physicianChargeMaster) {
+                    setFormData((prev) =>
+                        prev.map((row, index) =>
+                            index === rowIndex ? { ...row, fields: {
+                                    ...row.fields,
+                                    [fieldName]: e?.value,
+                                    standard_charge: physicianChargeMaster?.find(charge => charge.doctor_id === e?.value)?.standard_charge
+                                }
+                            } : row 
+                        ) 
+                    )
+                }
+             } else if([
+                    'gender',
+                    'roles',
+                    'bed',
+                    'bed_type',
+                    'bed_group',
+                    'bed_floor',
+                    'charge_type',
+                    'charge_category',
+                    'doctor_opd'
+                ].includes(fieldName)) {
                 setFormData((prev) =>
                     prev.map((row, index) =>
                         index === rowIndex ? { ...row, fields: {
                                 ...row.fields,
                                 [fieldName]: e?.value,
-                                standard_charge: physicianChargeMaster?.find(charge => charge.doctor_id === e?.value)?.standard_charge
                             }
-                        } : row 
+                        } : row
                     ) 
                 )
-            }
-         } else if([
-                'gender',
-                'roles',
-                'bed',
-                'bed_type',
-                'bed_group',
-                'bed_floor',
-                'charge_type',
-                'charge_category',
-                'doctor_opd'
-            ].includes(fieldName)) {
-            setFormData((prev) =>
-                prev.map((row, index) =>
-                    index === rowIndex ? { ...row, fields: {
-                            ...row.fields,
-                            [fieldName]: e?.value,
-                        }
-                    } : row
-                ) 
-            )
-         } else {
-             const { value, type, checked } = e.target
-             const fieldValue = type === 'checkbox' ? checked : value
-             setFormData((prev) =>
-                 prev.map((row, index) =>
-                     index === rowIndex ? { 
-                        ...row, 
-                        fields: {
-                            ...row.fields,
-                            [fieldName]: fieldValue 
-                        }
-                    } : row 
+             } else {
+                 const { value, type, checked } = e.target
+                 const fieldValue = type === 'checkbox' ? checked : value
+                 setFormData((prev) =>
+                     prev.map((row, index) =>
+                         index === rowIndex ? { 
+                            ...row, 
+                            fields: {
+                                ...row.fields,
+                                [fieldName]: fieldValue 
+                            }
+                        } : row 
+                     )
                  )
-             )
-         }
-     }
+             }
+        }
+     }, [])
  
      const handleResetForm = () => {
         setFormData([{ 
