@@ -219,7 +219,7 @@ const Form = forwardRef(({
              <div key={field.name}>
                 {field.type === "text" && !field.disabled && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -237,7 +237,7 @@ const Form = forwardRef(({
 
                 {field.type === "text" && field.disabled && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -255,7 +255,7 @@ const Form = forwardRef(({
 
                 {field.type === "password" && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -274,7 +274,7 @@ const Form = forwardRef(({
 
                 {field.type === 'email' && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -292,7 +292,7 @@ const Form = forwardRef(({
 
                 {field.type === 'date' && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -310,7 +310,7 @@ const Form = forwardRef(({
 
                 {field.type === 'number' && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
                             {field.label}
                         </label>
                         <input
@@ -328,7 +328,7 @@ const Form = forwardRef(({
 
                 {field.type === 'dropdown' && (
                     <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-bold text-xs mb-2 uppercase">{field.label}:</label>
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">{field.label}:</label>
                         <Select 
                             options={field.options?.map(option => ({ 
                                 value: option.value, 
@@ -366,7 +366,7 @@ const Form = forwardRef(({
                  {/* <form> */}
                      {formData.map((row, rowIndex) => (
                              <div key={row.id} className="flex gap-4">
-                                <div className="grid grid-cols-3 w-full gap-4">
+                                <div className="sm:flex sm:flex-col md:grid md:grid-cols-3 w-full gap-4">
                                     {renderForm(row, rowIndex)}
                                 </div>
                                  {formData.length > 1 && (
