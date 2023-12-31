@@ -95,6 +95,7 @@ const Form = forwardRef(({
         }
         return age
     }
+    // console.log(formData)
     
      const handleInputChange = useCallback((e, rowIndex, fieldName) => {
         if(enableAutoSave) {
@@ -221,7 +222,7 @@ const Form = forwardRef(({
  
      const renderForm = (row, rowIndex) => {
          return initialFields.map((field) => (
-             <div key={field.name}>
+            <div key={field.name}>
                 {field.type === "text" && !field.disabled && (
                     <div>
                         <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
@@ -232,7 +233,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border border-gray-300  w-full px-3 py-1 focus:outline-none"
                             placeholder={field.placeholder}
@@ -250,7 +251,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border-none bg-gray-200 px-3 py-1 focus:outline-none w-full"
                             placeholder={field.placeholder}
@@ -268,7 +269,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
                             placeholder={field.placeholder}
@@ -287,7 +288,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
                             placeholder={field.placeholder}
@@ -305,7 +306,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
                             placeholder={field.placeholder}
@@ -323,7 +324,7 @@ const Form = forwardRef(({
                             type={field.type}
                             id={field.name}
                             name={field.name}
-                            value={row.fields[field.name]}
+                            value={field.value !== null ? field.value : row.fields[field.name]}
                             onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                             className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
                             placeholder={field.placeholder}
@@ -346,12 +347,12 @@ const Form = forwardRef(({
                             classNamePrefix="react-select"
                             styles={styleDropdown}
                             value={field.options?.find(option => 
-                                option.value === row.fields[field.name]
+                                option.value === field.value !== null ? field.value : row.fields[field.name]
                             )}
                         />
                     </div>
                 )}
-             </div>
+            </div>
          ))
      }
  
@@ -371,7 +372,7 @@ const Form = forwardRef(({
                  {/* <form> */}
                      {formData.map((row, rowIndex) => (
                              <div key={row.id} className="flex gap-4">
-                                <div className="sm:flex sm:flex-col md:grid md:grid-cols-3 w-full gap-4">
+                                <div className="md:flex md:flex-col lg:grid lg:grid-cols-3 w-full gap-4">
                                     {renderForm(row, rowIndex)}
                                 </div>
                                  {formData.length > 1 && (
