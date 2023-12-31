@@ -589,6 +589,7 @@ const Bed = ({slug}) => {
                         <Form 
                             ref={formRef} 
                             initialFields={bedListTab}
+                            enableAutoSave={false}
                             onSuccess={handleRefetch}
                             onLoading={(data) => setBtnSpinner(data)}
                             onSetAlertType={(data) => setAlertType(data)}
@@ -601,6 +602,7 @@ const Bed = ({slug}) => {
                         <Form 
                             ref={formRef} 
                             initialFields={bedTypeTab}
+                            enableAutoSave={false}
                             onSuccess={handleRefetch}
                             onLoading={(data) => setBtnSpinner(data)}
                             onSetAlertType={(data) => setAlertType(data)}
@@ -613,6 +615,7 @@ const Bed = ({slug}) => {
                         <Form 
                             ref={formRef} 
                             initialFields={bedGroupTab}
+                            enableAutoSave={false}
                             onSuccess={handleRefetch}
                             onLoading={(data) => setBtnSpinner(data)}
                             onSetAlertType={(data) => setAlertType(data)}
@@ -625,6 +628,7 @@ const Bed = ({slug}) => {
                         <Form 
                             ref={formRef} 
                             initialFields={bedFloorTab}
+                            enableAutoSave={false}
                             onSuccess={handleRefetch}
                             onLoading={(data) => setBtnSpinner(data)}
                             onSetAlertType={(data) => setAlertType(data)}
