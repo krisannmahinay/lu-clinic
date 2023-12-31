@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
+import Cookies from 'js-cookie'
 import { useRouter } from 'next/router'
 import { useEffect, useState, useRef } from 'react'
-import styles from '../../../public/assets/css/notification.module.css'
+import socketIOClient from 'socket.io-client'
 
-import Cookies from 'js-cookie'
 import { useDispatch, useSelector } from 'react-redux'
 // import { logout, setModules } from '@/store/reducers/authSlice'
 // import { userGrants } from '@/store/actions/authActions'
@@ -14,9 +14,7 @@ import {
     useGetUserModulesQuery, 
     useGetUserDetailsQuery 
 } from '@/service/authService'
-
 import { useGetNotificationQuery } from '@/service/settingService'
-
 import withAuth from '@/pages/withAuth'
 
 // components
@@ -30,6 +28,9 @@ import ResponsiveNavLink,
 { ResponsiveNavButton } from '@/components/ResponsiveNavLink'
 import SkeletonSidebarScreen from '../SkeletonSidbarScreen'
 import ProfilePicture from '../ProfilePicture'
+import { debounce } from 'lodash'
+
+// const NEXT_IO = "http://localhost:6001"
 
 const Navigation = ({ ...props }) => {
     // props: user, children, moduleId, menuGroup
@@ -55,9 +56,7 @@ const Navigation = ({ ...props }) => {
     })
 
     const { data: prevNotification } = useGetNotificationQuery()
-    const [notifications, setNotifications] = useState(prevNotification)
-    
-    // console.log(notifications)
+    const [notifications, setNotifications] = useState([])
 
     useEffect(() => {
         if(moduleIsFetching) {
@@ -72,40 +71,80 @@ const Navigation = ({ ...props }) => {
             setNotifications(prevNotification)
         }
 
-        const echo = new Echo({
-            broadcaster: 'pusher',
-            key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
-            cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
-            wsHost: process.env.NEXT_PUBLIC_WS_HOST,
-            wsPort: parseInt(process.env.NEXT_PUBLIC_WS_PORT, 10),
-            wssPort: parseInt(process.env.NEXT_PUBLIC_WSS_PORT, 10),
-            disabledStats: true,
-            encrypted: true,
-            enabledTransports: ['ws', 'wss'],
+        const socket = socketIOClient(process.env.NEXT_SOCKET_IO, {
+            withCredentials: true,
+            extraHeaders: {
+                "my-custom-header": "abcd"
+            }
         })
-      
-          echo
-            .channel('notifications')
-            .subscribed(() => {console.log('You are subscribed')})
-            .listen('NewNotification', (data) => {
-                setNotifications((prev) => {
-                    // if(Array.isArray(prev) && !prev.some(notif => notif.timestamp === data.timestamp )) {
-                    // // if(Array.isArray(prev) && !prev.some(notif => console.log(notif))) {
-                    //     return [...prev, data]
-                    // }
-                    // return prev
-                    if(Array.isArray(prev) && !prev.some(notif => notif.timestamp === data.timestamp)) {
-                        const updateNotification = [data, ...prev]
-                        updatedNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                        return updatedNotifications
-                    }
-                    return prev
-                })
-            })
+        socket.on("NewNotification", (data) => {
+            console.log("New notification:", data)
+            // setNotifications(prev => [...prev, data])
+            // Handle the real-time notification
+          })
         
-        return () => {
-            echo.disconnect()
-        }
+        return () => socket.disconnect()
+        // window.io = socketIOClient
+
+        // const echo = new Echo({
+        //     broadcaster: 'socket.io',
+        //     client: io,
+        //     host: process.env.NEXT_SOCKET_IO,
+        //     encrypted: true,
+        //     enabledTransports: ['ws', 'wss'],
+        // })
+
+        // echo
+        //     .channel('notifications')
+        //     // .subscribed(() => {console.log('You are subscribed')})
+        //     .listen('NewNotification', (newData) => {
+        //         console.log(newData)
+        //         // setNotifications(prev => [...prev, newData.notificationData?.data])
+        //     })
+
+        // return () => {
+        //     echo.leaveChannel('notifications')
+        // }
+        // const echo = new Echo({
+        //     broadcaster: 'pusher',
+        //     key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
+        //     cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+        //     wsHost: process.env.NEXT_PUBLIC_WS_HOST,
+        //     wsPort: parseInt(process.env.NEXT_PUBLIC_WS_PORT, 10),
+        //     wssPort: parseInt(process.env.NEXT_PUBLIC_WSS_PORT, 10),
+        //     disabledStats: true,
+        //     encrypted: true,
+        //     enabledTransports: ['ws', 'wss'],
+        // })
+
+        // const debounceNotification = debounce((newData) => {
+        //     setNotifications(prev => {
+        //         const newNotif = newData.notificationData?.data
+        //         // console.log('Adding notification:', newNotif)
+        //         if(Array.isArray(prev)) {
+        //             const updateNotification = [...prev, newNotif]
+        //             updateNotification.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    
+        //             // console.log(updateNotification)
+        //             return updateNotification
+    
+        //         }
+        //         return prev
+        //     })
+        //     // setNotifications(prev => [...prev, newData.notificationData?.data])
+        // })
+      
+        //   echo
+        //     .channel('notifications')
+        //     .subscribed(() => {console.log('You are subscribed')})
+        //     .listen('NewNotification', (newData) => {
+        //         // debounceNotification(newData)
+        //         setNotifications(prev => [...prev, newData.notificationData?.data])
+        //     })
+        
+        // return () => {
+        //     echo.leaveChannel('notifications')
+        // }
 
     }, [notifications, prevNotification])
 
@@ -158,8 +197,6 @@ const Navigation = ({ ...props }) => {
     }
 
     const imgSrc = "https://i.imgur.com/bqRsTjB.png"
-
-    // console.log(notifications)
 
     return (
         <>
@@ -218,9 +255,9 @@ const Navigation = ({ ...props }) => {
                                                 <path clipRule="evenodd" fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" />
                                             </svg>
 
-                                            {notifications?.length > 0 && (
+                                            {notificationCount > 0 && (
                                                 <div className="absolute top-0 right-25 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
-                                                    {notifications?.length}
+                                                    {notificationCount}
                                                 </div>
                                             )}
                                         </div>
@@ -228,27 +265,27 @@ const Navigation = ({ ...props }) => {
                                         
                                     <div className="font-bold text-sm uppercase text-gray-600 ml-2 p-2">Notifications</div>
                                     <div className="divide-y divide-gray-200 overflow-x-hidden scroll-custom max-h-[30vh]">
-                                        {notifications?.notifications.map((notification, index) => (
+                                        {/* {notifications?.map((notification, index) => (
                                             <DropdownNotification key={index} onClick={handleClickedNotif}>
                                                 <div className="flex items-start">
                                                     <img
-                                                        src={notification.iconUrl}
+                                                        src={notification?.iconUrl}
                                                         alt="User"
                                                         className="w-12 h-12 rounded-full mr-4 flex-shrink-0"
                                                     />
                                                     <div className="flex-grow ">
-                                                        <span className="font-large">{notification.title}</span>
-                                                        <p className="text-xs text-gray-600 italic">{notification.message}</p>
+                                                        <span className="font-large">{notification?.title}</span>
+                                                        <p className="text-xs text-gray-600 italic">{notification?.message}</p>
                                                         <div className="text-xs text-gray-500 w-full">
-                                                            {elapsedTime(notification.timestamp)}
+                                                            {elapsedTime(notification?.timestamp)}
                                                         </div>
                                                     </div>
-                                                    {!notification.isRead && 
+                                                    {!notification?.isRead && 
                                                         <div className="ml-2 w-4 h-4 bg-blue-500 rounded-full"></div>
                                                     }
                                                 </div>
                                             </DropdownNotification>
-                                        ))}
+                                        ))} */}
                                     </div>
                                 </Dropdown>
                                         
