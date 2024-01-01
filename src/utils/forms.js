@@ -158,6 +158,50 @@ export const generateInfoForms = (formData, province, municipality, barangay) =>
         },
         {name: 'street', type: 'text', value: formData.street, label: 'Street', placeholder: 'Type...'},
         {name: 'no_blk_lot', type: 'text', value: formData.no_blk_lot, label: 'No/Blk/Lot', placeholder: 'Type...'},
+        {name: 'nationality', type: 'text', value: formData.nationality, label: 'Nationality', placeholder: 'Type...'},
+        {name: 'religion', type: 'text', value: formData.religion, label: 'Religion', placeholder: 'Type...'},
+        // employer details
+        {name: 'occupation', type: 'text', value: formData.occupation, label: 'Occupation', placeholder: 'Type...'},
+        {name: 'employer_name', type: 'text', value: formData.employer_name, label: 'Employer', placeholder: 'Type...'},
+        {name: 'employer_address', type: 'text', value: formData.employer_address, label: 'Employer Address', placeholder: 'Type...'},
+        {name: 'employer_contact', type: 'number', value: formData.contact, label: 'Employer Contact', placeholder: 'Type...'},
+        // family details
+        {name: 'father_name', type: 'text', value: formData.father_name, label: 'Father Name', placeholder: 'Type...'},
+        {name: 'father_address', type: 'text', value: formData.father_address, label: 'Father Address', placeholder: 'Type...'},
+        {name: 'father_contact', type: 'text', value: formData.father_address, label: 'Father Contact', placeholder: 'Type...'},
+        {name: 'mother_name', type: 'text', value: formData.mother_name, label: 'Mother Name', placeholder: 'Type...'},
+        {name: 'mother_address', type: 'text', value: formData.mother_address, label: 'Mother Address', placeholder: 'Type...'},
+        {name: 'mother_contact', type: 'text', value: formData.mother_contact, label: 'Mother Contact', placeholder: 'Type...'},
+        {name: 'spouse_name', type: 'text', value: formData.spouse_name, label: 'Spouse Name', placeholder: 'Type...'},
+        {name: 'spouse_address', type: 'text', value: formData.spouse_address, label: 'Spouse Address', placeholder: 'Type...'},
+        {name: 'spouse_contact', type: 'text', value: formData.spouse_contact, label: 'Spouse Contact', placeholder: 'Type...'},
+        // patient details
     ]
 }
 
+export const generatePatientForms = (formData) => {
+    return [
+        {name: 'admission_date', type: 'date', value: formData.admission_date, label: 'Admission Date | Time'},
+        {name: 'discharge_date', type: 'date', value: formData.discharge_date, label: 'Discharge Date | Time'},
+        {name: 'total_no_day', type: 'text', value: formData.total_no_day, label: 'Total No of Day', disabled: true},
+        {name: 'admitting_physician', type: 'text', value: formData.admitting_physician, label: 'Admitting Physician', disabled: true},
+        {name: 'admitting_clerk', type: 'text', value: formData.admitting_clerk, label: 'Admitting Clerk', disabled: true},
+        {name: 'type_visit', type: 'text', value: formData.type_visit, label: 'Type of Admission', disabled: true},
+        {name: 'referred_by', type: 'text', value: formData.referred_by, label: 'Referred By (Physician/Health Facility)', placeholder: 'Type...'},
+        {name: 'soc_serv_classification', type: 'checkbox', category: 'socserv', value: formData.soc_serv_classification, label: 'Social Service Classification'},
+        {name: 'allergic_to', type: 'text', value: formData.allergic_to, label: 'Allergic To', placeholder: 'Type..'},
+        {name: 'hospitalization_plan', type: 'text', value: formData.hospitalization_plan, label: 'Hospitalization Plan', placeholder: 'Type..'},
+        {name: 'health_insurance_name', type: 'text', value: formData.health_insurance_name, label: 'Health Insurance Name', placeholder: 'Type..'},
+        {name: 'phic', type: 'checkbox', category: 'phic', value: formData.phic, label: 'PHIC'},
+        {name: 'data_furnished_by', type: 'text', value: formData.data_furnished_by, label: 'Data Furnished By', disabled: true},
+        {name: 'address_of_informant', type: 'text', value: formData.address_of_informant, label: 'Address of Informant', placeholder: 'Type..'},
+        {name: 'relation_to_patient', type: 'text', value: formData.relation_to_patient, label: 'Relation to Patient', placeholder: 'Type..'},
+    ]
+}
+
+export const generateOtherPatientForms = (formData) => {
+    return [
+        {name: 'admission_diagnosis', type: 'textarea', value: formData.admission_diagnosis, label: 'Admission Diagnosis'},
+        
+    ]
+}
