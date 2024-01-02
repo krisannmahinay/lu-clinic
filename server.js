@@ -11,27 +11,27 @@ const dev = process.env.NEXT_ENV !== 'production'
 
 const app = express()
 const server = http.createServer(app)
-const io = socketIO(server, {
-  cors: {
-      origin: "http://localhost:3000",
-      method: ["GET", "POST"],
-      allowedHeaders: ["my-custom-header"],
-      credentials: true
-  }
-})
-const redis = new Redis({
-    host: 'redis',
-    port: 6379
-})
+// const io = socketIO(server, {
+//   cors: {
+//       origin: "http://localhost:3000",
+//       method: ["GET", "POST"],
+//       allowedHeaders: ["my-custom-header"],
+//       credentials: true
+//   }
+// })
+// const redis = new Redis({
+//     host: '127.0.0.1',
+//     port: 6379
+// })
 
-redis.subscribe('notifications', () => {
-    console.log('Subscribed to "notifications" channel')
-})
+// redis.subscribe('notifications', () => {
+//     console.log('Subscribed to "notifications" channel')
+// })
 
-redis.on('message', (channel, message) => {
-    console.log(`Message received from ${channel}: ${message}`)
-    io.sockets.emit('NewNotification', message)
-})
+// redis.on('message', (channel, message) => {
+//     console.log(`Message received from ${channel}: ${message}`)
+//     io.sockets.emit('NewNotification', message)
+// })
 
 // const redisClient = createClient({ url: 'redis://127.0.0.1:6001' })
 // const emitter = new Emitter(redisClient)
