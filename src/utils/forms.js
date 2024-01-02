@@ -88,7 +88,6 @@ export const generateIpdForms = (physicianList, activeBedList) => {
 }
 
 export const generateInfoForms = (formData, province, municipality, barangay) => {
-    console.log(formData)
     const provOptions = province?.map(data => ({
         label: data.name,
         value: data.code
