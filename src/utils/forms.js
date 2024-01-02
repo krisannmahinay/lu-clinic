@@ -157,7 +157,7 @@ export const generateInfoForms = (formData, province, municipality, barangay) =>
             options: brgyOptions
         },
         {name: 'street', type: 'text', value: formData.street, label: 'Street', placeholder: 'Type...'},
-        {name: 'no_blk_lot', type: 'text', value: formData.no_blk_lot, label: 'No/Blk/Lot', placeholder: 'Type...'},
+        {name: 'no_blk_lot', type: 'number', value: formData.no_blk_lot, label: 'No/Blk/Lot', placeholder: 'Type...'},
         {name: 'nationality', type: 'text', value: formData.nationality, label: 'Nationality', placeholder: 'Type...'},
         {name: 'religion', type: 'text', value: formData.religion, label: 'Religion', placeholder: 'Type...'},
         // employer details
@@ -174,8 +174,7 @@ export const generateInfoForms = (formData, province, municipality, barangay) =>
         {name: 'mother_contact', type: 'text', value: formData.mother_contact, label: 'Mother Contact', placeholder: 'Type...'},
         {name: 'spouse_name', type: 'text', value: formData.spouse_name, label: 'Spouse Name', placeholder: 'Type...'},
         {name: 'spouse_address', type: 'text', value: formData.spouse_address, label: 'Spouse Address', placeholder: 'Type...'},
-        {name: 'spouse_contact', type: 'text', value: formData.spouse_contact, label: 'Spouse Contact', placeholder: 'Type...'},
-        // patient details
+        {name: 'spouse_contact', type: 'text', value: formData.spouse_contact, label: 'Spouse Contact', placeholder: 'Type...'}
     ]
 }
 
@@ -199,9 +198,25 @@ export const generatePatientForms = (formData) => {
     ]
 }
 
-export const generateOtherPatientForms = (formData) => {
+export const generateOtherPatientForms = (formData, icd10code) => {
+    const icd10CodeOptions = icd10code?.map(data => ({
+        label: `${icd.icd10_code} ${icd.icd10_desc}`,
+        value: data.icd10_code
+    })) 
+    
     return [
-        {name: 'admission_diagnosis', type: 'textarea', value: formData.admission_diagnosis, label: 'Admission Diagnosis'},
-        
+        {name: 'admission_diagnosis', type: 'textarea', value: formData.admission_diagnosis, label: 'Admission Diagnosis', placeholder: 'Type...'},
+        {name: 'discharge_diagnosis', type: 'textarea', value: formData.discharge_diagnosis, label: 'Discharge Diagnosis', placeholder: 'Type Principal Diagnosis/Other Diagnosis'},
+        {name: 'principal_opt_proc', type: 'textarea', value: formData.principal_opt_proc, label: 'Principal Operation/Procedures', placeholder: 'Type...'},
+        {name: 'other_opt_proc', type: 'textarea', value: formData.other_opt_proc, label: 'Other Operation/Procedures', placeholder: 'Type...'},
+        {name: 'accident_injury_poison', type: 'textarea', value: formData.accident_injury_poison, label: 'Accident/Injuries/Poisoning', placeholder: 'Type...'},
+        {
+            name: 'icdo10_code',
+            type: 'dropdown',
+            label: 'ICD/RUV CODE',
+            value: formData.icd10_code,
+            options: icd10CodeOptions
+        },
+        {name: 'disposition', type: 'checkbox', category: 'disposition', value: formData.disposition, label: 'Disposition'},
     ]
 }
