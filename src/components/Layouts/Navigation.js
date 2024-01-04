@@ -70,81 +70,47 @@ const Navigation = ({ ...props }) => {
         if(prevNotification) {
             setNotifications(prevNotification)
         }
-
-        const socket = socketIOClient(process.env.NEXT_SOCKET_IO, {
-            withCredentials: true,
-            extraHeaders: {
-                "my-custom-header": "abcd"
-            }
+        
+        const echo = new Echo({
+            broadcaster: 'pusher',
+            key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
+            cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+            wsHost: process.env.NEXT_PUBLIC_WS_HOST,
+            wsPort: parseInt(process.env.NEXT_PUBLIC_WS_PORT, 10),
+            wssPort: parseInt(process.env.NEXT_PUBLIC_WSS_PORT, 10),
+            disabledStats: true,
+            encrypted: true,
+            enabledTransports: ['ws', 'wss'],
         })
-        socket.on("NewNotification", (data) => {
-            console.log("New notification:", data)
-            // setNotifications(prev => [...prev, data])
-            // Handle the real-time notification
-          })
-        
-        return () => socket.disconnect()
-        // window.io = socketIOClient
 
-        // const echo = new Echo({
-        //     broadcaster: 'socket.io',
-        //     client: io,
-        //     host: process.env.NEXT_SOCKET_IO,
-        //     encrypted: true,
-        //     enabledTransports: ['ws', 'wss'],
-        // })
-
-        // echo
-        //     .channel('notifications')
-        //     // .subscribed(() => {console.log('You are subscribed')})
-        //     .listen('NewNotification', (newData) => {
-        //         console.log(newData)
-        //         // setNotifications(prev => [...prev, newData.notificationData?.data])
-        //     })
-
-        // return () => {
-        //     echo.leaveChannel('notifications')
-        // }
-        // const echo = new Echo({
-        //     broadcaster: 'pusher',
-        //     key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
-        //     cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER,
-        //     wsHost: process.env.NEXT_PUBLIC_WS_HOST,
-        //     wsPort: parseInt(process.env.NEXT_PUBLIC_WS_PORT, 10),
-        //     wssPort: parseInt(process.env.NEXT_PUBLIC_WSS_PORT, 10),
-        //     disabledStats: true,
-        //     encrypted: true,
-        //     enabledTransports: ['ws', 'wss'],
-        // })
-
-        // const debounceNotification = debounce((newData) => {
-        //     setNotifications(prev => {
-        //         const newNotif = newData.notificationData?.data
-        //         // console.log('Adding notification:', newNotif)
-        //         if(Array.isArray(prev)) {
-        //             const updateNotification = [...prev, newNotif]
-        //             updateNotification.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+        const debounceNotification = debounce((newData) => {
+            setNotifications(prev => {
+                const newNotif = newData.notificationData?.data
+                // console.log('Adding notification:', newNotif)
+                if(Array.isArray(prev)) {
+                    const updateNotification = [...prev, newNotif]
+                    updateNotification.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
                     
-        //             // console.log(updateNotification)
-        //             return updateNotification
+                    // console.log(updateNotification)
+                    return updateNotification
     
-        //         }
-        //         return prev
-        //     })
-        //     // setNotifications(prev => [...prev, newData.notificationData?.data])
-        // })
+                }
+                return prev
+            })
+            // setNotifications(prev => [...prev, newData.notificationData?.data])
+        })
       
-        //   echo
-        //     .channel('notifications')
-        //     .subscribed(() => {console.log('You are subscribed')})
-        //     .listen('NewNotification', (newData) => {
-        //         // debounceNotification(newData)
-        //         setNotifications(prev => [...prev, newData.notificationData?.data])
-        //     })
+          echo
+            .channel('notifications')
+            .subscribed(() => {console.log('You are subscribed')})
+            .listen('NewNotification', (newData) => {
+                // debounceNotification(newData)
+                setNotifications(prev => [...prev, newData.notificationData?.data])
+            })
         
-        // return () => {
-        //     echo.leaveChannel('notifications')
-        // }
+        return () => {
+            echo.leaveChannel('notifications')
+        }
 
     }, [notifications, prevNotification])
 
