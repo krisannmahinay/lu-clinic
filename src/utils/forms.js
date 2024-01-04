@@ -87,7 +87,7 @@ export const generateIpdForms = (physicianList, activeBedList) => {
     ]
 }
 
-export const generateInfoForms = (formData, province, municipality, barangay) => {
+export const generateInfoForms = (formData, province, municipality, barangay, icd10code) => {
     const provOptions = province?.map(data => ({
         label: data.name,
         value: data.code
@@ -101,6 +101,11 @@ export const generateInfoForms = (formData, province, municipality, barangay) =>
     const municipalOptions = municipality?.map(data => ({
         label: data.name,
         value: data.code
+    })) 
+
+    const icd10CodeOptions = icd10code?.map(data => ({
+        label: `${icd.icd10_code} ${icd.icd10_desc}`,
+        value: data.icd10_code
     })) 
 
     return [
@@ -173,12 +178,9 @@ export const generateInfoForms = (formData, province, municipality, barangay) =>
         {name: 'mother_contact', type: 'text', value: formData.mother_contact, label: 'Mother Contact', placeholder: 'Type...'},
         {name: 'spouse_name', type: 'text', value: formData.spouse_name, label: 'Spouse Name', placeholder: 'Type...'},
         {name: 'spouse_address', type: 'text', value: formData.spouse_address, label: 'Spouse Address', placeholder: 'Type...'},
-        {name: 'spouse_contact', type: 'text', value: formData.spouse_contact, label: 'Spouse Contact', placeholder: 'Type...'}
-    ]
-}
+        {name: 'spouse_contact', type: 'text', value: formData.spouse_contact, label: 'Spouse Contact', placeholder: 'Type...'},
 
-export const generatePatientForms = (formData) => {
-    return [
+        // patient details
         {name: 'admission_date', type: 'date', value: formData.admission_date, label: 'Admission Date | Time'},
         {name: 'discharge_date', type: 'date', value: formData.discharge_date, label: 'Discharge Date | Time'},
         {name: 'total_no_day', type: 'text', value: formData.total_no_day, label: 'Total No of Day', disabled: true},
@@ -194,16 +196,8 @@ export const generatePatientForms = (formData) => {
         {name: 'data_furnished_by', type: 'text', value: formData.data_furnished_by, label: 'Data Furnished By', disabled: true},
         {name: 'address_of_informant', type: 'text', value: formData.address_of_informant, label: 'Address of Informant', placeholder: 'Type..'},
         {name: 'relation_to_patient', type: 'text', value: formData.relation_to_patient, label: 'Relation to Patient', placeholder: 'Type..'},
-    ]
-}
 
-export const generateOtherPatientForms = (formData, icd10code) => {
-    const icd10CodeOptions = icd10code?.map(data => ({
-        label: `${icd.icd10_code} ${icd.icd10_desc}`,
-        value: data.icd10_code
-    })) 
-    
-    return [
+        // other patient details
         {name: 'admission_diagnosis', type: 'textarea', value: formData.admission_diagnosis, label: 'Admission Diagnosis', placeholder: 'Type...'},
         {name: 'discharge_diagnosis', type: 'textarea', value: formData.discharge_diagnosis, label: 'Discharge Diagnosis', placeholder: 'Type Principal Diagnosis/Other Diagnosis'},
         {name: 'principal_opt_proc', type: 'textarea', value: formData.principal_opt_proc, label: 'Principal Operation/Procedures', placeholder: 'Type...'},
