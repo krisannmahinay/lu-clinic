@@ -10,18 +10,36 @@ const styleDropdown = {
     control: (provided) => ({
         ...provided,
         // border: '1px solid gray',
-        padding: '0.1em',
+        margin: 0,
+        padding: 0,
         boxShadow: 'none',
+        fontSize: '0.875rem',
+        lineHeight: '1.25rem',
+        backgroundColor: 'rgb(243 244 246)',
         '&:hover': {
           borderColor: 'gray',
           border: '1px solid gray'
         },
+        '&:focus': {
+            border: 'none'
+        }
       }),
       input: (provided) => ({
         ...provided,
         inputOutline: 'none',
       }),
 }
+
+const dispositionArray = [
+    { name: 'improved', label: 'Improved'},
+    { name: 'unimproved', label: 'Unimproved'},
+    { name: 'transferred', label: 'Transferred'},
+    { name: 'hama', label: 'HAMA'},
+    { name: 'absconded', label: 'Absconded'},
+    { name: 'expired', label: 'Expired'},
+    { name: 'u48h', label: 'under 48 hours', parent: 'expired'},
+    { name: 'm48h', label: 'more than 48 hours', parent: 'expired'}
+]
 
 const Form = forwardRef(({
         initialFields = [], 
@@ -31,7 +49,9 @@ const Form = forwardRef(({
         onSetAlertMessage,
         onSetAlertType,
         onLoading,
-        enableAutoSave
+        enableAutoSave,
+        enableAddRow,
+        style
     }, ref) => {
     const router = useRouter()
     const [formData, setFormData] = useState([])
@@ -95,11 +115,11 @@ const Form = forwardRef(({
         }
         return age
     }
-    // console.log(formData)
+    // console.log(initialFields)
     
-     const handleInputChange = useCallback((e, rowIndex, fieldName) => {
+     const handleInputChange = ((e, rowIndex, fieldName) => {
         if(enableAutoSave) {
-
+            
         } else {
             if(fieldName === 'birth_date') {
                 const age = calculatedAge(e.target.value)
@@ -115,6 +135,7 @@ const Form = forwardRef(({
                 )
              } else if(fieldName === 'admiting_physician') {
                 if(physicianChargeMaster) {
+                    console.log(physicianChargeMaster)
                     setFormData((prev) =>
                         prev.map((row, index) =>
                             index === rowIndex ? { ...row, fields: {
@@ -162,7 +183,7 @@ const Form = forwardRef(({
                  )
              }
         }
-     }, [])
+     })
  
      const handleResetForm = () => {
         setFormData([{ 
@@ -221,135 +242,272 @@ const Form = forwardRef(({
      }
  
      const renderForm = (row, rowIndex) => {
-         return initialFields.map((field) => (
+        return initialFields.map((field) => (
             <div key={field.name}>
+                {field.name === "last_name" && (
+                    <>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
+                        <hr className="drop-shadow-md pb-5"/>
+                    </>
+                )}
+
+                {field.name === "admission_date" && (
+                    <>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium pt-20">Part II</h3>
+                        <hr className="drop-shadow-md py-6"/>
+                    </>
+                )}
+
                 {field.type === "text" && !field.disabled && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300  w-full px-3 py-1 focus:outline-none"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className=" text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
                     </div>
                 )}
 
                 {field.type === "text" && field.disabled && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border-none bg-gray-200 px-3 py-1 focus:outline-none w-full"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+                        
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className=" bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
+                                placeholder={field.placeholder}
+                                disabled
+                            />
+                        </div>
                     </div>
                 )}
 
                 {field.type === "password" && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+                        
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
                     </div>
                 )}
 
 
                 {field.type === 'email' && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
                     </div>
                 )}
 
                 {field.type === 'date' && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {field.type === 'checkbox' && (
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+
+                        <div className="w-3/5">
+                            {field.category === 'socserv' ? (
+                                <div  className="flex flex-row mt-2 space-x-3">
+                                {['a', 'b', 'c1', 'c2', 'c3', 'd'].map(service => (
+                                    <div className="flex items-center space-x-1">
+                                        <input
+                                            key={service}
+                                            type={field.type}
+                                            id={field.name}
+                                            name={field.name}
+                                            // checked={}
+                                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                            className="w-5 h-5"
+                                            placeholder={field.placeholder}
+                                            />
+                                        <label className="text-gray-500 font-bold text-xs">{service.toUpperCase()}</label>  
+                                    </div>
+                                ))}
+                                </div>
+                            ) : field.category === 'phic' ? (
+                                <div  className="flex flex-row mt-2 space-x-3">
+                                {['sss', 'sss_dependent', 'gsis', 'gsis_dependent'].map(service => (
+                                    <div className="flex items-center space-x-1">
+                                        <input
+                                            key={service}
+                                            type={field.type}
+                                            id={field.name}
+                                            name={field.name}
+                                            // checked={}
+                                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                            className="w-5 h-5"
+                                            placeholder={field.placeholder}
+                                            />
+                                        <label className="text-gray-500 font-bold text-xs">{service.toUpperCase()}</label>  
+                                    </div>
+                                ))}
+                                </div>
+                            ) : field.category === 'disposition'  ? (
+                                <div  className="flex flex-row mt-2 space-x-3">
+                                    {dispositionArray.map(dispo => (
+                                        <div key={dispo} className={`flex items-center space-x-1 ${dispo.parent ? "ml-16" : ""}`}>
+                                            {(!dispo.parent || field.value === dispo.parent) && (
+                                                <>
+                                                    <input
+                                                        type={field.type}
+                                                        id={field.name}
+                                                        name={field.name}
+                                                        checked={field.value === dispo.name}
+                                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                                        className="w-5 h-5"
+                                                        />
+                                                    <label className="text-gray-500 font-bold text-xs">{dispo.label}</label>
+                                                </>
+                                            )} 
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : ( "" )}
+                        </div>
                     </div>
                 )}
 
                 {field.type === 'number' && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">
-                            {field.label}
-                        </label>
-                        <input
-                            required
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={field.value !== null ? field.value : row.fields[field.name]}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            className="border border-gray-300 text-sm w-full px-3 py-1 focus:outline-none"
-                            placeholder={field.placeholder}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
                     </div>
                 )}
 
                 {field.type === 'dropdown' && (
-                    <div>
-                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm mt-4 capitalize">{field.label}:</label>
-                        <Select 
-                            options={field.options?.map(option => ({ 
-                                value: option.value, 
-                                label: option.label 
-                            }))}
-                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                            isSearchable={true}
-                            isClearable={true}
-                            placeholder={`Select ${field.label.toLowerCase()}...`}
-                            classNamePrefix="react-select"
-                            styles={styleDropdown}
-                            value={field.options?.find(option => 
-                                option.value === field.value !== null ? field.value : row.fields[field.name]
-                            )}
-                        />
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
+                        </div>
+                        <div className="w-3/5">
+                            <Select 
+                                options={field.options?.map(option => ({ 
+                                    value: option.value,    
+                                    label: option.label 
+                                }))}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                isSearchable={true}
+                                isClearable={true}
+                                placeholder={`Select ${field.label.toLowerCase()}...`}
+                                classNamePrefix=""
+                                styles={styleDropdown}
+                                value={field.options?.find(option => 
+                                    option.value === field.value !== null ? field.value : row.fields[field.name]
+                                )}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {field.type === 'textarea' && (
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
+                        </div>
+                        <div className="w-3/5">
+                            <textarea
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={field.value !== null ? field.value : row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
+                                placeholder={field.placeholder}
+                            />
+                        </div>
                     </div>
                 )}
             </div>
@@ -372,7 +530,7 @@ const Form = forwardRef(({
                  {/* <form> */}
                      {formData.map((row, rowIndex) => (
                              <div key={row.id} className="flex gap-4">
-                                <div className="md:flex md:flex-col lg:grid lg:grid-cols-3 w-full gap-4">
+                                <div className="md:flex md:flex-col  w-full gap-4">
                                     {renderForm(row, rowIndex)}
                                 </div>
                                  {formData.length > 1 && (
