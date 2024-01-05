@@ -513,9 +513,17 @@ const Table = forwardRef(({
 
             <div className="bg-white overflow-y-auto scroll-custom sm:rounded-lg">
                 {isLoading ? (
-                    <>
-                        <SkeletonScreen rowCount={tableData?.length} columnCount={tableHeader?.length}/> 
-                    </>
+                    <div className="grid p-3 gap-y-2">
+                        <div className="flex space-x-3">
+                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+
+                        </div>
+                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                    </div>
                 ) : (
                     <>
                         {disableTable ? (
@@ -595,7 +603,17 @@ const Table = forwardRef(({
 
                                         {tableHeader.map((tblHeader, tblHeaderIndex) => (
                                             <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {tblHeader}
+                                                {tblHeader === 'id' ? (
+                                                    'patient_id'
+                                                ) : tblHeader === 'patient_id' ? (
+                                                    'patient_name'
+                                                ) : tblHeader === 'admitting_physician' ? (
+                                                    'physician'
+                                                ) : tblHeader === 'created_at' ? (
+                                                    'time_in'
+                                                ) : (
+                                                    tblHeader
+                                                )}
                                             </th>
 
                                         ))}
@@ -625,7 +643,15 @@ const Table = forwardRef(({
 
                                                 {tableHeader.map((tblHeader) => (
                                                     <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                                        {tblBody[tblHeader]}
+                                                        {tblHeader === 'admitting_physician' ? (
+                                                            `Dr. ${tblBody?.physician_identity?.first_name} ${tblBody?.physician_identity?.last_name}`
+                                                        ) : tblHeader === 'id' ? (
+                                                            tblBody?.patient_id
+                                                        ) : tblHeader === 'patient_id' ? (
+                                                            `${tblBody?.patient_identity?.first_name} ${tblBody?.patient_identity?.last_name}`
+                                                        ) : (
+                                                            tblBody[tblHeader]
+                                                        )}
                                                     </td>
                                                 ))}
                                             </tr>
