@@ -644,11 +644,11 @@ const Table = forwardRef(({
                                                 {tableHeader.map((tblHeader) => (
                                                     <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                                         {tblHeader === 'admitting_physician' ? (
-                                                            `Dr. ${tblBody?.physician_identity?.first_name} ${tblBody?.physician_identity?.last_name}`
+                                                            `Dr. ${tblBody?.physician_data_info?.first_name} ${tblBody?.physician_data_info?.last_name}`
                                                         ) : tblHeader === 'id' ? (
                                                             tblBody?.patient_id
                                                         ) : tblHeader === 'patient_id' ? (
-                                                            `${tblBody?.patient_identity?.first_name} ${tblBody?.patient_identity?.last_name}`
+                                                            `${tblBody?.user_data_info?.first_name} ${tblBody?.user_data_info?.last_name}`
                                                         ) : (
                                                             tblBody[tblHeader]
                                                         )}
