@@ -512,268 +512,251 @@ const Table = forwardRef(({
             </Modal>
 
             <div className="bg-white overflow-y-auto scroll-custom sm:rounded-lg">
-                {isLoading ? (
-                    <div className="grid p-3 gap-y-2">
-                        <div className="flex space-x-3">
-                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                            <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-
-                        </div>
-                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                    </div>
-                ) : (
-                    <>
-                        {disableTable ? (
-                            <div>{children}</div>
-                        ) : dynamicTable ? (
-                            <table className="min-w-full divide-y  divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        {tableHeader.map((tblHeader, tblHeaderIndex) => (
-                                            <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {tblHeader}
-                                            </th>
-                                        ))}
-                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {/* {formData.map(renderTableRow)} */}
-                                    {formData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
-                                                No records found.
+                {disableTable ? (
+                    <div>{children}</div>
+                ) : dynamicTable ? (
+                    <table className="min-w-full divide-y  divide-gray-200">
+                        <thead>
+                            <tr>
+                                {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                                    <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {tblHeader}
+                                    </th>
+                                ))}
+                                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {/* {formData.map(renderTableRow)} */}
+                            {formData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                        No records found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                formData.map((formRow, index) => (
+                                    <tr key={formRow.id}>
+                                        {tableHeader.map((fieldName, fieldIndex) => (
+                                            <td key={fieldIndex} className="px-6 py-3 whitespace-nowrap text-sm">
+                                                {editMode[idCounter] ? renderForm(fieldName, formRow, index) : formRow[fieldName]}
                                             </td>
-                                        </tr>
-                                    ) : (
-                                        formData.map((formRow, index) => (
-                                            <tr key={formRow.id}>
-                                                {tableHeader.map((fieldName, fieldIndex) => (
-                                                    <td key={fieldIndex} className="px-6 py-3 whitespace-nowrap text-sm">
-                                                        {editMode[idCounter] ? renderForm(fieldName, formRow, index) : formRow[fieldName]}
-                                                    </td>
-                                                ))}
-                                                <td className="px-6 whitespace-nowrap">
-                                                    {editMode[idCounter] ? (
-                                                        <button onClick={() => toggleSaveMode(idCounter)}>
-                                                            <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                                            </svg>
-                                                        </button>
-                                                    ) : (
-                                                        <button onClick={() => toggleEditMode(idCounter)}>
-                                                            <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveRow(index, formRow.id)}
-                                                        className="ml-2  text-[#cb4949] rounded-md px-2 py-1 focus:outline-none"
-                                                    >
-                                                        <svg fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                        </svg>
-                                                    </button>
-                                                </td>
-                                                
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ))}
+                                        <td className="px-6 whitespace-nowrap">
+                                            {editMode[idCounter] ? (
+                                                <button onClick={() => toggleSaveMode(idCounter)}>
+                                                    <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                                    </svg>
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => toggleEditMode(idCounter)}>
+                                                    <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveRow(index, formRow.id)}
+                                                className="ml-2  text-[#cb4949] rounded-md px-2 py-1 focus:outline-none"
+                                            >
+                                                <svg fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                        
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input
+                                        type="checkbox"
+                                        checked={checked.length === tableData.length && tableData.length !== 0}
+                                        onChange={(e) => handleOnchange('tblSelectAll', e)}
+                                    />
+                                </th>
+
+                                {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                                    <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {tblHeader === 'id' ? (
+                                            'patient_id'
+                                        ) : tblHeader === 'patient_id' ? (
+                                            'patient_name'
+                                        ) : tblHeader === 'admitting_physician' ? (
+                                            'physician'
+                                        ) : tblHeader === 'created_at' ? (
+                                            'time_in'
+                                        ) : (
+                                            tblHeader
+                                        )}
+                                    </th>
+
+                                ))}
+                            </tr>
+                        </thead>
+
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {tableData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                        No records found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                tableData.map((tblBody, tblBodyIndex) => (
+                                    // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
+                                    <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
+                                        <td className="px-6 py-2 whitespace-nowrap text-sm">
                                             <input
                                                 type="checkbox"
-                                                checked={checked.length === tableData.length && tableData.length !== 0}
-                                                onChange={(e) => handleOnchange('tblSelectAll', e)}
+                                                checked={checked.includes(tblBody.id)}
+                                                onChange={(e) => handleOnchange('tblSelectRow', e, tblBody.id, tblBody.user_id)}
+                                                onClick={(e) => handleOnclick('tickedCheckbox', e)}
                                             />
-                                        </th>
+                                        </td>
 
-                                        {tableHeader.map((tblHeader, tblHeaderIndex) => (
-                                            <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {tblHeader === 'id' ? (
-                                                    'patient_id'
+
+                                        {tableHeader.map((tblHeader) => (
+                                            <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                                                {tblHeader === 'admitting_physician' ? (
+                                                    `Dr. ${tblBody?.physician_data_info?.first_name} ${tblBody?.physician_data_info?.last_name}`
+                                                ) : tblHeader === 'id' ? (
+                                                    tblBody?.patient_id
                                                 ) : tblHeader === 'patient_id' ? (
-                                                    'patient_name'
-                                                ) : tblHeader === 'admitting_physician' ? (
-                                                    'physician'
-                                                ) : tblHeader === 'created_at' ? (
-                                                    'time_in'
+                                                    `${tblBody?.user_data_info?.first_name} ${tblBody?.user_data_info?.last_name}`
                                                 ) : (
-                                                    tblHeader
+                                                    tblBody[tblHeader]
                                                 )}
-                                            </th>
-
+                                            </td>
                                         ))}
                                     </tr>
-                                </thead>
-
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {tableData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
-                                                No records found.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        tableData.map((tblBody, tblBodyIndex) => (
-                                            // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                            <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
-                                                <td className="px-6 py-2 whitespace-nowrap text-sm">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={checked.includes(tblBody.id)}
-                                                        onChange={(e) => handleOnchange('tblSelectRow', e, tblBody.id, tblBody.user_id)}
-                                                        onClick={(e) => handleOnclick('tickedCheckbox', e)}
-                                                    />
-                                                </td>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
 
 
-                                                {tableHeader.map((tblHeader) => (
-                                                    <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                                        {tblHeader === 'admitting_physician' ? (
-                                                            `Dr. ${tblBody?.physician_data_info?.first_name} ${tblBody?.physician_data_info?.last_name}`
-                                                        ) : tblHeader === 'id' ? (
-                                                            tblBody?.patient_id
-                                                        ) : tblHeader === 'patient_id' ? (
-                                                            `${tblBody?.user_data_info?.first_name} ${tblBody?.user_data_info?.last_name}`
-                                                        ) : (
-                                                            tblBody[tblHeader]
-                                                        )}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                    // <table className="min-w-full divide-y divide-gray-200">
+                    //     <thead>
+                    //         <tr>
+                    //             {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                    //                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    //                     {tblHeader}
+                    //                 </th>
 
+                    //             ))}
 
-                            // <table className="min-w-full divide-y divide-gray-200">
-                            //     <thead>
-                            //         <tr>
-                            //             {tableHeader.map((tblHeader, tblHeaderIndex) => (
-                            //                 <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            //                     {tblHeader}
-                            //                 </th>
+                    //             {action && (
+                    //                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    //                     Action
+                    //                 </th>
+                    //             )}
+                                
+                    //         </tr>
+                    //     </thead>
+                    //     <tbody className="bg-white divide-y divide-gray-200">
+                    //         {tableData.length === 0 ? (
+                    //             <tr>
+                    //                 <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                    //                     No records found.
+                    //                 </td>
+                    //             </tr>
+                    //         ) : (
+                    //             tableData.map((tblBody, tblBodyIndex) => (
+                    //                 <tr key={tblBodyIndex}>
+                    //                     {tableHeader.map((tblHeader) => (
+                    //                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                    //                             {tblHeader === 'patient_id' ? (
+                    //                                 // console.log(slug)
+                    //                                 slug === 'out-patient' || slug === 'in-patient' ? (
+                    //                                     <a href={`/patients/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
+                    //                                         {tblBody[tblHeader]}
+                    //                                     </a>
+                    //                                 ) : slug === 'laboratory' ? (
+                    //                                     <a href={`/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
+                    //                                         {tblBody[tblHeader]}
+                    //                                     </a>
+                    //                                 ) : (
+                    //                                     <></>
+                    //                                 )
+                    //                             ) : tblHeader === 'ancillary' ? (
+                    //                                     tblBody[tblHeader] === "None" && (
+                    //                                         <span className="p-2 bg-slate-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     )  
+                    //                             ) : tblHeader === 'laboratory_status' ? (
+                    //                                     tblBody[tblHeader] === "Pending" ? (
+                    //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     ) : 
 
-                            //             ))}
+                    //                                     tblBody[tblHeader] === "Available" && (
+                    //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     )
+                    //                             ) : tblHeader === 'imaging_status' ? (
+                    //                                     tblBody[tblHeader] === "Pending" ? (
+                    //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     ) : 
 
-                            //             {action && (
-                            //                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            //                     Action
-                            //                 </th>
-                            //             )}
-                                        
-                            //         </tr>
-                            //     </thead>
-                            //     <tbody className="bg-white divide-y divide-gray-200">
-                            //         {tableData.length === 0 ? (
-                            //             <tr>
-                            //                 <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
-                            //                     No records found.
-                            //                 </td>
-                            //             </tr>
-                            //         ) : (
-                            //             tableData.map((tblBody, tblBodyIndex) => (
-                            //                 <tr key={tblBodyIndex}>
-                            //                     {tableHeader.map((tblHeader) => (
-                            //                         <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                            //                             {tblHeader === 'patient_id' ? (
-                            //                                 // console.log(slug)
-                            //                                 slug === 'out-patient' || slug === 'in-patient' ? (
-                            //                                     <a href={`/patients/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
-                            //                                         {tblBody[tblHeader]}
-                            //                                     </a>
-                            //                                 ) : slug === 'laboratory' ? (
-                            //                                     <a href={`/${slug}/${tblBody[tblHeader]}`} className="text-blue-500 hover:underline">
-                            //                                         {tblBody[tblHeader]}
-                            //                                     </a>
-                            //                                 ) : (
-                            //                                     <></>
-                            //                                 )
-                            //                             ) : tblHeader === 'ancillary' ? (
-                            //                                     tblBody[tblHeader] === "None" && (
-                            //                                         <span className="p-2 bg-slate-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     )  
-                            //                             ) : tblHeader === 'laboratory_status' ? (
-                            //                                     tblBody[tblHeader] === "Pending" ? (
-                            //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     ) : 
+                    //                                     tblBody[tblHeader] === "Available" && (
+                    //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     )
+                    //                             ) : tblHeader === 'disposition' ? (
+                    //                                     tblBody[tblHeader] === "Admission" ? (
+                    //                                         <span className="p-2 bg-blue-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     ) : 
 
-                            //                                     tblBody[tblHeader] === "Available" && (
-                            //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     )
-                            //                             ) : tblHeader === 'imaging_status' ? (
-                            //                                     tblBody[tblHeader] === "Pending" ? (
-                            //                                         <span className="p-2 bg-red-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     ) : 
+                    //                                     tblBody[tblHeader] === "Discharged" && (
+                    //                                         <span className="p-2 bg-yellow-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
+                    //                                     )
+                    //                             ) : tblHeader === 'physicians_order' ? (
+                    //                                 <td className="flex items-center space-x-2">
+                    //                                     <textarea 
+                    //                                         type="text" 
+                    //                                         name="lastName" 
+                    //                                         placeholder="Click for physicians order" 
+                    //                                         onClick={() => handleClickedPO("po")}
+                    //                                         className="border border-gray-300 px-3 py-2 w-[20rem] focus:border-gray-500 focus:outline-none" 
+                    //                                     />
+                    //                                     <button onClick={() => handleClickedPublish("publish")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Publish</button>
+                    //                                     <button onClick={() => handleClickedRefer("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Refer</button>
+                    //                                     <button onClick={() => handleClickedMGH("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">MGH</button>
+                                                        
+                    //                                 </td>
+                    //                             ) : tblHeader === 'result_image' ? (
+                    //                                 <a href="javascript:void(0)" onClick={() => handleImageView("imgView", tblBody?.result_image)} className="text-blue-500 hover:underline">
+                    //                                     {tblBody?.image_type}
+                    //                                 </a>
+                    //                             ) : (
+                    //                                 tblBody[tblHeader]
+                    //                             )}
+                    //                         </td>
+                    //                     ))}
 
-                            //                                     tblBody[tblHeader] === "Available" && (
-                            //                                         <span className="p-2 bg-green-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     )
-                            //                             ) : tblHeader === 'disposition' ? (
-                            //                                     tblBody[tblHeader] === "Admission" ? (
-                            //                                         <span className="p-2 bg-blue-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     ) : 
+                    //                     {action && (
+                    //                         <td className="px-6 py-2 whitespace-nowrap">    
+                    //                             <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
+                    //                                 <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    //                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    //                                 </svg>
 
-                            //                                     tblBody[tblHeader] === "Discharged" && (
-                            //                                         <span className="p-2 bg-yellow-600 text-white rounded-full uppercase font-bold text-xs">{tblBody[tblHeader]}</span>
-                            //                                     )
-                            //                             ) : tblHeader === 'physicians_order' ? (
-                            //                                 <td className="flex items-center space-x-2">
-                            //                                     <textarea 
-                            //                                         type="text" 
-                            //                                         name="lastName" 
-                            //                                         placeholder="Click for physicians order" 
-                            //                                         onClick={() => handleClickedPO("po")}
-                            //                                         className="border border-gray-300 px-3 py-2 w-[20rem] focus:border-gray-500 focus:outline-none" 
-                            //                                     />
-                            //                                     <button onClick={() => handleClickedPublish("publish")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Publish</button>
-                            //                                     <button onClick={() => handleClickedRefer("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">Refer</button>
-                            //                                     <button onClick={() => handleClickedMGH("refer")} className="bg-slate-100 border border-gray-500 hover:bg-slate-200 text-gray-500 px-4 py-2 rounded mr-2">MGH</button>
-                                                                
-                            //                                 </td>
-                            //                             ) : tblHeader === 'result_image' ? (
-                            //                                 <a href="javascript:void(0)" onClick={() => handleImageView("imgView", tblBody?.result_image)} className="text-blue-500 hover:underline">
-                            //                                     {tblBody?.image_type}
-                            //                                 </a>
-                            //                             ) : (
-                            //                                 tblBody[tblHeader]
-                            //                             )}
-                            //                         </td>
-                            //                     ))}
-
-                            //                     {action && (
-                            //                         <td className="px-6 py-2 whitespace-nowrap">    
-                            //                             <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}>
-                            //                                 <svg fill="none" stroke="currentColor" className="h-5 w-5" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            //                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                            //                                 </svg>
-
-                            //                             </button>
-                            //                         </td>
-                            //                     )}
-                            //                 </tr>
-                            //             ))
-                            //         )}
-                            //     </tbody>
-                            // </table>
-                        )}
-                        
-                    </>
+                    //                             </button>
+                    //                         </td>
+                    //                     )}
+                    //                 </tr>
+                    //             ))
+                    //         )}
+                    //     </tbody>
+                    // </table>
                 )}
             </div>
 
