@@ -1,32 +1,28 @@
 
-const SkeletonCall = () => {
-    return <div className="w-full h-8 bg-gray-200 rounded animate-pulse mx-2"></div>
-}
 
-const SkeletonScreen = ({ columnCount, rowCount }) => {
-    const maxRowCount = Math.min(rowCount, 5)
-
-    const skeletonHeaders = Array.from({ length: columnCount }, (_, index) => (
-        <SkeletonCall key={index}/>
-    ))
-
-    const skeletonRows = Array.from({ length: 5 }, (_, rowIndex) => (
-        <div key={rowIndex} className="flex justify-between items-center">
-            {Array.from({ length: columnCount }, (_, colIndex) => (
-                // console.log(colIndex)
-                <SkeletonCall key={colIndex}/>
-            ))}
-        </div>
-    ))
-
+const SkeletonScreen = () => {
     return (
-        <>
-        {/* Table Header */}
-        <div className="flex justify-between items-center py-4">{skeletonHeaders}</div>
-    
-        {/* Table Rows */}
-        <div className="space-y-4 py-4">{skeletonRows}</div>
-        </>
+        <div className="grid p-3 gap-y-2 pt-[8rem]">
+            <div className="flex justify-between mb-4">
+                <div className="flex space-x-3">
+                    <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                </div>
+
+                <div>
+                    <div className="w-32 h-8 bg-gray-300 rounded animate-pulse"></div>
+                </div>
+            </div>
+            <div className="flex space-x-3">
+                <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+
+            </div>
+            <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+            <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+        </div>
     )
 }
 
