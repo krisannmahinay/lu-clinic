@@ -316,7 +316,7 @@ export const settingApi = createApi({
                             message: 'need for consultations',
                             action: 'admitted',
                             
-                            patientType: 'new',
+                            patientType: 'new_opd',
                             actionType: actionType,
                             data: data.map(item => item.fields),
                             selectedDB: session
