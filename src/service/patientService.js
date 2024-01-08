@@ -32,6 +32,27 @@ export const patientApi = createApi({
                 }
             }
         }),
+
+        getPatientList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, slug, patientType } = args
+                return {
+                    url: '/opd-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        slug: slug,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        patientType: patientType,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getOutPatientList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -161,6 +182,7 @@ export const patientApi = createApi({
 
 export const { 
     useAutoSaveDataMutation, 
+    useGetPatientListQuery,
     useGetOutPatientListQuery,
     useGetPhysicianListQuery,
     useGetPhysicianChargeQuery,
