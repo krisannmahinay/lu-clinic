@@ -259,6 +259,13 @@ const Form = forwardRef(({
                     </div>
                 )}
 
+                {field.name === "soap_subj_symptoms" && (
+                    <div>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Doctor's Notes</h3>
+                        <hr className="drop-shadow-md py-6"/>
+                    </div>
+                )}
+
                 {field.type === "text" && !field.disabled && (
                     <div className="flex flex-row items-center">
                         <div className="text-right basis-1/4 mr-4">

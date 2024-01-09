@@ -212,6 +212,15 @@ export const settingApi = createApi({
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'createDoctorRequest':
+                        url = '/create-doctor-request',
+                        body = {
+                            actionType: actionType,
+                            data: data,
+                            selectedDB: session
+                        }
+                        break
+
                     case 'createUser':
                         url = '/user-bulk-registration',
                         body = {

@@ -398,7 +398,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
     })
 
     
-    console.log(formData)
+    // console.log(formData)
 
     const handleEditForm = (e, rowIndex, fieldName) => {
         const specialFields = [
@@ -476,22 +476,20 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
     }
 
     return (
-        <div className="">
-            <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
-                {/* <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
-                <hr className="drop-shadow-md"/> */}
-                <div className="lg:ml-[10rem] lg:mr-[10rem] :ml-0 md:mr-0 pb-7">
-                    <Form
-                        initialFields={personInfo}
-                        enableAutoSave={true}
-                        onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
-                        // onSuccess={handleRefetch}
-                        // onCloseSlider={() => setActiveContent("yellow")}
-                        // onLoading={(data) => setBtnSpinner(data)}
-                        // onSetAlertType={(data) => setAlertType(data)}
-                        // onSetAlertMessage={(data) => setAlertMessage(data)}
-                    />
-                </div>
+        <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
+            {/* <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
+            <hr className="drop-shadow-md"/> */}
+            <div className="lg:ml-[10rem] lg:mr-[10rem] :ml-0 md:mr-0 pb-7">
+                <Form
+                    initialFields={personInfo}
+                    enableAutoSave={true}
+                    onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
+                    // onSuccess={handleRefetch}
+                    // onCloseSlider={() => setActiveContent("yellow")}
+                    // onLoading={(data) => setBtnSpinner(data)}
+                    // onSetAlertType={(data) => setAlertType(data)}
+                    // onSetAlertMessage={(data) => setAlertMessage(data)}
+                />
             </div>
         </div>
     )

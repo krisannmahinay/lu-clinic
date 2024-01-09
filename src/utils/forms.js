@@ -213,3 +213,12 @@ export const generateInfoForms = (formData, province, municipality, barangay, ic
         {name: 'disposition', type: 'checkbox', category: 'disposition', value: formData.disposition, label: 'Disposition'},
     ]
 }
+
+export const generateSoapForms = (formData) => {
+    return [
+        {name: 'soap_subj_symptoms', type: 'textarea', value: formData.soap_subj_symptoms, label: 'Subjective Symptoms', placeholder: 'Type...'},
+        {name: 'soap_obj_findings', type: 'textarea', value: formData.soap_obj_findings, label: 'Objective Findings', placeholder: 'Type...'},
+        {name: 'soap_assessment', type: 'textarea', value: formData.soap_assessment, label: 'Assessment', placeholder: 'Type...'},
+        {name: 'soap_plan', type: 'textarea', value: formData.soap_plan, label: 'Plan', placeholder: 'Type...'},
+    ]
+}
