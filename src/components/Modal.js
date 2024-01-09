@@ -141,67 +141,11 @@ const Modal = ({
         }
     },[data])
     
-    const [grantUserModule, { isLoading, isError, error, isSuccess }] = useGrantUserModuleMutation()
     const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
         user_id: openId
     })
 
     // console.log(moduleData)
-    
-    const groupModules = useMemo(() => {
-        // return module
-        //     ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
-        //     .reduce((groups, module) => {
-        //         const { menu_group } = module.grant || {}
-        //         if(!groups[menu_group]) {
-        //             groups[menu_group] = []
-        //         }
-        //         if(module.type === "") {
-        //             groups[menu_group].unshift(module)
-        //         } else {
-        //             groups[menu_group].push(module)
-        //         }
-
-        //         return groups
-        //     }, {})
-    }, [module])
-        
-    // const groupModules = module
-    //     ?.filter(module => (module.type === 'sub' || module.type === "") && module.grant?.menu_group)
-    //     .reduce((groups, module) => {
-    //         const { menu_group } = module.grant || {}
-    //         if(!groups[menu_group]) {
-    //             groups[menu_group] = []
-    //         }
-    //         if(module.type === "") {
-    //             groups[menu_group].unshift(module)
-    //         } else {
-    //             groups[menu_group].push(module)
-    //         }
-
-    //         return groups
-    //     }, {})
-        
-    const handleCheckbox = (moduleId) => {
-        const correspondingModule = Object.values(groupModules).flat().find(mod => mod.module_id === moduleId)
-        const { menu_group } = correspondingModule.grant || {}
-        
-        setCheckedItem(prevItems => {
-            // Make a copy of the current items
-            const updatedItems = { ...prevItems }
-            const currentGroupItems = updatedItems[menu_group] || []
-            
-            if (currentGroupItems.includes(moduleId)) {
-                // If moduleId is already present, remove it
-                updatedItems[menu_group] = currentGroupItems.filter(item => item !== moduleId)
-            } else {
-                // Add moduleId to the menu_group
-                updatedItems[menu_group] = [...currentGroupItems, moduleId]
-            }
-    
-            return updatedItems
-        })
-    }
 
 
     const handleRoomChange = (type) => {
@@ -358,118 +302,6 @@ const Modal = ({
                     </button> */}
                 </div>
                 <div className="w-full">
-                
-                {groupModules && (
-                    <>
-                        {/* <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="border rounded-lg">
-                                <div className="flex justify-items-center">
-                                    <button 
-                                        onClick={() => setActiveTab('tab1')}
-                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab1' ? 'bg-white':'bg-gray-200'}`}>Dashboard
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('tab2')}
-                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Inventory
-                                    </button>
-                                    {userData.roles === "x" && (
-                                        <button 
-                                            onClick={() => setActiveTab('tab3')}
-                                            className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Settings
-                                        </button>
-                                    )}
-                                    <button 
-                                        onClick={() => setActiveTab('tab4')}
-                                        className={`px-4 py-2 border-b-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab4' ? 'bg-white':'bg-gray-200'}`}>Patients
-                                    </button>
-                                </div>
-                                
-                                <div className="tab-content p-2">
-                                    {activeTab === 'tab1' && (
-                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                            {dashboard.map((item) => (
-                                                <li key={item.module_id}>
-                                                    <div className="flex items-center space-x-3 p-2 ">
-                                                        <input
-                                                            type="checkbox" 
-                                                            className="w-4 h-4"
-                                                            name={`grant_${item.module_id}`}
-                                                            value={item.module_id}
-                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                            onChange={() => handleCheckbox(item.module_id)}
-                                                        />
-                                                        <p className="text-medium text-gray-500">{item.name}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {activeTab === 'tab2' && (
-                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                            {inventory.map((item) => (
-                                                
-                                                <li key={item.module_id}>
-                                                    <div className="flex items-center space-x-3 p-2  ">
-                                                        <input
-                                                            type="checkbox" 
-                                                            className="w-4 h-4"
-                                                            name={`grant_${item.module_id}`}
-                                                            value={item.module_id}
-                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                            onChange={() => handleCheckbox(item.module_id)}
-                                                        />
-                                                        <p className="text-medium text-gray-500">{item.name}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {activeTab === 'tab3' && (
-                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                            {settings.map((item) => (
-                                                
-                                                <li key={item.module_id}>
-                                                    <div className="flex items-center space-x-3 p-2 ">
-                                                        <input
-                                                            type="checkbox" 
-                                                            className="w-4 h-4"
-                                                            name={`grant_${item.module_id}`}
-                                                            value={item.module_id}
-                                                            
-                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                            onChange={() => handleCheckbox(item.module_id)}
-                                                        />
-                                                        <p className="text-medium text-gray-500">{item.name}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                    {activeTab === 'tab4' && (
-                                        <ul className="space-y-4 max-h-80 overflow-y-auto divide-y">
-                                            {patients.map((item) => (
-                                                
-                                                <li key={item.module_id}>
-                                                    <div className="flex items-center space-x-3 p-2 ">
-                                                        <input
-                                                            type="checkbox" 
-                                                            className="w-4 h-4"
-                                                            name={`grant_${item.module_id}`}
-                                                            value={item.module_id}
-                                                            checked={(checkedItem[item.grant?.menu_group] || []).includes(item.module_id)}
-                                                            onChange={() => handleCheckbox(item.module_id)}
-                                                        />
-                                                        <p className="text-medium text-gray-500">{item.name}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
-                        </div> */}
-                    </>
-                )}
 
                 {slug === 'pharmacy' && (
                     tabNumber === 'tab1' ? (

@@ -12,7 +12,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     }
 
     return (
-        <div class="">
+        <div>
             <nav>
                 <ul className="flex rounded list-none flex-wrap gap-1">
                     <li>

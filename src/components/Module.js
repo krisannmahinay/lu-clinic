@@ -10,17 +10,18 @@ const Module = ({data, menuGroup}) => {
     const router = useRouter()
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
-    
+
     useEffect(() => {
-        if(data && data.module) {
-            const uniquePermissions = new Set();
-            const filteredMenus = data.module.filter((item) => {
+        if(data && data?.module) {
+            const uniquePermissions = new Set()
+            const filteredMenus = data?.module.filter((item) => {
                 if(item.menu_group === menuGroup && !uniquePermissions.has(item.permission_id)) {
                     uniquePermissions.add(item.permission_id)
                     return true
                 }
                 return false
-            });
+            })
+            // console.log(filteredMenus)
             setMenus(filteredMenus)
         }
     }, [data, menuGroup])
@@ -31,7 +32,7 @@ const Module = ({data, menuGroup}) => {
         }
     }
 
-    // console.log(menus)
+    // console.log(menuGroup)
     
     return (
         <>
@@ -55,7 +56,7 @@ const Module = ({data, menuGroup}) => {
 
                     return (
                         // console.log(item)
-                        <nav className="bg-[#343a40]">
+                        <nav className="bg-[#343a40]" key={index}>
                             <ul className="mx-1 my-1">
                                 {item.module?.type === 'sub' ? (
                                     <>

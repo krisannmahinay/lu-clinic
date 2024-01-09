@@ -17,6 +17,7 @@ export const settingApi = createApi({
          }
     }),
 
+    tagTypes: ['BedList', 'FloorList', 'BedTypeList', 'BedGroupList', 'HospitalChargeList', 'HospitalChargeTypeList', 'HospitalChargeCategoryList'],
     endpoints: (builder) => ({
         getUserList: builder.query({
             query: (args) => {
@@ -83,6 +84,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedList']
         }),
 
         getBedFloorList: builder.query({
@@ -97,6 +99,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['FloorList']
         }),
 
         getBedTypeList: builder.query({
@@ -111,6 +114,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedTypeList']
         }),
 
         getBedGroupList: builder.query({
@@ -125,6 +129,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['BedGroupList']
         }),
 
         getHosptlCharge: builder.query({
@@ -139,6 +144,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeList']
         }),
 
         getHosptlChargeType: builder.query({
@@ -153,6 +159,7 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeTypeList']
         }),
 
         getHosptlChargeCategory: builder.query({
@@ -167,6 +174,21 @@ export const settingApi = createApi({
                     }
                 }
             },
+            providesTags: ['HospitalChargeCategoryList']
+        }),
+
+        getNotification: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-all-notification',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session,
+                        sort: 'created_at',
+                    }
+                }
+            }
         }),
 
         createUserBatch: builder.mutation({
@@ -190,6 +212,15 @@ export const settingApi = createApi({
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'createDoctorRequest':
+                        url = '/create-doctor-request',
+                        body = {
+                            actionType: actionType,
+                            data: data,
+                            selectedDB: session
+                        }
+                        break
+
                     case 'createUser':
                         url = '/user-bulk-registration',
                         body = {
@@ -289,6 +320,22 @@ export const settingApi = createApi({
                     case 'createOutPatient':
                         url = '/create-out-patient',
                         body = {
+                            // notifications
+                            title: 'Newly Added Patient',
+                            message: 'need for consultations',
+                            action: 'admitted',
+                            
+                            patientType: 'new_opd',
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createInPatient':
+                        url = '/create-in-patient',
+                        body = {
+                            patientType: 'new',
                             actionType: actionType,
                             data: data.map(item => item.fields),
                             selectedDB: session
@@ -303,7 +350,17 @@ export const settingApi = createApi({
                     method: 'POST',
                     body: body
                 }
-            }
+            },
+            invalidatesTags: [
+                'BedList',
+                'FloorList',
+                'BedTypeList',
+                'BedGroupList',
+                'HospitalChargeList',
+                'HospitalChargeTypeList',
+                'HospitalChargeCategoryList',
+                'ActiveBedList',
+            ],
         })
     })
 })
@@ -321,5 +378,6 @@ export const {
     useGetBedGroupListQuery,
     useGetHosptlChargeQuery,
     useGetHosptlChargeTypeQuery,
-    useGetHosptlChargeCategoryQuery
+    useGetHosptlChargeCategoryQuery,
+    useGetNotificationQuery
 } = settingApi

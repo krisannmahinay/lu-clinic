@@ -28,7 +28,7 @@ const Button = ({
         case 'disable':
             iconChange =  (
                 <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin' viewBox="0 0 100 100" fill="none">
-                    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" strokeDasharray="50.26548245743669 50.26548245743669" fill="none" strokeLinecap="round"/>
                 </svg>
             )
             break

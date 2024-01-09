@@ -1,18 +1,23 @@
 import { useState } from "react"
 
 
-const Tabs = ({tabsConfig}) => {
+const Tabs = ({tabsConfig, onActiveTab}) => {
     const [activeTab, setActiveTab] = useState(tabsConfig[0].id)
 
+    const handleActiveTab = (id) => {
+        onActiveTab(id)
+        setActiveTab(id)
+    }
+
     return (
-        <div className="bg-white overflow-hidden mx-auto sm:w-full">
+        <div className="bg-white mx-auto sm:w-full">
             <div className="border border-gray-300 rounded">
                 <div className="flex justify-items-center">
                     <div className="rounded-tl-lg py-3 ml-3">
                         {tabsConfig.map(tab => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => handleActiveTab(tab.id)}
                                 className={`focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === tab.id ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}
                             >
                                 {tab.label}
@@ -21,7 +26,7 @@ const Tabs = ({tabsConfig}) => {
                     </div>
                 </div>
 
-                <div className="tab-content px-3 max-h-[65vh] overflow-y-auto scroll-custom">
+                <div className="tab-content px-3">
                         {tabsConfig.map(tab => {
                             if(activeTab === tab.id) {
                                 return <div key={tab.id}>{tab.content()}</div>

@@ -33,6 +33,7 @@ export default function App ({Component, pageProps}) {
                     <link rel="manifest" href={pwa.manifest} />
                 )}
                 
+                <title>Loading...</title>
             </Head>
             <Provider store={store}>
                 {isLoading ? <Loading /> : <Component {...pageProps} />}

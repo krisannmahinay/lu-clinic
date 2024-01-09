@@ -24,6 +24,13 @@ import {
     useGetHosptlChargeCategoryQuery, 
 } from '@/service/settingService'
 
+import {
+    useGetStatisticalReportQuery,
+    useGetInfoClassificationQuery
+} from '@/service/dohService'
+
+import DOHReport from '@/components/Settings/DOHReport'
+
 
 const itemCategory = [
     {item_category: ""}
@@ -42,6 +49,7 @@ const SubModule = () => {
     const router = useRouter()
     const { slug } = router.query
     const menuGroup = "settings"
+    const [accordionSlug, setAccordionSlug] = useState("")
     
     const { 
         data: data, 
@@ -49,25 +57,51 @@ const SubModule = () => {
         refetch: refetchUserDetails 
     } = useGetUserDetailsQuery()
     
-    const {data: hosptlChargeMaster} = useGetHosptlChargeQuery()
-    const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery()
-    const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery()
-    const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery()
+    const hospitalChargeSlug = slug === 'charges'
+    const dohReportSlug = slug === 'doh-report'
+    // const hospitalChargeSlug = slug === 'charges'
 
+    const {data: hosptlChargeMaster} = useGetHosptlChargeQuery()
+    const {data: hosptlChargeTypeMaster} = useGetHosptlChargeTypeQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: hosptlChargeCategoryMaster} = useGetHosptlChargeCategoryQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: hosptlPhysicianListMaster} = useGetPhysicianListQuery(undefined, {skip: !hospitalChargeSlug})
+    const {data: statisticalReport} = useGetInfoClassificationQuery(undefined, {skip: !dohReportSlug})
+
+    // console.log(statisticalReport?.data)
     const [activeTab, setActiveTab] = useState('tab1')
     const [editorData, setEditorData] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
-
-    console.log(hosptlChargeCategoryMaster)
+    
+    const [contentHeight, setContentHeight] = useState(0)
+    // console.log(hosptlChargeCategoryMaster)
     
     const userDetails = data?.data ?? []
+    const header = statisticalReport?.data[0] ?? []
 
     // console.log(userDetails.roles)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
     
+    const handleAccordion = (data) => {
+        setAccordionSlug(data)
+    }
+
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
     }
@@ -179,7 +213,7 @@ const SubModule = () => {
             <Head>
                 <title>Laravel - {slug}</title>
             </Head>
-            <div className="p-8">
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
                 <Modal 
                     // title={title}
                     // charges={true} 
@@ -329,13 +363,10 @@ const SubModule = () => {
                 {slug === "doh-report" && (
                     
                     <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">DOH Annual Health Facility Statistical Report</div>
-                    
-                        <div className="max-h-[70vh] overflow-y-auto scroll-custom">
-                            <Accordion title="General Information">
-                                <p>Testing Accordion 1</p>
-                            </Accordion>
-                        </div>
+                        <DOHReport 
+                            onAccordionClicked={(data) => handleAccordion(data)}
+                            dohData={statisticalReport?.data}
+                        />
                     </div>
                 )}
             </div>

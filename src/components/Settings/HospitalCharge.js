@@ -194,6 +194,7 @@ const HospitalCharge = ({
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [activeContent, setActiveContent] = useState("yellow")
+    const [contentHeight, setContentHeight] = useState(0)
 
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -212,6 +213,20 @@ const HospitalCharge = ({
     }, {
         enabled: !!activeTab
     })
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
 
     useEffect(() => {
         // const newRows = new Set()
@@ -500,7 +515,7 @@ const HospitalCharge = ({
             <>
                 <div className="flex relative overflow-hidden h-screen">
                     <div className="absolute inset-0 w-full">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             <div className="font-bold text-xl mb-2 uppercase text-gray-600">Hospital Charges</div>
                             <div className="flex justify-between py-1">
                                 <Button
@@ -613,7 +628,7 @@ const HospitalCharge = ({
                             </div>
                         </div>
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]` } style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             <div className="flex justify-between py-2">
                                 <Button
                                     paddingY="2"

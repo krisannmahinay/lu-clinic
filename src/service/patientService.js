@@ -15,7 +15,7 @@ export const patientApi = createApi({
             }
          }
     }),
-    
+    tagTypes: ['UpdateOPDtoLatest', 'ActiveBedList'],
     endpoints: (builder) => ({
         autoSaveData: builder.mutation({
             query: dataArray => {
@@ -32,7 +32,8 @@ export const patientApi = createApi({
                 }
             }
         }),
-        getOutPatientList: builder.query({
+
+        getPatientList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
                 const { keywords, items, page, slug, patientType } = args
@@ -50,6 +51,27 @@ export const patientApi = createApi({
                     }
                 }
             }
+        }),
+
+        getOutPatientList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, slug, patientType } = args
+                return {
+                    url: '/opd-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        slug: slug,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        patientType: patientType,
+                        selectedDB: session
+                    }
+                }
+            },
+            providesTags: ['UpdateOPDtoLatest']
         }),
 
         getPhysicianList: builder.query({
@@ -125,16 +147,48 @@ export const patientApi = createApi({
                     }
                 }
             }
+        }),
+
+        getActiveBedList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-bed-list',
+                    method: 'GET',
+                    params: {
+                        tabs: 'bed-list',
+                        selectedDB: session
+                    }
+                }
+            },
+            providesTags: ['ActiveBedList']
+        }),
+
+        getIcd10List: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-icd10',
+                    method: 'GET',
+                    params: {
+                        slug: 'icd10',
+                        selectedDB: session
+                    }
+                }
+            }
         })
     })
 })
 
 export const { 
     useAutoSaveDataMutation, 
+    useGetPatientListQuery,
     useGetOutPatientListQuery,
     useGetPhysicianListQuery,
     useGetPhysicianChargeQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
-    useGetMedicineListQuery
+    useGetMedicineListQuery,
+    useGetIcd10ListQuery,
+    useGetActiveBedListQuery
 } = patientApi
