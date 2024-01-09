@@ -242,6 +242,27 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
                 vital_weight: patientDataMaster?.vital_weight || "",
                 vital_bmi: patientDataMaster?.vital_bmi || "",
 
+                // ipd forms
+                case_number: patientDataMaster?.case_number || "",
+                bed_id: patientDataMaster?.bed_id || "",
+                kin_to_notif: patientDataMaster?.kin_to_notif || "",
+                kintonotif_relationship: patientDataMaster?.kintonotif_relationship || "",
+                kintonotif_address: patientDataMaster?.kintonotif_address || "",
+                kintonotif_contact_no: patientDataMaster?.kintonotif_contact_no || "",
+                data_furnished_by: patientDataMaster?.data_furnished_by || "",
+                dfby_relation_to_patient: patientDataMaster?.dfby_relation_to_patient || "",
+                dfby_address: patientDataMaster?.dfby_address || "",
+                dfby_contact_no: patientDataMaster?.dfby_contact_no || "",
+                date_surgery: patientDataMaster?.date_surgery || "",
+                principal_opt_proc_code: patientDataMaster?.principal_opt_proc_code || "",
+                other_opt_proc_code: patientDataMaster?.other_opt_proc_code || "",
+                rvs_code: patientDataMaster?.rvs_code || "",
+                allegic_to: patientDataMaster?.allegic_to || "",
+                name_surgeon: patientDataMaster?.name_surgeon || "",
+                type_of_anesthesia: patientDataMaster?.type_of_anesthesia || "",
+                principal_diagnosis: patientDataMaster?.principal_diagnosis || "",
+                other_diagnosis: patientDataMaster?.other_diagnosis || "",
+                name_physician: patientDataMaster?.name_physician || "",
             })
         }   
 
