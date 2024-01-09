@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import AsyncSelect from 'react-select/async'
 import Select from 'react-select'
-import { debounce } from 'lodash'
+import { debounce, update } from 'lodash'
 
 import { useGetCountryDataQuery } from '@/service/countryService'
 import { 
@@ -93,55 +93,59 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
         last_name: "",
         first_name: "",
         middle_name: "",
-        email: "",
-        birth_date: "",
-        birth_place: "",
         gender: "",
-        civil_status: "",
-        contact_no: 0,
+        birth_date: "",
         age: 0,
-        province: "",
-        municipality: "",
-        barangay: "",
-        street: "",
-        no_blk_lot: 0,
-        nationality: "",
-        religion: "",
-        occupation: "",
-        employer_name: "",
-        employer_address: "",
-        employer_contact: "",
-        father_name: "",
-        father_address: "",
-        father_contact: "",
-        mother_name: "",
-        mother_address: "",
-        mother_contact: "",
-        spouse_name: "",
-        spouse_address: "",
-        spouse_contact: "",
+        patient_id: "",
+        patient_hrn: "",
+        date_visit: "",
+        type_visit: "",
         admission_date: "",
         discharge_date: "",
-        total_no_day: "",
+        refered_by: "",
+        total_no_day: 0,
         admitting_physician: "",
         admitting_clerk: "",
-        type_visit: "",
-        referred_by: "",
         soc_serv_classification: "",
         allergic_to: "",
         hospitalization_plan: "",
         health_insurance_name: "",
         phic: "",
-        data_furnished_by: "",
         address_of_informant: "",
         relation_to_patient: "",
         admission_diagnosis: "",
-        discharge_diagnosis: "",
-        principal_opt_proc: "",
-        other_opt_proc: "",
-        accident_injury_poison: "",
-        icdo10_code: "",
-        disposition: ""
+        icd10_code: "",
+        disposition: "",
+        soap_subj_symptoms: "",
+        soap_obj_findings: "",
+        soap_assessment: "",
+        soap_plan: "",
+        vital_bp: 0,
+        vital_hr: 0,
+        vital_temp: 0,
+        vital_height: 0,
+        vital_weight: 0,
+        vital_bmi: 0,
+        case_number: "",
+        bed_id: "",
+        kin_to_notif: "",
+        kintonotif_relationship: "",
+        kintonotif_address: "",
+        kintonotif_contact_no: "",
+        data_furnished_by: "",
+        dfby_relation_to_patient: "",
+        dfby_address: "",
+        dfby_contact_no: "",
+        date_surgery: "",
+        principal_opt_proc_code: "",
+        other_opt_proc_code: "",
+        rvs_code: "",
+        allegic_to: "",
+        name_surgeon: "",
+        type_of_anesthesia: "",
+        principal_diagnosis: "",
+        other_diagnosis: "",
+        name_physician: "",
     })  
 
     const [imagePreviewUrl, setImagePreviewUrl] = useState('/path/to/default-photo.png')
@@ -190,7 +194,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
 
     const [autoSaveData] = useAutoSaveDataMutation()
 
-    console.log(patientDataMaster)
+    // console.log(patientDataMaster)
 
     useEffect(() => {
         if (provinceData) {
@@ -317,25 +321,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
             setSelectedDisposition(type)
         }
     }
-
-    const autoSave = debounce(async (newData) => {
-        try {
-            console.log(newData)
-            // await autoSaveData(newData)
-            console.log("it works!")
-        } catch(err) {
-            console.log(err)
-        }
-    })
-
-    const handleFieldChange = useCallback((e) => {
-        const { name, value } = e.target
-        setFormData(prevData => ({
-            ...prevData, 
-            [name]: value
-        }))
-        autoSave({...formData, [name]: value})
-    }, [autoSave, formData])
+    
 
     const handleProvinceChange = (selectedOption) => {
         setSelectedProvince(selectedOption?.label)
@@ -380,6 +366,78 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
             setCheckedItem([...checkedItem, moduleId])
         }
     }
+
+
+    // const handleFieldChange = useCallback((e) => {
+    //     const { name, value } = e.target
+    //     setFormData(prevData => ({
+    //         ...prevData, 
+    //         [name]: value
+    //     }))
+    // }, [autoSave, formData])
+
+    const calculateAge = (birthdate) => {
+        const birthDate = new Date(birthdate)
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--
+        }
+        return age
+    }
+
+    const autoSave = debounce(async (newData) => {
+        try {
+            console.log(newData)
+            // await autoSaveData(newData)
+            console.log("it works!")
+        } catch(err) {
+            console.log(err)
+        }
+    })
+
+    
+    console.log(formData)
+
+    const handleEditForm = (e, rowIndex, fieldName) => {
+        const specialFields = [
+            'gender'
+        ]
+
+        if(fieldName === 'birth_date') {
+            const age = calculateAge(e.target.value)
+            setFormData(prevData => ({
+                ...prevData,
+                birth_date: e.target.value,
+                age: age
+            }))
+        } else if (specialFields.includes(fieldName)) {
+            setFormData(prevData => ({
+                ...prevData,
+                [fieldName]: e.value
+            }))
+        } else {
+            const { value, type, checked } = e.target
+            const fieldValue = type === 'checkbox' ? checked : value
+            setFormData(prevData => ({
+                ...prevData,
+                [fieldName]: fieldValue
+            }))
+        }
+        
+        // const updatedFormData = {
+        //     ...formData,
+        //     [fieldName]: fieldValue,
+        //     ...(fieldName === 'birth_date' && {
+        //         age: calculateAge(value)
+        //     })
+        // }
+
+        autoSave(formData)
+    }
+
+   
 
     const handleBirthDateChange = (e) => {
         setBirthDate(e.target.value)
@@ -426,6 +484,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
                     <Form
                         initialFields={personInfo}
                         enableAutoSave={true}
+                        onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
                         // onSuccess={handleRefetch}
                         // onCloseSlider={() => setActiveContent("yellow")}
                         // onLoading={(data) => setBtnSpinner(data)}
