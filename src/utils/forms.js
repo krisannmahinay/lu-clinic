@@ -53,7 +53,7 @@ export const generateIpdForms = (physicianList, activeBedList) => {
 
     const bedOptions = activeBedList?.map(bed => ({
         value: bed.id,
-        label: `${bed.name} | ${bed.bed_group?.name} - ${bed.bed_group?.bed_floor?.floor}`
+        label: `${bed.name} (${bed.bed_group?.name} : ${bed.bed_group?.bed_floor?.floor})`
     })) 
 
     return [
