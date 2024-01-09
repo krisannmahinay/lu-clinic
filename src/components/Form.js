@@ -51,6 +51,7 @@ const Form = forwardRef(({
         onLoading,
         enableAutoSave,
         enableAddRow,
+        onEditForm,
         style
     }, ref) => {
     const router = useRouter()
@@ -115,11 +116,11 @@ const Form = forwardRef(({
         }
         return age
     }
-    // console.log(initialFields)
+    // console.log(formData)
     
      const handleInputChange = ((e, rowIndex, fieldName) => {
         if(enableAutoSave) {
-            
+            onEditForm(e, rowIndex, fieldName)
         } else {
             if(fieldName === 'birth_date') {
                 const age = calculatedAge(e.target.value)
@@ -245,17 +246,17 @@ const Form = forwardRef(({
         return initialFields.map((field) => (
             <div key={field.name}>
                 {field.name === "last_name" && (
-                    <>
-                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
+                    <div>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Person Details</h3>
                         <hr className="drop-shadow-md pb-5"/>
-                    </>
+                    </div>
                 )}
 
                 {field.name === "admission_date" && (
-                    <>
-                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium pt-20">Part II</h3>
+                    <div>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Patient Information</h3>
                         <hr className="drop-shadow-md py-6"/>
-                    </>
+                    </div>
                 )}
 
                 {field.type === "text" && !field.disabled && (
@@ -529,29 +530,34 @@ const Form = forwardRef(({
                  <form onSubmit={handleSubmit}>
                  {/* <form> */}
                      {formData.map((row, rowIndex) => (
-                             <div key={row.id} className="flex gap-4">
-                                <div className="md:flex md:flex-col  w-full gap-4">
-                                    {renderForm(row, rowIndex)}
-                                </div>
-                                 {formData.length > 1 && (
-                                     <button
-                                         type="button"
-                                         onClick={() => handleRemoveRow(rowIndex)}
-                                         className="ml-2  text-[#cb4949] rounded-md px-2 py-1 focus:outline-none"
-                                     >
-                                         <svg fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                             <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                         </svg>
-                                     </button>
-                                 )}
-                             </div>
-                         ))}
+                        <div>
+                            <div className={`${enableAddRow ? 'relative bg-white overflow-hidden border border-gray-300 rounded py-5' : ''}`}>
+                                <div key={row.id} className="flex gap-4">
+                                    <div className="md:flex md:flex-col  w-full gap-4">
+                                        {renderForm(row, rowIndex)}
+                                    </div>
+                                    {formData.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveRow(rowIndex)}
+                                            className="absolute top-1/2 right-4 transform -translate-y-1/2 hover:bg-gray-200 rounded-md px-2 py-40 focus:outline-none text-[#cb4949] "
+                                        >
+                                            <svg fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div> 
+                            </div>
+                            <br/>
+                        </div>
+                    ))}
  
-                     {loginBtn && (
-                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                             Login
-                         </button>
-                     )}
+                    {loginBtn && (
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            Login
+                        </button>
+                    )}
                  </form>
              </div>
          </>
