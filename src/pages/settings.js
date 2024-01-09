@@ -35,24 +35,10 @@ import SearchExport from '@/components/SearchExport'
 import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from "@/components/DropdownLink"
 import UserProfile from '@/components/UserProfile'
+import { userRegistration } from '@/utils/forms'
 
-const userRegistration = [
-    {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
-    {name: 'password', type: 'password', label: 'Password', placeholder: 'Enter password'},
-    {
-        name: 'roles',
-        type: 'dropdown',
-        label: 'Roles',
-        options: [
-            {value: 'admin', label: 'Admin'},
-            {value: 'nurse', label: 'Nurse'},
-            {value: 'doctor', label: 'Doctor'}
-        ]
-    }
-]
 
 const Setting = () => {
-
     const moduleId = "settings"
     const menuGroup = "settings"
     const formRef = useRef(null)
@@ -210,8 +196,6 @@ const Setting = () => {
     }
 
     const handleOnchecked = (data) => {
-        // console.log(data)
-        // console.log(data.length)
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
     }
@@ -363,13 +347,6 @@ const Setting = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        {/* <Table 
-                            title="User List" 
-                            disableTable={true}
-                            onOpenModal={(id) => setModalId(id)}
-                        >
-                            {renderTableContent()}
-                        </Table> */}
                         <Table
                             tableData={userData}
                             tableHeader={header}
@@ -441,6 +418,7 @@ const Setting = () => {
                             <Form 
                                 ref={formRef} 
                                 initialFields={userRegistration}
+                                enableAutoSave={false}
                                 onSuccess={handleRefetch}
                                 onCloseSlider={() => setActiveContent("yellow")}
                                 onLoading={(data) => setBtnSpinner(data)}
