@@ -1,33 +1,42 @@
 
 import Table from "@/components/Table"
 
-const labResults = [
-    {
-        test_name: "Hemoglobin",
-        result: 12,
-        normal_range: "11.0 - 16.0",
-        unit: "g/dL",
-        date_examination: "06 Aug 2023 09:00AM"
-    },
-    
-    {
-        test_name: "RBC",
-        result: "3.3",
-        normal_range: "3.5-5.50",
-        unit: "10^6/uL",
-        date_examination: "06 Aug 2023 09:00AM"
-    }
-]
-
-const LabResult = ({slug}) => {
+const LabResult = ({slug, tableData, tableHeader}) => {
+    const header = ['test_name','result', 'normal_range', 'units', 'created_at']
+    const filteredHeader = tableHeader.filter(field => header.includes(field))
     return (
-        <Table 
-            title="Patient List" 
-            action={false}
-            slug={slug}
-            tableHeader={Object.keys(labResults[0])}
-            tableData={labResults} 
-        />
+        <table className="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    {filteredHeader?.map((tblHeader, tblHeaderIndex) => (
+                        <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {tblHeader}
+                        </th>
+
+                    ))}
+                </tr>
+            </thead>
+
+            <tbody className="bg-white divide-y divide-gray-200">
+                {tableData?.length === 0 ? (
+                    <tr>
+                        <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                            No records found.
+                        </td>
+                    </tr>
+                ) : (
+                    tableData?.map((tblBody, tblBodyIndex) => (
+                        <tr key={tblBody.id} className="hover:bg-gray-200">
+                            {filteredHeader.map((tblHeader) => (
+                                <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
+                                    {tblBody[tblHeader] !== null ? tblBody[tblHeader] : 'Pending' }
+                                </td>
+                            ))}
+                        </tr>
+                    ))
+                )}
+            </tbody>
+        </table>
     )
 }
 
