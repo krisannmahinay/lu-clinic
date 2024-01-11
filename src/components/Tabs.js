@@ -26,7 +26,7 @@ const Tabs = ({tabsConfig, onActiveTab}) => {
                     </div>
                 </div>
 
-                <div className="tab-content px-3">
+                <div className="tab-content">
                         {tabsConfig.map(tab => {
                             if(activeTab === tab.id) {
                                 return <div key={tab.id}>{tab.content()}</div>
