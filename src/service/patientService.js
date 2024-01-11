@@ -105,6 +105,40 @@ export const patientApi = createApi({
             }
         }),
 
+        getImgResultList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, patient_id, slug } = args
+                return {
+                    url: '/get-imaging-result',
+                    method: 'GET',
+                    params: {
+                        slug: slug,
+                        patient_id: patient_id,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getLabResultList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, patient_id, slug } = args
+                return {
+                    url: '/get-lab-result',
+                    method: 'GET',
+                    params: {
+                        slug: slug,
+                        patient_id: patient_id,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getRadiologyList: builder.query({
             query: () => {
                 const session = Cookies.get('session')
@@ -221,5 +255,7 @@ export const {
     useGetPathologyCategoryListQuery,
     useGetMedicationListQuery,
     useGetIcd10ListQuery,
-    useGetActiveBedListQuery
+    useGetActiveBedListQuery,
+    useGetImgResultListQuery,
+    useGetLabResultListQuery
 } = patientApi
