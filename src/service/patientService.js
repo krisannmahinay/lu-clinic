@@ -105,6 +105,34 @@ export const patientApi = createApi({
             }
         }),
 
+        getRadiologyList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-radiology',
+                    method: 'GET',
+                    params: {
+                        slug: 'radiology',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getRadiologyCategoryList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-radiology-category',
+                    method: 'GET',
+                    params: {
+                        slug: 'radiology-category',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getPathologyList: builder.query({
             query: () => {
                 const session = Cookies.get('session')
@@ -133,15 +161,16 @@ export const patientApi = createApi({
             }
         }),
 
-        getMedicineList: builder.query({
+        getMedicationList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
-                const { keywords } = args
+                const { keywords, patient_id } = args
                 return {
                     url: '/get-medication',
                     method: 'GET',
                     params: {
-                        slug: 'medicine',
+                        patient_id: patient_id,
+                        slug: 'medication',
                         q: keywords,
                         selectedDB: session
                     }
@@ -186,9 +215,11 @@ export const {
     useGetOutPatientListQuery,
     useGetPhysicianListQuery,
     useGetPhysicianChargeQuery,
+    useGetRadiologyListQuery,
+    useGetRadiologyCategoryListQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
-    useGetMedicineListQuery,
+    useGetMedicationListQuery,
     useGetIcd10ListQuery,
     useGetActiveBedListQuery
 } = patientApi
