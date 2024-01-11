@@ -22,7 +22,9 @@ import {
     useGetMedicineListQuery,
     useGetIcd10ListQuery,
     useGetActiveBedListQuery,
-    useGetMedicationListQuery
+    useGetMedicationListQuery,
+    useGetImgResultListQuery,
+    useGetLabResultListQuery,
 } from '@/service/patientService'
 import { 
     useGetModuleListQuery,
@@ -142,6 +144,8 @@ const SubModule = () => {
     }, {
         enabled: !!searchMedicine
     })
+    const { data: imgResultList } = useGetImgResultListQuery({ slug: 'imaging', patient_id: profileData?.patient_id })
+    const { data: labResultList } = useGetLabResultListQuery({ slug: 'laboratory', patient_id: profileData?.patient_id })
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
     const { data: radiologyList } = useGetRadiologyListQuery()
@@ -151,7 +155,7 @@ const SubModule = () => {
 
     // const panthologyCategoryListData = pathologyCategoryList?.map(el => el.category_name)
 
-    // console.log(medicationList)
+    console.log(labResultList)
 
     const formatTitlePages = (str) => {
         return str
@@ -1053,7 +1057,7 @@ const SubModule = () => {
                                                                     <input
                                                                         type="checkbox" 
                                                                         className="w-3 h-3"
-                                                                        onChange={(e) => handleCheckbox(test, e.target.checked, 'panthologies')}
+                                                                        onChange={(e) => handleCheckbox(test, e.target.checked, 'pathology')}
                                                                     />
                                                                     <p className="text-sm text-gray-500">{test.test_name}</p>
                                                                 </div>
@@ -1077,7 +1081,7 @@ const SubModule = () => {
                                                         <input
                                                             type="checkbox" 
                                                             className="w-3 h-3"
-                                                            onChange={(e) => handleCheckbox(test, e.target.checked, 'radiologies')}
+                                                            onChange={(e) => handleCheckbox(test, e.target.checked, 'radiology')}
                                                         />
                                                         <p className="text-sm text-gray-500">{test.test_name}</p>
                                                     </div>
@@ -1087,10 +1091,21 @@ const SubModule = () => {
                                     </div>
 
                                     <div className="grid justify-items-center py-4">
-                                        <button onClick={() => handleSubmitButton("doctor-request")} className={`${isOptionDisabled ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 gap-2 rounded focus:outline-none`} disabled={isOptionDisabled}>
-                                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                            </svg>
+                                        <button 
+                                            onClick={() => handleSubmitButton("doctor-request")} 
+                                            className={`${isOptionDisabled || btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
+                                            disabled={isOptionDisabled || btnSpinner}>
+                                            
+                                            
+                                            {btnSpinner ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin' viewBox="0 0 100 100" fill="none">
+                                                    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" strokeDasharray="50.26548245743669 50.26548245743669" fill="none" strokeLinecap="round"/>
+                                                </svg>
+                                            ) : (
+                                                <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                                </svg>
+                                            )}
 
                                             Submit
                                         </button>
