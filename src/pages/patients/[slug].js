@@ -14,17 +14,20 @@ import ItemPerPage from '@/components/ItemPerPage'
 import { DropdownExport, DropdownRowMenu } from '@/components/DropdownLink'
 import { 
     useGetPatientListQuery,
-    useGetOutPatientListQuery,
     useGetPhysicianListQuery,
+    useGetRadiologyListQuery,
+    useGetRadiologyCategoryListQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
     useGetMedicineListQuery,
     useGetIcd10ListQuery,
-    useGetActiveBedListQuery
+    useGetActiveBedListQuery,
+    useGetMedicationListQuery
 } from '@/service/patientService'
 import { 
     useGetModuleListQuery,
-    useCreateBulkMutation
+    useCreateBulkMutation,
+    useUpdateBulkMutation
 } from '@/service/settingService'
 
 import Alert from '@/components/Alert'
@@ -39,112 +42,6 @@ import Profile from '@/components/Profile'
 import { generateOpdForms, generateIpdForms } from '@/utils/forms' 
 import SkeletonScreen from '@/components/SkeletonScreen'
 
-const patientOPD = [
-    {
-        time_in: "1440",
-        patient_id: "PAT-230818XY2A",
-        patient_name: "John Doe",
-        age: 20,
-        gender: "Male",
-        phone: "092222222222",
-        physician: "Dr Smith",
-    },
-    
-    {
-        time_in: "1533",
-        patient_id: "PAT-230818XYA2",
-        patient_name: "John Doe",
-        age: 27,
-        gender: "Male",
-        phone: "092222222222",
-        physician: "Dr Smith",
-    }
-]
-
-const patientIPD = [
-    {
-        time_in: "1533",
-        patient_id: "PAT-230818XYA2",
-        patient_name: "John Doe",
-        age: 27,
-        gender: "Male",
-        phone: "092222222222",
-        room_number: "02",
-        physician: "Dr Smith",
-    },
-    {
-        time_in: "1440",
-        patient_id: "PAT-230818XY2A",
-        patient_name: "John Doe",
-        age: 27,
-        gender: "Male",
-        phone: "092222222222",
-        room_number: "WARD BED#2",
-        physician: "Dr Smith",
-    }
-]
-
-const soapData = [
-    {
-        hematology: [
-            // {id:1, type:"hematology", name: "Complete Blood Count with platelet count(CBC with platelet)"},
-            // {id:2, type:"hematology", name: "Peripheral Blood Smear"},
-            // {id:3, type:"hematology", name: "Clotting Time(CT)"},
-            // {id:4, type:"hematology", name: "Bleeding Time(BT)"},
-            // {id:5, type:"hematology", name: "Prothrombin Time(PT)"},
-            // {id:6, type:"hematology", name: "Partial Thromboplastin Time(PTT)"},
-            // {id:7, type:"hematology", name: "Dengue NS1"},
-            // {id:8, type:"hematology", name: "Crossmatching"},
-            // {id:9, type:"hematology", name: "Blood Typing"},
-            // {id:10, type:"hematology", name: "Others"}
-        ], 
-        urine_stool_studies: [
-            // {id:11, type:"stool", name: "Urinalysis(midstream, clean catch)"},
-            // {id:12, type:"stool", name: "Pregnancy Test"},
-            // {id:13, type:"stool", name: "Fecalysis"},
-            // {id:14, type:"stool", name: "Others"},
-        ],
-        cardiac_studies: [
-            // {id:15, type:"cardiac", name: "Electrocardiogram(ECG)"},
-            // {id:16, type:"cardiac", name: "Others",}
-        ], 
-        chemistry: [
-            // {id:17, type:"chemistry", name: "Lipid Profile"},
-            // {id:18, type:"chemistry", name: "Serum Sodium(Na)"},
-            // {id:19, type:"chemistry", name: "Serum Potassium(K)"},
-            // {id:20, type:"chemistry", name: "Blood Urea Nitrogen(BUN)"},
-            // {id:21, type:"chemistry", name: "Ionized Calcium(iCa)"},
-            // {id:22, type:"chemistry", name: "Uric Acid"},
-            // {id:23, type:"chemistry", name: "ALT/SGPT"},
-            // {id:24, type:"chemistry", name: "AST/SGOT"},
-            // {id:25, type:"chemistry", name: "Hepatitis Test"},
-            // {id:26, type:"chemistry", name: "Syphilis"},
-            // {id:27, type:"chemistry", name: "TSH"},
-            // {id:28, type:"chemistry", name: "Ft4"},
-            // {id:29, type:"chemistry", name: "Ft3"},
-            // {id:30, type:"chemistry", name: "TT4"},
-            // {id:31, type:"chemistry", name: "TT3"},
-            // {id:32, type:"chemistry", name: "PSA"},
-            // {id:33, type:"chemistry", name: "Rapid Antigen Test(COVID-19)"},
-            // {id:45, type:"chemistry", name: "Others"},
-        ],
-        glucose: [
-            // {id:46, type:"glucose", name: "Fasting Blood Sugar(FBS)"},
-            // {id:47, type:"glucose", name: "Hba1c"},
-            // {id:48, type:"glucose", name: "Random Blood Sugar"},
-            // {id:49, type:"glucose", name: "75g Oral Glucose Tolerance Test(OGTT)"},
-            // {id:50, type:"glucose", name: "Others"}
-        ]
-    }
-]
-
-const soapHeaders = [
-    "hematology",
-    "urine_stool_studies",
-    "cardiac_studies",
-    "chemistry",
-    "glucose",
-]
 
 const dummyData = [
     {id:1, name: "Paracetamol"},
@@ -194,6 +91,11 @@ const SubModule = () => {
     const [openCategory, setOpenCategory] = useState(null)
     const [drRequestForms, setDrRequestForms] = useState([])
 
+    // medications
+    const [isShowMedForm, setIsShowMedForm] = useState(false)
+    const [addedMedicine, setAddedMedicine] = useState([])
+    const [selectedMedicine, setSelectedMedicine] = useState(null)
+
     const [pageTitle, setPageTitle] = useState("")
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -229,24 +131,27 @@ const SubModule = () => {
         isSuccess: createUserSuccess 
     }] = useCreateBulkMutation()
 
+    const [updateBulk, {isLoading: updateBulkLoading}] = useUpdateBulkMutation()
+
     const { data: activeBedList } = useGetActiveBedListQuery(undefined, {skip: !refetchRTK})
     const { data: physicianList } = useGetPhysicianListQuery(undefined, {skip: !refetchRTK})
     const { data: icd10List } = useGetIcd10ListQuery(undefined, {skip: !refetchRTK})
-    const { data: medicineList } = useGetMedicineListQuery(
-        undefined, {
-            skip: !refetchRTK
-    }, {
-        keywords: searchMedicine
+    const { data: medicationList } = useGetMedicationListQuery({
+        keywords: searchMedicine,
+        patient_id: profileData?.patient_id
     }, {
         enabled: !!searchMedicine
     })
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
+    const { data: radiologyList } = useGetRadiologyListQuery()
     const patientData = patientList?.data ?? []
     const pagination = patientList?.pagination ?? []
     const header = patientList?.columns ?? []
 
     // const panthologyCategoryListData = pathologyCategoryList?.map(el => el.category_name)
+
+    // console.log(medicationList)
 
     const formatTitlePages = (str) => {
         return str
@@ -342,7 +247,7 @@ const SubModule = () => {
         [category]: organizedData[category]
     }))
 
-    console.log(testsData)
+    // console.log(testsData)
 
     // const organizedData = pathologyList?.reduce((acc, item) => {
     //     const category = item.panthology_category?.category_name || 'unknown'
@@ -394,11 +299,58 @@ const SubModule = () => {
                         setAlertOpen(true)
                     }
                 })
+        } else if(slug.link === 'add-medicine') {
+            if (slug.qty > selectedMedicine?.medicine.quantity) {
+                setAlertMessage(`Please refer to available stock (${selectedMedicine?.medicine.quantity})`)
+            } else {
+                updateBulk({actionType: 'updateMedication', data: selectedMedicine, id: slug.id})
+                    .unwrap()
+                    .then(response => {
+                        if(response.status === "success") {
+                            setBtnSpinner(true)
+                        }
+                    })
+                    .catch(error => {
+                         console.log(error)
+                    })
+
+                setAddedMedicine((current) => [
+                    ...current, 
+                    selectedMedicine
+                ])
+                setIsShowMedForm(false)
+            }
         }
     }
 
+    const addMedicine = (qty) => {
+        // console.log(selectedMedicine)
+        if (qty > selectedMedicine?.medicine.quantity) {
+            
+            createBulk({actionType: 'createDoctorRequest', data: drRequestForms})
+
+            setAlertMessage(`Please refer to available stock (${selectedMedicine?.medicine.quantity})`)
+        } else {
+            setAddedMedicine((current) => [...current, selectedMedicine])
+            setIsShowMedForm(false)
+        }
+    }
+
+    const backToList = () => {
+        setSelectedMedicine(null)
+        setIsShowMedForm(false)
+        setAlertMessage("")
+    }
+
+    // console.log(drRequestForms)
+
+    const selectMedicine = (medicine) => {
+        setSelectedMedicine(medicine)
+        setIsShowMedForm(true)
+    }
+
     const handleSearchMedQuery = (e) => {
-        setSearchMedicine(e)
+        setSearchMedicine(e.target.value)
     }
 
     const handleSearch = (e) => {
@@ -449,11 +401,8 @@ const SubModule = () => {
             id: 'tab2',
             label: 'S.O.A.P',
             content: () => <Soap 
-                                soapData={soapData} 
-                                soapHeaders={soapHeaders} 
                                 dummyData={dummyData}
-                                medicineMaster={medicineList}
-                                onSearchQuery={(data) => handleSearchMedQuery(data)}
+                                // onSearchQuery={(data) => handleSearchMedQuery(data)}
                             />
         },
         {
@@ -506,24 +455,28 @@ const SubModule = () => {
         setIsOptionDisabled(data.length === 0)
     }
 
-    console.log(drRequestForms)
+    const handleAddMedicine = (e, fieldName) => {
+        setSelectedMedicine(prevData => ({
+            ...prevData,
+            [fieldName]: e.target.value
+        }))
+    }
 
-    const handleCheckbox = (testId, isChecked) => {
+    const handleCheckbox = (test, isChecked, labCategory) => {
         if(isChecked) {
             setDrRequestForms(prevForms => [...prevForms, {
                 patient_id: profileData?.patient_id,
                 physician_id: profileData?.admitting_physician,
-                test_id: testId,
+                test_id: test.id,
+                lab_category: labCategory,
+                charge: test.charge
 
             }])
+            setIsOptionDisabled(false)
         } else {
-            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== testId))
+            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== test.id))
+            setIsOptionDisabled(true)
         }
-        // if(checkedItem.includes(id)) {
-        //     setCheckedItem((prevChecked) => prevChecked.filter((itemId) => itemId !== id))
-        // } else {
-        //     setCheckedItem((prevChecked) => [...prevChecked, id])
-        // }
     }
 
     const handleOnclick = (type, data) => {
@@ -1043,79 +996,250 @@ const SubModule = () => {
                     }
 
                     {renderContent(slug)}
-                </div>
-            </div>
 
-            {activeTab === 'tab2' && (
-                <div className="fixed bottom-4 right-5 z-50">
-                    <button onClick={() => setIsDrDrawerOpen(!isDrDrawerOpen)} title="Doctor Request's" className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg focus:outline-none">
-                    <svg fill="#ffffff" height={20} width={20} version="1.1" id="Capa_1" viewBox="0 0 201.324 201.324" transform="matrix(1, 0, 0, 1, 0, 0)rotate(0)" stroke="#ffffff">
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.805296"></g>
-                        <g id="SVGRepo_iconCarrier"> <circle cx="95.596" cy="10.083" r="10.083"></circle> <circle cx="149.018" cy="10.083" r="10.083"></circle> 
-                            <path d="M179.06,19.254c-5.123-8.873-14.298-14.17-24.544-14.17v10c6.631,0,12.568,3.428,15.884,9.17 c3.316,5.743,3.316,12.599,0.001,18.342l-32.122,55.636c-3.315,5.742-9.253,9.17-15.884,9.171c-6.631,0-12.569-3.428-15.885-9.171 L74.389,42.595c-3.315-5.742-3.315-12.599,0-18.341s9.254-9.171,15.885-9.171v-10c-10.246,0-19.422,5.297-24.545,14.171 s-5.123,19.468,0,28.341l32.121,55.636c4.272,7.399,11.366,12.299,19.545,13.727v26.832c0,26.211-15.473,47.535-34.492,47.535 c-19.019,0-34.491-21.324-34.491-47.535v-31.948C59.802,109.52,68.4,99.424,68.4,87.356c0-13.779-11.21-24.989-24.989-24.989 s-24.989,11.21-24.989,24.989c0,12.067,8.598,22.163,19.989,24.486v31.948c0,31.725,19.959,57.535,44.492,57.535 c24.532,0,44.491-25.81,44.491-57.535v-26.832c8.178-1.428,15.273-6.328,19.544-13.727l32.122-55.636 C184.184,38.722,184.184,28.127,179.06,19.254z">
+                    {activeTab === 'tab2' && (
+                        <div className="fixed bottom-4 right-5 z-50">
+                            <button onClick={() => setIsDrDrawerOpen(!isDrDrawerOpen)} title="Doctor Request's" className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg focus:outline-none">
+                            <svg fill="#ffffff" height={20} width={20} version="1.1" id="Capa_1" viewBox="0 0 201.324 201.324" transform="matrix(1, 0, 0, 1, 0, 0)rotate(0)" stroke="#ffffff">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.805296"></g>
+                                <g id="SVGRepo_iconCarrier"> <circle cx="95.596" cy="10.083" r="10.083"></circle> <circle cx="149.018" cy="10.083" r="10.083"></circle> 
+                                    <path d="M179.06,19.254c-5.123-8.873-14.298-14.17-24.544-14.17v10c6.631,0,12.568,3.428,15.884,9.17 c3.316,5.743,3.316,12.599,0.001,18.342l-32.122,55.636c-3.315,5.742-9.253,9.17-15.884,9.171c-6.631,0-12.569-3.428-15.885-9.171 L74.389,42.595c-3.315-5.742-3.315-12.599,0-18.341s9.254-9.171,15.885-9.171v-10c-10.246,0-19.422,5.297-24.545,14.171 s-5.123,19.468,0,28.341l32.121,55.636c4.272,7.399,11.366,12.299,19.545,13.727v26.832c0,26.211-15.473,47.535-34.492,47.535 c-19.019,0-34.491-21.324-34.491-47.535v-31.948C59.802,109.52,68.4,99.424,68.4,87.356c0-13.779-11.21-24.989-24.989-24.989 s-24.989,11.21-24.989,24.989c0,12.067,8.598,22.163,19.989,24.486v31.948c0,31.725,19.959,57.535,44.492,57.535 c24.532,0,44.491-25.81,44.491-57.535v-26.832c8.178-1.428,15.273-6.328,19.544-13.727l32.122-55.636 C184.184,38.722,184.184,28.127,179.06,19.254z">
 
-                            </path> 
-                        </g>
-                    </svg>
-                    </button>
-                </div>
-            )}
-
-            {isDrDrawerOpen && (
-                <div>
-                    <div className={`fixed inset-0 top-0 p-4 bg-black opacity-50 transition-opacity ${isDrDrawerOpen ? 'visible' : 'hidden'}`}></div>
-                    <div className={`fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-80 transition-transform duration-500 ease-in-out ${isDrDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <button 
-                            onClick={() => setIsDrDrawerOpen(!isDrDrawerOpen)}
-                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
-                            <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                    </path> 
+                                </g>
                             </svg>
-                            <span className="sr-only">Close menu</span>
-                        </button>
+                            </button>
+                        </div>
+                    )}
 
-                        <div className="pt-7">
-                            {Object.entries(testsData).map(([category, tests]) => (
-                                <div key={category}>
-                                    <div className="bg-gray-200">
-                                        <button onClick={() => setOpenCategory(openCategory === category ? null : category)} className="text-gray-500 font-medium p-2 font-bold uppercase text-xs">
-                                            {category}
-                                        </button>
-                                    </div>
+                    {isDrDrawerOpen && (
+                        <div>
+                            <div className={`fixed inset-0 top-0 p-4 bg-black opacity-50 transition-opacity ${isDrDrawerOpen ? 'visible' : 'hidden'}`}></div>
+                            <div className={`fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-2/5 transition-transform duration-500 ease-in-out ${isDrDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                                <h5 id="drawer-right-label" class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                </svg>Doctor's Request
+                                </h5>
+                                <button 
+                                    onClick={() => {
+                                        setIsDrDrawerOpen(!isDrDrawerOpen)
+                                        setDrRequestForms([])
+                                        setAddedMedicine([])
+                                        setAlertMessage("")
+                                    }}
+                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
+                                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                    </svg>
+                                    <span className="sr-only">Close menu</span>
+                                </button>
 
-                                    <div style={{ display: openCategory === category ? 'block' : 'none' }}>
-                                        {tests.map(test => (
-                                            <ul className="space-y-2 align-top divide-y">
+                                <div className="pt-7">
+                                    {Object.entries(testsData).map(([category, tests]) => (
+                                        <>
+                                            <div key={category} className="border border-gray-400">
+                                                <div className="bg-gray-200">
+                                                    <button onClick={() => setOpenCategory(openCategory === category ? null : category)} className="text-gray-500 font-medium p-2 uppercase text-xs">
+                                                        {category}
+                                                    </button>
+                                                </div>
+
+                                                <div style={{ display: openCategory === category ? 'block' : 'none' }} className="p-4">
+                                                    <ul className="space-y-1">
+                                                        {tests.map(test => (
+                                                            <li key={test.id}>
+                                                                <div className="flex items-center space-x-4">
+                                                                    <input
+                                                                        type="checkbox" 
+                                                                        className="w-3 h-3"
+                                                                        onChange={(e) => handleCheckbox(test, e.target.checked, 'panthologies')}
+                                                                    />
+                                                                    <p className="text-sm text-gray-500">{test.test_name}</p>
+                                                                </div>
+                                                            </li>    
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ))}
+
+                                    <div className="border border-gray-400">
+                                        <div className="bg-gray-200">
+                                            <p className="text-gray-500 font-medium p-2 uppercase text-xs">Imaging</p>
+                                        </div>
+
+                                        <ul className="space-y-1 p-4">
+                                            {radiologyList?.map(test => (
                                                 <li key={test.id}>
                                                     <div className="flex items-center space-x-4">
                                                         <input
                                                             type="checkbox" 
                                                             className="w-3 h-3"
-                                                            // name=""
-                                                            // value={test.id}
-                                                            // checked={checkedItem.includes(test.id)}
-                                                            onChange={(e) => handleCheckbox(test.id, e.target.checked)}
+                                                            onChange={(e) => handleCheckbox(test, e.target.checked, 'radiologies')}
                                                         />
                                                         <p className="text-sm text-gray-500">{test.test_name}</p>
                                                     </div>
                                                 </li>
-                                            </ul>
-                                        ))}
+                                            ))}
+                                        </ul>
                                     </div>
+
+                                    <div className="grid justify-items-center py-4">
+                                        <button onClick={() => handleSubmitButton("doctor-request")} className={`${isOptionDisabled ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 gap-2 rounded focus:outline-none`} disabled={isOptionDisabled}>
+                                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                            </svg>
+
+                                            Submit
+                                        </button>
+                                    </div>
+
+                                    <div className="border border-gray-400 ">
+                                        <div className="bg-gray-200">
+                                            <p className="text-gray-500 font-medium p-2 uppercase text-xs">Medications</p>
+                                        </div>
+                                        <div className="flex justify-center">
+                                            <div className="flex-col w-full border scroll-custom">
+                                                <div className="overflow-y-auto scroll-custom">
+                                                    {!isShowMedForm && (
+                                                        <div className="sticky top-0">
+                                                            <input
+                                                                type="search"
+                                                                value={searchMedicine}
+                                                                onChange={(e) => handleSearchMedQuery(e)}
+                                                                placeholder="Search..."
+                                                                className="p-1 w-full border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
+                                                            />
+                                                            <div className="">
+                                                                {medicationList?.map((data) => (
+                                                                    <div
+                                                                        key={data.id}
+                                                                        className={`p-2 text-sm text-gray-500 ${data?.status === 'ps' ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-300 cursor-pointer' }`}
+                                                                        onClick={data?.status !== 'ps' ? () => selectMedicine(data) : undefined}
+                                                                    >
+                                                                        {`${data?.medicine.generic_name} (${data?.dose})`}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {isShowMedForm && (
+                                                        <div className="p-4">
+                                                            <div className="mb-4">
+                                                                <label className="block text-sm font-medium text-gray-700">Brand name:</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
+                                                                    value={selectedMedicine?.medicine.brand_name}
+                                                                    readOnly
+                                                                    
+                                                                />
+                                                                <label className="block text-sm font-medium text-gray-700">Generic name:</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
+                                                                    value={selectedMedicine?.medicine.generic_name}
+                                                                    readOnly
+                                                                />
+
+                                                                <label className="block text-sm font-medium text-gray-700">Dose:</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
+                                                                    value={selectedMedicine.dose}
+                                                                    onChange={(e) => handleAddMedicine(e, "dose")}
+                                                                />
+
+                                                                <label className="block text-sm font-medium text-gray-700">Qty:</label>
+                                                                <input
+                                                                    type="number"
+                                                                    className={`mt-1 block w-full p-2 border bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500 ${alertMessage !== "" ? 'border-red-600' :  'border-gray-300'}`}
+                                                                    value={selectedMedicine.qty}
+                                                                    onChange={(e) => handleAddMedicine(e, "qty")}
+                                                                />
+                                                                {alertMessage && (
+                                                                    <p className="text-xs text-red-600"><span class="font-medium">Error!</span> {alertMessage}</p>
+                                                                )}
+   
+
+                                                                <label className="block text-sm font-medium text-gray-700">Frequency:</label>
+                                                                <select 
+                                                                    className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
+                                                                    onChange={(e) => handleAddMedicine(e, "frequency")}>
+                                                                    <option>Select options</option>
+                                                                    <option value="once a day">once a day</option>
+                                                                    <option value="twice a day">twice a day</option>
+                                                                    <option value="every other day">every other day</option>
+                                                                    <option value="every 12 hours">every 12 hours</option>
+                                                                </select>
+
+                                                                <label className="block text-sm font-medium text-gray-700">Sig:</label>
+                                                                <textarea 
+                                                                    type="text"
+                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
+                                                                    value={selectedMedicine.sig}
+                                                                    onChange={(e) => handleAddMedicine(e, "sig")}
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={backToList}
+                                                                    className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                                                                >&larr; Back
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleSubmitButton({
+                                                                        link: "add-medicine",
+                                                                        qty: selectedMedicine.qty,
+                                                                        id: selectedMedicine.id
+                                                                    })}
+                                                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
+                                                                    Add
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-col w-full h-58 border border-l-gray-500">
+                                                <div className="overflow-y-auto scroll-custom h-full">
+                                                    {addedMedicine.map((data, index) => (
+                                                        <div 
+                                                            key={data.id} 
+                                                            className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
+                                                            // onClick={() => moveItemToLeft(item.id)}
+                                                        >
+                                                            {`${data?.medicine.generic_name} (${data.dose})`}
+                                                        </div>
+                                                    ))}
+
+                                                    {/* {medicationList?.filter(data => data.status === 'ps').map((data) => (
+                                                        <div 
+                                                            key={data.id} 
+                                                            className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
+                                                            // onClick={() => moveItemToLeft(item.id)}
+                                                        >
+                                                            {`${data?.medicine.generic_name} (${data.dose})`}
+                                                        </div>
+                                                    ))} */}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+                                    
                                 </div>
-                            ))}
-                            <Button
-                                bgColor={btnSpinner ? 'disable': 'emerald'}
-                                btnIcon={btnSpinner ? 'disable': 'submit'}
-                                btnLoading={btnSpinner}
-                                onClick={() => handleSubmitButton("doctor-request")}
-                            >
-                                {btnSpinner ? '' : 'Submit'}
-                            </Button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
+
         </AppLayout>
     )
 }
