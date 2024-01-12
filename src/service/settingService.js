@@ -209,7 +209,6 @@ export const settingApi = createApi({
         updateBulk: builder.mutation({
             query: (args) => {
                 const { actionType, data, id } = args
-                console.log(data)
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
@@ -235,10 +234,23 @@ export const settingApi = createApi({
 
         createBulk: builder.mutation({
             query: (args) => {
-                const { actionType, data } = args
+                const { actionType, data, patientId, physicianId } = args
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'createPrescription':
+                        // console.log(data)
+                        url = '/create-prescription',
+                        body = {
+                            data: data,
+                            patient_id: patientId,
+                            physician_id: physicianId,
+                            selectedDB: session,
+                            actionType: actionType,
+                        }
+                        break
+
+
                     case 'createDoctorRequest':
                         url = '/create-doctor-request',
                         body = {
