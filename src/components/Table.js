@@ -170,14 +170,14 @@ const Table = forwardRef(({
     })
 
     useEffect(() => {
-        if(tableData?.length > 0) {
-            setFormData(tableData)
-        }
+        // if(tableData?.length > 0) {
+        //     setFormData(tableData)
+        // }
 
         if(lastCheckedUserId !== null) {
             onEdit(lastCheckedUserId)
         }
-    }, [tableData, lastCheckedUserId])
+    }, [lastCheckedUserId])
 
     let adjustFontSize
 
@@ -582,7 +582,7 @@ const Table = forwardRef(({
                                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     <input
                                         type="checkbox"
-                                        checked={checked.length === tableData.length && tableData.length !== 0}
+                                        checked={checked.length === tableData?.length && tableData?.length !== 0}
                                         onChange={(e) => handleOnchange('tblSelectAll', e)}
                                     />
                                 </th>
@@ -607,14 +607,14 @@ const Table = forwardRef(({
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {tableData.length === 0 ? (
+                            {tableData?.length === 0 ? (
                                 <tr>
                                     <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
                                         No records found.
                                     </td>
                                 </tr>
                             ) : (
-                                tableData.map((tblBody, tblBodyIndex) => (
+                                tableData?.map((tblBody, tblBodyIndex) => (
                                     // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
                                     <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
                                         <td className="px-6 py-2 whitespace-nowrap text-sm">
