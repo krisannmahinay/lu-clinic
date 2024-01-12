@@ -120,7 +120,7 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
     
     return (
         <div className="flex justify-center">
-            <div className="flex-col w-1/2 border border-r-gray-400">
+            <div className="flex-col w-1/2 border-r-gray-300 border-r-[1px]">
                 <div className="overflow-y-auto scroll-custom ">
                     {!isShowMedForm && (
                         <div className="sticky top-0">
@@ -129,16 +129,16 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
                                 value={searchMedicine}
                                 onChange={(e) => handleOnChange(e, 'searchMedicine', _)}
                                 placeholder="Search..."
-                                className="p-1 w-full border border-b-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
+                                className="p-1 w-full border-b-gray-300 border-b-[1px] bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-400"
                             />
                             <div className="">
                                 {medicineList?.map((data) => (
                                     <div
                                         key={data.id}
-                                        className="p-2 text-sm text-gray-500 hover:bg-gray-300 cursor-pointer"
-                                        onClick={() => handleOnClick(data, 'selectMedicine')}
+                                        className={`p-2 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 ${data.quantity === 0 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                        onClick={data.quantity === 0 ? undefined : () => handleOnClick(data, 'selectMedicine')}
                                     >
-                                        {`${data.generic_name}`}
+                                        <p className={`${data.quantity === 0 ? 'text-red-500' : ''}`}>{`${data.generic_name} ${data.quantity === 0 ? '(Out of stock)' : ''}`}</p>
                                     </div>
                                 ))}
                             </div>
@@ -228,13 +228,13 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
                 </div>
             </div>
             
-            <div className="flex-col w-full border p-5">
+            <div className="flex-col w-full p-5">
                 <div className="overflow-y-auto scroll-custom h-full">
                     {medication?.map((data, index) => (
                         <div>
                             <div 
                                 key={data.id} 
-                                className="p-4 rounded border border-gray-200 bg-gray-200 cursor-pointer text-sm text-gray-500"
+                                className="p-4 rounded bg-gray-200 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
                                 // onClick={() => moveItemToLeft(item.id)}
                             >
                                 <p dangerouslySetInnerHTML={{ __html: `${data?.medicine.generic_name} (${data.dose}) &bull; ${data.form} &bull; ${data.frequency}`}}></p>
