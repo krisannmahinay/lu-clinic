@@ -2,7 +2,7 @@
 import CustomTextarea from "@/components/CustomTextarea"
 import Form from "@/components/Form"
 import { generateSoapForms } from "@/utils/forms"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import HighlightWithinTextarea from 'react-highlight-within-textarea'
 
 const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster,onSearchQuery}) => {
@@ -177,4 +177,4 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
     )
 }
 
-export default Soap
+export default React.memo(Soap)
