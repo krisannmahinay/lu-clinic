@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { patientApi, useGetMedicineListQuery } from '@/service/patientService'
 import { useCreateBulkMutation } from "@/service/settingService"
 
@@ -249,4 +249,4 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
     )
 }
 
-export default Prescription
+export default React.memo(Prescription)
