@@ -1,3 +1,4 @@
+import React from "react"
 
 
 
@@ -40,4 +41,4 @@ const ImagingResult = ({slug, tableData, tableHeader}) => {
     )
 }
 
-export default ImagingResult
+export default React.memo(ImagingResult)
