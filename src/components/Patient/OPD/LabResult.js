@@ -1,5 +1,6 @@
 
 import Table from "@/components/Table"
+import React from "react"
 
 const LabResult = ({slug, tableData, tableHeader}) => {
     const header = ['test_name','result', 'normal_range', 'units', 'created_at']
@@ -40,4 +41,4 @@ const LabResult = ({slug, tableData, tableHeader}) => {
     )
 }
 
-export default LabResult
+export default React.memo(LabResult)
