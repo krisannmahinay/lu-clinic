@@ -1,3 +1,4 @@
+import React from "react"
 
 
 const SkeletonScreen = ({loadingType}) => {
@@ -55,4 +56,4 @@ const SkeletonScreen = ({loadingType}) => {
     )
 }
 
-export default SkeletonScreen
+export default React.memo(SkeletonScreen)
