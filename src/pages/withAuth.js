@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import React,{ useEffect, useMemo } from 'react'
 import { useLoginMutation } from '@/service/loginService'
 import { useGetUserDetailsQuery } from '@/service/authService'
 import { useGetModuleListQuery } from '@/service/settingService'
@@ -9,6 +9,8 @@ import Cookies from 'js-cookie'
 
 
 const withAuth = (WrappedContent) => {
+    const MemoizedWrappedContent = React.memo(WrappedContent)
+
     return (props, parentLoading) => {
         const router = useRouter()
         const token = Cookies.get('token')
@@ -27,7 +29,7 @@ const withAuth = (WrappedContent) => {
             return <SystemError />
         }
 
-        return <WrappedContent {...props}/>
+        return <MemoizedWrappedContent {...props}/>
     }
 }
 
