@@ -1,6 +1,7 @@
 
 import CustomTextarea from "@/components/CustomTextarea"
 import Form from "@/components/Form"
+import { FormContext } from "@/utils/context"
 import { generateSoapForms } from "@/utils/forms"
 import React, { useState, useEffect } from "react"
 import HighlightWithinTextarea from 'react-highlight-within-textarea'
@@ -157,16 +158,23 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
                     
                 <div>
                     <div className="lg:ml-[10rem] lg:mr-[10rem] :ml-0 md:mr-0 pb-7">
-                        <Form
+                        <FormContext.Provider value={{
+                            initialFields: patientInfo,
+                            enableAutoSave:true
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
+
+                        {/* <Form
                             initialFields={patientInfo}
                             enableAutoSave={true}
-                            // onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
-                            // onSuccess={handleRefetch}
-                            // onCloseSlider={() => setActiveContent("yellow")}
-                            // onLoading={(data) => setBtnSpinner(data)}
-                            // onSetAlertType={(data) => setAlertType(data)}
-                            // onSetAlertMessage={(data) => setAlertMessage(data)}
-                        />
+                            onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
+                            onSuccess={handleRefetch}
+                            onCloseSlider={() => setActiveContent("yellow")}
+                            onLoading={(data) => setBtnSpinner(data)}
+                            onSetAlertType={(data) => setAlertType(data)}
+                            onSetAlertMessage={(data) => setAlertMessage(data)}
+                        /> */}
                     </div>
                 </div>
                 )}
