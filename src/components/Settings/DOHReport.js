@@ -66,29 +66,38 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
 
     const [submitAnnualReport] = useSubmitAnnualReportMutation()
 
+    const checkAndStopSpinner = () => {
+        const anyPending = Object.values(apiStatus).some(status => status !== 'done')
+        setBtnSpinner(anyPending)
+        // const allDone = Object.values(apiStatus).every(status => status === 'done')
+        // if(allDone) {
+        //     setBtnSpinner(false)
+        // } else {
+        //     accordionItem.forEach(item => {
+        //         if (apiStatus[item.slug + 'Status'] === 'done') {
+        //             setBtnSpinner(false)
+        //         }
+        //     })
+        // }
+    }
+
     useEffect(() => {
         if (!btnSpinner) return
-
-        let spinnerTimer
-        const checkAndStopSpinner = () => {
-            const allDone = Object.values(apiStatus).every(status => status === 'done')
-            if(allDone) {
-                setBtnSpinner(false)
-            } else {
-                accordionItem.forEach(item => {
-                    if (apiStatus[item.slug + 'Status'] === 'done') {
-                        setBtnSpinner(false)
-                    }
-                })
-            }
-        }
+        
         checkAndStopSpinner()
-        spinnerTimer = setTimeout(checkAndStopSpinner, 500)
-        return () => {
-            if(spinnerTimer) {
-                clearTimeout(spinnerTimer)
-            }
-        }
+        // const apiStatusSubscription = apiStatus?.subscribe(() => checkAndStopSpinner())
+        // return () => apiStatusSubscription.unsubscribe()
+        
+        // let spinnerTimer
+        // const statusWithLongestTime = Math.max(
+        //     ...Object.values(apiStatus).map(status => status === 'pending' ? apiStatus[status] : 0)
+        // )
+        // spinnerTimer = setTimeout(checkAndStopSpinner, statusWithLongestTime)
+        // return () => {
+        //     if(spinnerTimer) {
+        //         clearTimeout(spinnerTimer)
+        //     }
+        // }
     }, [btnSpinner, apiStatus, accordionItem])
 
     const toggleAccordion = (id, slug) => {
@@ -276,27 +285,14 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
                                     <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
                                 </svg>
                             ) : (
-                                apiStatus[item.slug + 'Status'] === 'done' ? (
+                                apiStatus[item.slug + 'Status'] === 'done' && (
                                     <svg fill="currentColor" className='w-7 h-7 text-green-500' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <path clipRule="evenodd" fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" />
                                     </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin text-gray-700' viewBox="0 0 100 100" fill="none">
-                                        <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
-                                    </svg>
                                 )
                             )}
-
-                            
-
                             </div>
                         </button>
-
-                        {/* {accordionIdOpen.includes(item.id) && (
-                            item.id === 1 ? (
-                                <h1>test 1</h1>
-                            ) : ""
-                        )} */}
                     </div>
                 ))}
                 
