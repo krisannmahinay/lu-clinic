@@ -107,6 +107,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
     const [birthDate, setBirthDate] = useState("")
     const [age, setAge] = useState("")
     const [provinceCode, setProvinceCode] = useState(null)
+    const [initialInfoForms, setInitialInfoForms] = useState([])
     const [municipalCode, setMunicipalCode] = useState(null)
     const [initialOptions, setInitialOptions] = useState([]) 
     const [checkedItem, setCheckedItem] = useState([])
@@ -236,8 +237,16 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
     // const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
     const { data: countryData } = useGetCountryDataQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
-    const { data: municipalityData } = useGetMunicipalityDataQuery({provinceCode: provinceCode}, {enabled: !!provinceCode})
-    const { data: barangayData } = useGetBarangayDataQuery({municipalCode: municipalCode}, {enabled: !!municipalCode})
+    const { data: municipalityData } = useGetMunicipalityDataQuery({
+        provinceCode: provinceCode
+    }, {
+        enabled: !!provinceCode
+    })
+    const { data: barangayData } = useGetBarangayDataQuery({
+        municipalCode: municipalCode
+    }, {
+        enabled: !!municipalCode
+    })
 
     const { data: icdResultData, isLoading, isError, error, isSuccess } = useGetICDDataQuery({
         keywords: searchQuery
@@ -258,18 +267,19 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
 
 
     useEffect(() => {
-        if (provinceData) {
-            const options = provinceData.map(item => ({
-                value: item.code,
-                label: item.name
-            }))
-            setInitialOptions(options)
+        if(provinceData) {
+            const data = generateInfoForms(_, provinceData, municipalityData, barangayData)
+            setInitialInfoForms(data)
         }
-    }, [])
+    }, [provinceData, municipalityData, barangayData])
 
-    const generatedInfoForms = useMemo(() => {
-        return generateInfoForms()
-    }, [])
+    const handleSelectedProvince = (code) => {
+        setProvinceCode(code)
+    }
+
+    const handleSelectedMunicipality = (code) => {
+        setMunicipalCode(code)
+    }
 
     const handleCheckbox = (moduleId) => {
         if(checkedItem.includes(moduleId)) {
@@ -316,10 +326,6 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
         }
     }
 
-    const handleOnSelect = (data) => {
-        console.log(data)
-    }
-
     const toggleAccordion = (id) => {
         setAccordionIdOpen(prevState => {
             if (prevState.includes(id)) {
@@ -349,12 +355,14 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
                 /> */}
                 <FormContext.Provider value={{ 
                     data: patientDataMaster, 
-                    initialFields: generatedInfoForms, 
+                    initialFields: initialInfoForms, 
                     provinceData: provinceData,
                     municipalityData: municipalityData,
                     barangayData: barangayData,
                     enableAutoSave: true, 
-                    onSelectProvince: handleOnSelect
+                    onSelectedProvince: handleSelectedProvince,
+                    onSelectedMunicipality: handleSelectedMunicipality,
+                    // onSelectProvince: handleOnSelect
                 }}>
                     <Form />
                 </FormContext.Provider>
