@@ -10,6 +10,9 @@ from '@/service/settingService'
 import Button from '@/components/Button'
 import Dropdown from '@/components/Dropdown'
 import SearchExport from '@/components/SearchExport'
+import { TableContext } from '@/utils/context'
+import Table from '@/components/Table'
+import SkeletonScreen from '@/components/SkeletonScreen'
 
 
 const EyeCenter = () => {
@@ -17,8 +20,11 @@ const EyeCenter = () => {
     const moduleId = "eye-center"
     const [contentHeight, setContentHeight] = useState(0)
     const [pageTitle, setPageTitle] = useState("")
+    const [searchQuery, setSearchQuery] = useState("")
     const [activeContent, setActiveContent] = useState("yellow")
     const [contentType, setContentType] = useState("")
+    const [isOptionDisabled, setIsOptionDisabled] = useState(true)
+    const [isOptionEditDisabled, setIsOptionEditDisabled] = useState(true)
 
     const { isLoading: moduleListLoading } = useGetModuleListQuery()
 
@@ -97,7 +103,9 @@ const EyeCenter = () => {
 
     
     const renderContent = () => {
-        return (
+        return moduleListLoading ? (
+            <SkeletonScreen loadingType="table"/>
+        ) : (
             <div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     <div className="font-medium text-xl mb-2 text-gray-600">Eye Center</div>
@@ -180,6 +188,19 @@ const EyeCenter = () => {
                                 </Dropdown>
                             </div>
                         </SearchExport>
+                    </div>
+
+                    
+                    <div className="border border-gray-300 rounded">
+                        <TableContext.Provider value={{
+                            tableData: null,
+                            tableHeader: null,
+                            onChecked: () => {},
+                            onClick: () => {},
+                            onEdit: () => {}
+                        }}>
+                            <Table />
+                        </TableContext.Provider>
                     </div>
                  </div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>

@@ -13,6 +13,7 @@ import Dropdown from '@/components/Dropdown'
 import SearchExport from '@/components/SearchExport'
 import Table from '@/components/Table'
 import { TableContext } from '@/utils/context'
+import SkeletonScreen from '@/components/SkeletonScreen'
 
 const erdata = [
     {
@@ -46,15 +47,10 @@ const EmergencyRoom = () => {
         isLoading: moduleListLoading, 
         refetch: refetchModules, 
         isError, isSuccess 
-    } = useGetModuleListQuery({},{
-        enabled: !!authToken
-    })
+    } = useGetModuleListQuery()
 
     const formatTitlePages = (str) => {
-        return str
-            .split('-')
-            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(' ')
+        return str.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
     }
 
     useEffect(() => {
@@ -80,7 +76,7 @@ const EmergencyRoom = () => {
         setIsOptionDisabled(data.length === 0)
     }
 
-    const handleOnchange = (type, e) => {
+    const handleOnChange = (type, e) => {
         switch(type) {
             case 'itemsPerPage':
                 setItemsPerPage(e.target.value)
@@ -127,7 +123,9 @@ const EmergencyRoom = () => {
     }
 
     const renderContent = () => {
-        return (
+        return moduleListLoading ? (
+            <SkeletonScreen loadingType="table"/>
+        ) : (
             <div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                 <div className="font-medium text-xl mb-2 text-gray-600">Emergency Room</div>
@@ -181,7 +179,7 @@ const EmergencyRoom = () => {
                                         type="text"
                                         value={searchQuery}
                                         // onChange={e => setSearchQuery(e.target.value)}
-                                        onChange={(e) => handleOnchange('search',e)}
+                                        onChange={(e) => handleOnChange('search',e)}
                                         className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
                                         placeholder="Search..."
                                     />

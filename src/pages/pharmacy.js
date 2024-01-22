@@ -12,6 +12,12 @@ import Button from '@/components/Button'
 import Dropdown from '@/components/Dropdown'
 import SearchExport from '@/components/SearchExport'
 import { TableContext } from '@/utils/context'
+import { 
+    useGetUserListQuery, 
+    useGetPermissionListQuery, 
+    useGetModuleListQuery } 
+from '@/service/settingService'
+import SkeletonScreen from '@/components/SkeletonScreen'
 
 const pharmacyData = [
     {medicine_name: "10CC DISPOSABLE SYRINGE BM", medical_company: "", medical_composition: "", medical_category: "Medicine", medicine_group: "", unit: 1, available_qty: ""},
@@ -59,6 +65,10 @@ const Pharmacy = () => {
     const [contentType, setContentType] = useState("")
     const [contentHeight, setContentHeight] = useState(0)
     // const [totalPages, setTotalPages] = useState(0)
+
+    
+    const { isLoading: moduleListLoading } = useGetModuleListQuery()
+
     const formatTitlePages = (str) => {
         return str
             .split('-')
@@ -260,7 +270,9 @@ const Pharmacy = () => {
     }
     
     const renderContent = () => {
-        return (
+        return moduleListLoading ? (
+            <SkeletonScreen loadingType="table"/>
+        ) : (
             <div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     <div className="font-medium text-xl mb-2 text-gray-600">Pharmacy</div>
