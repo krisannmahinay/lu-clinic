@@ -1,6 +1,5 @@
 import { createContext, useContext } from "react"
 
-
 export const FormContext = createContext({
     // PatientInformation component
     data: null,
@@ -9,8 +8,10 @@ export const FormContext = createContext({
     barangayData: null,
     initialFields: [],
     enableAutoSave: false,
+    onModalOpen: () => {},
     onFormChange: () => {},
-    onSelectProvince: () => {},
+    onSelectedProvince: () => {},
+    onSelectedMunicipality: () => {},
 
     // Add OPD Form Context
     ref: null,
@@ -34,5 +35,12 @@ export const TableContext = createContext({
     onEdit: () => {},
 })
 
+export const ModalContext = createContext({
+    isOpen: false,
+    isModalOpen: false,
+    onClose: () => {}
+})
+
+export const useModalContext = () => useContext(ModalContext)
 export const useFormContext = () => useContext(FormContext)
 export const useTableContext = () => useContext(TableContext)
