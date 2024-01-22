@@ -100,7 +100,6 @@ const EyeCenter = () => {
                 break
         }
     }
-
     
     const renderContent = () => {
         return moduleListLoading ? (
