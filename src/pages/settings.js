@@ -36,6 +36,7 @@ import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from "@/components/DropdownLink"
 import UserProfile from '@/components/UserProfile'
 import { userRegistration } from '@/utils/forms'
+import { FormContext, TableContext } from '@/utils/context'
 
 
 const Setting = () => {
@@ -347,13 +348,23 @@ const Setting = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        <Table
+                        <TableContext.Provider value={{
+                            tableData: userData,
+                            tableHeader: header,
+                            onChecked: (data) => handleOnchecked(data),
+                            onClick: (data) => handleOnclick('clickedRows', data),
+                            onEdit: (id) => setCheckIds(id)
+                        }}>
+                            <Table />
+                        </TableContext.Provider>
+
+                        {/* <Table
                             tableData={userData}
                             tableHeader={header}
                             onChecked={(data) => handleOnchecked(data)}
                             onClick={(data) => handleOnclick('clickedRows', data)}
                             onEdit={(id) => setCheckIds(id)}
-                        />
+                        /> */}
                     </div>
         
                     <div className="flex flex-wrap py-1">
@@ -415,7 +426,21 @@ const Setting = () => {
                                 </div>
                             </div>
 
-                            <Form 
+                            <FormContext.Provider value={{
+                                ref: formRef,
+                                initialFields: userRegistration,
+                                enableAutoSave: false,
+                                enableAddRow:true,
+                                onSuccess: handleRefetch,
+                                onCloseSlider: () => setActiveContent("yellow"),
+                                onLoading: (data) => setBtnSpinner(data),
+                                onSetAlertType: (data) => setAlertType(data),
+                                onSetAlertMessage: (data) => setAlertMessage(data)
+                            }}>
+                                <Form />
+                            </FormContext.Provider>
+
+                            {/* <Form 
                                 ref={formRef} 
                                 initialFields={userRegistration}
                                 enableAutoSave={false}
@@ -424,7 +449,7 @@ const Setting = () => {
                                 onLoading={(data) => setBtnSpinner(data)}
                                 onSetAlertType={(data) => setAlertType(data)}
                                 onSetAlertMessage={(data) => setAlertMessage(data)}
-                            />
+                            /> */}
                         </div>
                     )}
 
