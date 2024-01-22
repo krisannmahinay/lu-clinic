@@ -12,6 +12,7 @@ import Button from '@/components/Button'
 import Dropdown from '@/components/Dropdown'
 import SearchExport from '@/components/SearchExport'
 import Table from '@/components/Table'
+import { TableContext } from '@/utils/context'
 
 const erdata = [
     {
@@ -74,7 +75,7 @@ const EmergencyRoom = () => {
         }
     }, [])
 
-    const handleOnchecked = (data) => {
+    const handleOnChecked = (data) => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
     }
@@ -93,7 +94,7 @@ const EmergencyRoom = () => {
         }
     }
 
-    const handleOnclick = (type, data) => {
+    const handleOnClick = (type, data) => {
         switch(type) {
             case 'addRowBtn':
                 formRef.current.handleAddRow()
@@ -127,7 +128,7 @@ const EmergencyRoom = () => {
 
     const renderContent = () => {
         return (
-            <>
+            <div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                 <div className="font-medium text-xl mb-2 text-gray-600">Emergency Room</div>
                     <div className="flex justify-between py-1">
@@ -162,7 +163,7 @@ const EmergencyRoom = () => {
                                         Options
                                     </button>
                                 }>
-                                <button onClick={() => handleOnclick('editUserBtn')} 
+                                <button onClick={() => handleOnClick('editUserBtn')} 
                                     className={`${isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`}
                                     disabled={isOptionEditDisabled}>
                                     Edit
@@ -212,16 +213,23 @@ const EmergencyRoom = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        <Table
+                        <TableContext.Provider value={{
+                            tableData: erdata,
+                            tableHeader: Object.keys(erdata[0]),
+                            onChecked: (data) => handleOnChecked(data),
+                            onClick: (data) => handleOnClick('clickedRows', data),
+                            onEdit: (id) => setCheckIds(id)
+                        }}>
+                            <Table />
+                        </TableContext.Provider>
+                        {/* <Table
                             tableData={erdata}
                             tableHeader={Object.keys(erdata[0])}
-                            onChecked={(data) => handleOnchecked(data)}
-                            onClick={(data) => handleOnclick('clickedRows', data)}
+                            onChecked={(data) => handleOnChecked(data)}
+                            onClick={(data) => handleOnClick('clickedRows', data)}
                             onEdit={(id) => setCheckIds(id)}
-                        />
+                        /> */}
                     </div>
-
-                    
                 </div>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     {contentType === 'addEr' && (
@@ -229,7 +237,7 @@ const EmergencyRoom = () => {
                             paddingY="1"
                             btnIcon="close"
                             // onClick={() => setActiveContent("yellow")}
-                            onClick={() => handleOnclick('closeDrawer')}
+                            onClick={() => handleOnClick('closeDrawer')}
                         >
                             Close
                         </Button>
@@ -240,7 +248,7 @@ const EmergencyRoom = () => {
                             <Button
                                 paddingY="1"
                                 btnIcon="close"
-                                onClick={() => handleOnclick('closeDrawer')}
+                                onClick={() => handleOnClick('closeDrawer')}
                             >
                                 Close
                             </Button>
@@ -252,7 +260,7 @@ const EmergencyRoom = () => {
                         </div>
                     )}
                 </div>
-            </>
+            </div>
         )
     }
 
