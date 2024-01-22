@@ -17,6 +17,7 @@ import SearchExport from '@/components/SearchExport'
 import Dropdown from '@/components/Dropdown'
 import { DropdownExport } from '@/components/DropdownLink'
 import SkeletonScreen from '@/components/SkeletonScreen'
+import { TableContext } from '@/utils/context'
 
 const recentDoctorData = [
     {name: "schin kumar", department: "Allergist/Immunologist", mobile: "0982828282", status: "permanent"},
@@ -93,24 +94,36 @@ const Patients = () => {
         switch(table) {
             case 'recent_doctors':
                 return (
-                    <Table 
-                        slug={moduleId}
-                        title="User List"
-                        tableData={recentDoctorData} 
-                        tableHeader={Object.keys(recentDoctorData[0])}
-                        // isLoading={userListLoading}
-                    />
+                    <TableContext.Provider value={{
+                        tableData: recentDoctorData,
+                        tableHeader: Object.keys(recentDoctorData[0])
+                    }}>
+                        <Table />
+                    </TableContext.Provider>
+                    // <Table 
+                    //     slug={moduleId}
+                    //     title="User List"
+                    //     tableData={recentDoctorData} 
+                    //     tableHeader={Object.keys(recentDoctorData[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
 
             case 'recent_patients':
                 return (
-                    <Table 
-                        slug={moduleId}
-                        title="User List"
-                        tableData={recentPatientData} 
-                        tableHeader={Object.keys(recentPatientData[0])}
-                        // isLoading={userListLoading}
-                    />
+                    <TableContext.Provider value={{
+                        tableData: recentPatientData,
+                        tableHeader: Object.keys(recentPatientData[0])
+                    }}>
+                        <Table />
+                    </TableContext.Provider>
+                    // <Table 
+                    //     slug={moduleId}
+                    //     title="User List"
+                    //     tableData={recentPatientData} 
+                    //     tableHeader={Object.keys(recentPatientData[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
             
             default:
@@ -215,18 +228,10 @@ const Patients = () => {
                                 </SearchExport>
                             </div>
 
-
-                            <Table 
-                                slug={moduleId}
-                                title="User List"
-                                disableTable={true} 
-                                // tableData={recentDoctorData} 
-                                // tableHeader={Object.keys(recentDoctorData[0])}
-                                // isLoading={userListLoading}
-                                onOpenModal={(id) => setModalId(id)}
-                            >
+                            
+                            <div className="bg-white overflow-hidden border border-gray-300 rounded">
                                 {renderContentBySlug(tableRecords)}
-                            </Table>
+                            </div>
 
                             <div className="flex flex-wrap py-2">
                                 <div className="flex items-center justify-center flex-grow">
