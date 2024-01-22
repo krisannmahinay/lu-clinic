@@ -1,12 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
+import Cookies from 'js-cookie'
 
 export const searchApi = createApi({
     reducerPath: 'searchApi',
     baseQuery: fetchBaseQuery({
          baseUrl: process.env.API_URL,
          prepareHeaders: (headers, {getState}) => {
-            const token = getState().auth.userToken
+            const token = Cookies.get('token')
             // console.log(token)
             if(token) {
                 headers.set('authorization', `Bearer ${token}`)
@@ -18,12 +18,14 @@ export const searchApi = createApi({
     endpoints: (builder) => ({
         search: builder.query({
             query: (args) => {
-                const { keywords, searchModel, items, page } = args
+                const session = Cookies.get('session')
+                const { keywords, model, items, page } = args
                 return {
                     url: `/search?q=${keywords}`,
                     method: 'GET',
                     params: {
-                        type: searchModel,
+                        type: model,
+                        selectedDB: session
                         // items: items,
                         // page: page
                     }
