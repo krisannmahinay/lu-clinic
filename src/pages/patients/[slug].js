@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback, useContext, createContext } from "react"
 import { useRouter } from "next/router"
 import AppLayout from "@/components/Layouts/AppLayout"
 import NavTab from "@/components/NavTab"
@@ -32,17 +32,20 @@ import {
     useUpdateBulkMutation
 } from '@/service/settingService'
 
-import Alert from '@/components/Alert'
 import Tabs from '@/components/Tabs'
-import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+import Alert from '@/components/Alert'
 import Soap from '@/components/Patient/OPD/Soap'
 import LabResult from '@/components/Patient/OPD/LabResult'
-import ImagingResult from '@/components/ImagingResult'
-import Prescription from '@/components/Prescription'
+import ImagingResult from '@/components/Patient/OPD/ImagingResult'
+import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+import Prescription from '@/components/Patient/OPD/Prescription'
+// import Prescription from '@/components/Prescription'
 import ProfileInformation from '@/components/ProfileInformation'
 import Profile from '@/components/Profile'
 import { generateOpdForms, generateIpdForms } from '@/utils/forms' 
 import SkeletonScreen from '@/components/SkeletonScreen'
+import { ComponentContext, FormContext, ModalContext, TableContext } from '@/utils/context'
+import DoctorRequest from '@/components/Patient/OPD/DoctorRequest'
 
 
 const dummyData = [
@@ -64,7 +67,30 @@ const dummyData = [
     {id:16, name: "Test Medicine7"},
 ]
 
+
+const frequencyOptions = [
+    "once a day",
+    "twice a day",
+    "every other day",
+    "every 12 hours"
+]
+
+const formMedication = [
+    "tablets",
+    "capsules",
+    "spansules",
+    "liquid",
+    "softgels",
+]
+
+const useRenderCount = () => {
+    const renderCountRef = useRef(0)
+    renderCountRef.current++
+    console.log(`Rendered ${renderCountRef.current} times`)
+}
+
 const SubModule = () => {
+    // useRenderCount()
     const formRef = useRef(null)
     const router = useRouter()
     const { slug } = router.query
@@ -84,6 +110,8 @@ const SubModule = () => {
     const [refetchRTK, setRefetchRTK] = useState(false)
     const [checked, setChecked] = useState([])
     const [profileData, setProfileData] = useState({})
+    const [opdProfileData, setOpdProfileData] = useState({})
+
     const [checkIds, setCheckIds] = useState(0)
     const [isOptionDisabled, setIsOptionDisabled] = useState(true)
     const [isOptionEditDisabled, setIsOptionEditDisabled] = useState(true)
@@ -97,6 +125,7 @@ const SubModule = () => {
     const [isShowMedForm, setIsShowMedForm] = useState(false)
     const [addedMedicine, setAddedMedicine] = useState([])
     const [selectedMedicine, setSelectedMedicine] = useState(null)
+    
 
     const [pageTitle, setPageTitle] = useState("")
     const [alertType, setAlertType] = useState("")
@@ -106,56 +135,81 @@ const SubModule = () => {
     const [opdForms, setOpdForms] = useState([])
     const [ipdForms, setIpdForms] = useState([])
     const [checkedItem, setCheckedItem] = useState([])
-    
-    const { 
-        isLoading: moduleListLoading
-    } = useGetModuleListQuery()
+    const [drRequestBtnEbled, setDrRequestBtnEnabled] = useState(false)
+    const [floatAccessBtn, setFloatAccessBtn] = useState(false)
 
-    const {
-        data: patientList, 
-        isLoading: patientListLoading, 
-        isError: userErr, 
-        error, 
-        isSuccess: patientSuccess 
-    } = useGetPatientListQuery({
-        slug: slug,
-        items: itemsPerPage,
-        page: currentPage,
-        keywords: searchQuery,
-        patientType: 'opd'
-    }, {
-        enabled: !!searchQuery,
-        enabled: !!itemsPerPage
+    const [enableQuery, setEnableQuery] = useState({
+        opd: false
     })
+    
+    const { isLoading: moduleListLoading} = useGetModuleListQuery()
 
-    const [createBulk, { 
-        isLoading: createBulkLoading, 
-        isSuccess: createUserSuccess 
-    }] = useCreateBulkMutation()
+    const { data: patientList, isLoading: patientListLoading, isError: userErr,  isSuccess: patientSuccess } = useGetPatientListQuery(
+        {
+            slug: slug,
+            items: itemsPerPage,
+            page: currentPage,
+            keywords: searchQuery,
+            patientType: 'opd'
+        }, {
+            enabled: !!searchQuery && !!itemsPerPage
+        }
+    )
 
+    const [createBulk, { isLoading: createBulkLoading, isSuccess: createUserSuccess }] = useCreateBulkMutation()
     const [updateBulk, {isLoading: updateBulkLoading}] = useUpdateBulkMutation()
 
     const { data: activeBedList } = useGetActiveBedListQuery(undefined, {skip: !refetchRTK})
     const { data: physicianList } = useGetPhysicianListQuery(undefined, {skip: !refetchRTK})
     const { data: icd10List } = useGetIcd10ListQuery(undefined, {skip: !refetchRTK})
-    const { data: medicationList } = useGetMedicationListQuery({
+    const { data: medicationList, refetch: medicationRefetch } = useGetMedicationListQuery({
         keywords: searchMedicine,
         patient_id: profileData?.patient_id
     }, {
-        enabled: !!searchMedicine
+        enabled: !!searchMedicine,
     })
-    const { data: imgResultList } = useGetImgResultListQuery({ slug: 'imaging', patient_id: profileData?.patient_id })
-    const { data: labResultList } = useGetLabResultListQuery({ slug: 'laboratory', patient_id: profileData?.patient_id })
+    const { data: imgResultList } = useGetImgResultListQuery(
+        {
+            slug: 'imaging', 
+            patient_id: profileData?.patient_id 
+        }
+    )
+    
+    const { data: labResultList } = useGetLabResultListQuery(
+        { 
+            slug: 'laboratory', 
+            patient_id: profileData?.patient_id 
+        }
+    )
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
     const { data: radiologyList } = useGetRadiologyListQuery()
-    const patientData = patientList?.data ?? []
-    const pagination = patientList?.pagination ?? []
-    const header = patientList?.columns ?? []
+    
+    const { patientData, pagination, header } = useMemo(() => {
+        const data = patientList?.data ?? []
+        const paginationInfo = patientList?.pagination ?? []
+        const headers = patientList?.columns ?? []
+
+        return {
+            patientData:data,
+            pagination:paginationInfo,
+            header: headers
+        }
+    },[patientList]) 
+
+    const handleOnEdit = (data) => {
+        setCheckIds(data)
+    }
+
+    const handleOnChecked = (data) => {
+        setIsOptionEditDisabled(data.length > 1)
+        setIsOptionDisabled(data.length === 0)
+    }
 
     // const panthologyCategoryListData = pathologyCategoryList?.map(el => el.category_name)
 
-    console.log(labResultList)
+    // console.log(patientList)
+    // console.log(profileData)
 
     const formatTitlePages = (str) => {
         return str
@@ -163,6 +217,9 @@ const SubModule = () => {
             .map(part => part.charAt(0).toUpperCase() + part.slice(1))
             .join(' ')
     }
+
+    // const initialOpdForms = useMemo(() => generateOpdForms(physicianList), [physicianList])
+    // console.log(initialOpdForms)
 
     useEffect(() => {
         if(pathologyCategoryList && pathologyList) {
@@ -174,39 +231,12 @@ const SubModule = () => {
             setTestsData(pathologyData)
         }
 
-        if(slug) {
-            setPageTitle(formatTitlePages(slug))
-        }
+        // if(Array.isArray(imgResultList) && imgResultList.length > 0) {
+        //     const headers = Object.keys(imgResultList[0])
+        //     setTableHeader(headers)
+        // }
+        // console.log(physicianList)
 
-        const calculateHeight = () => {
-            const windowHeight = window.innerHeight
-            setContentHeight(windowHeight)
-        }
-        calculateHeight()
-
-        // Recalculate height on window resize
-        window.addEventListener('resize', calculateHeight)
-        return () => {
-            window.removeEventListener('resize', calculateHeight)
-        }
-    }, [pathologyCategoryList, pathologyList])
-
-    useEffect(() => {
-        // const newRows = new Set()
-
-        // userData.forEach((row, index) => {
-        //     if(isRowNew(row.created_at)) {
-        //         newRows.add(index)
-        //     }
-        // })
-
-        // setHighlightedRows(newRows)
-        
-        // console.log(highlightedRows)
-
-        // const highlightTimeout = setTimeout(() => {
-        //     setHighlightedRows(new Set())
-        // }, 2000) //clear the highlights after .5milliseconds
         if(physicianList) {
             const opd = generateOpdForms(physicianList)
             setOpdForms(opd)
@@ -224,13 +254,55 @@ const SubModule = () => {
             }, 500)
         }
 
+        if(slug) {
+            setPageTitle(formatTitlePages(slug))
+            setEnableQuery(prev => ({
+                ...prev,
+                opd: true
+            }))
+        }
+
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
         return () => {
             if(spinnerTimer) {
                 clearTimeout(spinnerTimer)
             }
+            window.removeEventListener('resize', calculateHeight)
         }
+    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList])
 
-    }, [btnSpinner, physicianList])
+    // useEffect(() => {
+    //     if(physicianList) {
+    //         const opd = generateOpdForms(physicianList)
+    //         setOpdForms(opd)
+    //     }
+
+    //     if(physicianList && activeBedList) {
+    //         const ipd = generateIpdForms(physicianList, activeBedList)
+    //         setIpdForms(ipd)
+    //     }
+
+    //     let spinnerTimer
+    //     if(btnSpinner) {
+    //         spinnerTimer = setTimeout(() => {
+    //             setBtnSpinner(false)
+    //         }, 500)
+    //     }
+
+    //     return () => {
+    //         if(spinnerTimer) {
+    //             clearTimeout(spinnerTimer)
+    //         }
+    //     }
+
+    // }, [btnSpinner, physicianList])
 
     const organizedData = {}
 
@@ -251,26 +323,6 @@ const SubModule = () => {
         [category]: organizedData[category]
     }))
 
-    // console.log(testsData)
-
-    // const organizedData = pathologyList?.reduce((acc, item) => {
-    //     const category = item.panthology_category?.category_name || 'unknown'
-    //     if (!acc[category]) {
-    //         acc[category] = []
-    //     }
-    //     acc[category].push({
-    //         id: item.id,
-    //         type: category,
-    //         name: item.test_name,
-    //     })
-    //     return acc
-    // }, {})
-
-    // const mergedData = [{ ...organizedData, ...soapData[0]}]
-    // console.log(mergedData)
-
-    // console.log(activeBedList)
-
     const handleExportToPDF = () => {
         
     }
@@ -282,7 +334,77 @@ const SubModule = () => {
         setCurrentPage(page)
     }
 
+    const handleOnChange = (type, data) => {
+        switch(type) {
+            case 'newPage':
+                setCurrentPage(data)
+                break
+            
+            case 'searchMedQuery':
+                setSearchMedicine(data.target.value)
+                break
+            
+            default:
+                break
+        }
+    }
+
+    const handleSelectMedicine = (data) => {
+        // console.log(data)
+        setSelectedMedicine(data)
+        setIsShowMedForm(true)
+    }
+
+    const handleOnClose = (data) => {
+        if(data === 'backToList') {
+            setSelectedMedicine(null)
+            setIsShowMedForm(false)
+            setAlertMessage("")
+        } else if(data === 'closeMenu') {
+            setIsDrDrawerOpen(false)
+        }
+    }
+
+    const handleOnClick = (type, data) => {
+        switch(type) {
+            case 'addRowBtn':
+                formRef.current.handleAddRow()
+                break
+
+            case 'addUserBtn':
+                formRef.current.handleSubmit('createUser')
+                break
+
+            case 'closeDrawer':
+                setActiveContent("yellow")
+                setProfileData({})
+                break
+
+            case 'editUserBtn':
+                // setProfileData(data)
+                setActiveContent("green")
+                setContentType("editUser")
+                break
+
+            case 'clickedRow':
+                setProfileData(data)
+                setActiveContent("green")
+                setContentType("tableRow")
+
+                // query
+                setEnableQuery(prev => ({
+                    ...prev,
+                    opd: !prev.opd
+                }))
+                break
+
+            default:
+                break
+        }
+    }
+
     const handleSubmitButton = (slug) => {
+        console.log(slug)
         if(slug === 'out-patient') {
             formRef.current.handleSubmit('createOutPatient')
         } else if (slug === 'in-patient') {
@@ -296,7 +418,6 @@ const SubModule = () => {
                     }
                 })
                 .catch(error => {
-                    //  console.log(error)
                     if(error.status === 500) {
                         setAlertType("error")
                         setAlertMessage("Unsuccessful")
@@ -315,7 +436,7 @@ const SubModule = () => {
                         }
                     })
                     .catch(error => {
-                         console.log(error)
+                        //  console.log(error)
                     })
 
                 setAddedMedicine((current) => [
@@ -325,32 +446,6 @@ const SubModule = () => {
                 setIsShowMedForm(false)
             }
         }
-    }
-
-    const addMedicine = (qty) => {
-        // console.log(selectedMedicine)
-        if (qty > selectedMedicine?.medicine.quantity) {
-            
-            createBulk({actionType: 'createDoctorRequest', data: drRequestForms})
-
-            setAlertMessage(`Please refer to available stock (${selectedMedicine?.medicine.quantity})`)
-        } else {
-            setAddedMedicine((current) => [...current, selectedMedicine])
-            setIsShowMedForm(false)
-        }
-    }
-
-    const backToList = () => {
-        setSelectedMedicine(null)
-        setIsShowMedForm(false)
-        setAlertMessage("")
-    }
-
-    // console.log(drRequestForms)
-
-    const selectMedicine = (medicine) => {
-        setSelectedMedicine(medicine)
-        setIsShowMedForm(true)
     }
 
     const handleSearchMedQuery = (e) => {
@@ -388,75 +483,67 @@ const SubModule = () => {
         setIsModalOpen(false)
     }
 
-    const handleNewPage = (newPage) => {
-        setCurrentPage(newPage)
+    const handleModalState = (data) => {
+        setIsModalOpen(data)
     }
 
-    const tabsConfig = [
-        {
+    const handleFloatAccessBtn = (data) => {
+        setFloatAccessBtn(data)
+    }
+
+    const tabsConfig = [{
             id: 'tab1',
             label: 'Patient Information and Consent',
-            content: () => <PatientInformation
-                                patientDataMaster={profileData}
-                                icd10Data={icd10List}
-                            />
-        },
-        {
+            content: () => (
+                <PatientInformation
+                    patientDataMaster={profileData}
+                    icd10Data={icd10List}
+                    onModalState={handleModalState}
+                />
+            ) 
+        }, {
             id: 'tab2',
             label: 'S.O.A.P',
             content: () => <Soap 
+                                id="tab2"
+                                onSetFloatAccessBtn={handleFloatAccessBtn}
+                                onClick={() => {
+                                    setIsDrDrawerOpen(true)
+                                    setDrRequestForms([])
+                                    setAddedMedicine([])
+                                    setAlertMessage("")
+                                }}
                                 dummyData={dummyData}
                                 // onSearchQuery={(data) => handleSearchMedQuery(data)}
                             />
-        },
-        {
+        }, {
             id: 'tab3',
             label: 'Laboratory Results',
-            content: () => <LabResult />
-        },
-        {
+            content: () => <LabResult
+                                tableData={labResultList} 
+                                tableHeader={labResultList.length > 0 ? Object.keys(labResultList[0]) : []} 
+                            />
+        }, {
             id: 'tab4',
             label: 'Imaging Results',
-            content: () => <ImagingResult />
-        },
-        {
+            content: () => <ImagingResult
+                                tableData={imgResultList} 
+                                tableHeader={imgResultList.length > 0 ? Object.keys(imgResultList[0]) : []} 
+                            />
+        }, {
             id: 'tab5',
             label: 'Prescription',
-            content: () => <Prescription />
+            content: () => <Prescription 
+                                onRefetch={medicationRefetch}
+                                medication={medicationList}
+                                patientId={profileData?.patient_id}
+                                physicianId={profileData?.admitting_physician}
+                            />
         }
     ]
 
     const handleActiveTab = (id) => {
         setActiveTab(id)
-    }
-
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            const allIds = patientData?.map((pd) => pd.id) // assuming each patientData has a unique id
-            setChecked(allIds)
-        } else {
-            setChecked([])
-        }
-    }
-
-    const handleRowSelect = (e, id) => {
-        e.stopPropagation()
-        const newChecked = e.target.checked
-            ? [...checked, id]
-            : checked.filter((sid) => sid !== id)
-        
-        setChecked(newChecked)
-    }
-
-    // const isOptionDisabled = checked.length === 0
-    
-    const handleRowMenu = (e) => {
-        e.stopPropagation()
-    }
-
-    const handleOnchecked = (data) => {
-        setIsOptionEditDisabled(data.length > 1)
-        setIsOptionDisabled(data.length === 0)
     }
 
     const handleAddMedicine = (e, fieldName) => {
@@ -466,162 +553,21 @@ const SubModule = () => {
         }))
     }
 
-    const handleCheckbox = (test, isChecked, labCategory) => {
-        if(isChecked) {
+    const handleCheckBox = (data) => {
+        if(data.event) {
             setDrRequestForms(prevForms => [...prevForms, {
                 patient_id: profileData?.patient_id,
                 physician_id: profileData?.admitting_physician,
-                test_id: test.id,
-                lab_category: labCategory,
-                charge: test.charge
+                test_id: data.type.id,
+                lab_category: data.category,
+                charge: data.type.charge
 
             }])
             setIsOptionDisabled(false)
         } else {
-            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== test.id))
+            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== data.type.id))
             setIsOptionDisabled(true)
         }
-    }
-
-    const handleOnclick = (type, data) => {
-        switch(type) {
-            case 'addRowBtn':
-                formRef.current.handleAddRow()
-                break
-
-            case 'addUserBtn':
-                formRef.current.handleSubmit('createUser')
-                break
-
-            case 'closeDrawer':
-                setActiveContent("yellow")
-                // setProfileData([])
-                break
-
-            case 'editUserBtn':
-                setProfileData(data)
-                setActiveContent("green")
-                setContentType("editUser")
-                break
-
-            case 'clickedRows':
-                setProfileData(data)
-                setActiveContent("green")
-                setContentType("tableRow")
-                break
-
-            default:
-                break
-        }
-    }
-
-    const renderTableContent = () => {
-        return (
-            patientListLoading ? (
-                <div className="grid p-3 gap-y-2">
-                    <div className="flex space-x-3">
-                        <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                        <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                        <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-                        <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
-
-                    </div>
-                    <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                    <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                </div>
-            ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr>
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <input
-                                    type="checkbox"
-                                    checked={checked.length === patientData.length && patientData.length !== 0}
-                                    onChange={handleSelectAll}
-                                />
-                            </th>
-
-                            {header.map((tblHeader, tblHeaderIndex) => (
-                                // console.log(tblHeaderIndex)
-                                <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    {tblHeader === 'id' ? (
-                                        'patient_id'
-                                    ) : tblHeader === 'patient_id' ? (
-                                        'patient_name'
-                                    ) : tblHeader === 'admitting_physician' ? (
-                                        'physician'
-                                    ) : tblHeader === 'created_at' ? (
-                                        'time_in'
-                                    ) : (
-                                        tblHeader
-                                    )}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {patientData.length === 0 ? (
-                            <tr>
-                                <td colSpan={header.length + 1} className="px-6 py-2 text-center">
-                                    No records found.
-                                </td>
-                            </tr>
-                        ) : (
-                            patientData.map((tblBody, tblBodyIndex) => (
-                                // console.log(tblBody)
-                                // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => {
-                                    handleActiveContent('tableRow', tblBody),
-                                    setRefetchRTK(true)
-                                }}>
-                                    <td className="px-6 py-2 whitespace-nowrap text-sm">
-                                        <input
-                                            type="checkbox"
-                                            checked={checked.includes(tblBody.id)}
-                                            onClick={(e) => handleRowSelect(e, tblBody.id)}
-                                        />
-                                    </td>
-
-                                    {header.map((tblHeader) => (
-                                        <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
-                                            {tblHeader === 'admitting_physician' ? (
-                                                `Dr. ${tblBody?.physician_identity?.first_name} ${tblBody?.physician_identity?.last_name}`
-                                            ) : tblHeader === 'id' ? (
-                                                tblBody?.patient_id
-                                            ) : tblHeader === 'patient_id' ? (
-                                                `${tblBody?.patient_identity?.first_name} ${tblBody?.patient_identity?.last_name}`
-                                            ) : (
-                                                tblBody[tblHeader]
-                                            )}
-                                        </td>
-                                    ))}
-                                    
-                                    {/* <td className="relative px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
-                                        <div>
-                                            <Dropdown
-                                                align="right"
-                                                width="48"
-                                                trigger={
-                                                    <button className="action-icon hidden absolute" onClick={(e) => handleRowMenu(e)}>
-                                                        <svg dataSlot="icon" fill="currentColor" viewBox="0 0 24 24" className="h-6 w-6 text-gray-700 rounded-full border border-gray-700 bg-white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                            <path clipRule="evenodd" fillRule="evenodd" d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
-                                                        </svg>
-                                                    </button>
-                                                }>
-                                                <DropdownExport>
-                                                    Re-Visit
-                                                </DropdownExport>
-                                            </Dropdown>
-                                        </div>
-                                    </td> */}
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            )
-        )
     }
 
     const renderContent = (slug) => {
@@ -632,7 +578,7 @@ const SubModule = () => {
                 ) : (
                     <div>
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
-                        <div className="font-bold text-xl mb-2 uppercase text-gray-600">In Patient</div>
+                        <div className="font-medium text-xl mb-2 text-gray-600">In Patient</div>
                             <div className="flex justify-between py-1">
                                 <Button
                                     btnIcon="add"
@@ -683,23 +629,24 @@ const SubModule = () => {
                             
                             
                             <div className="bg-white overflow-hidden border border-gray-300 rounded">
-                                <Table
+                                <TableContext.Provider value={{
+                                    tableData: patientData,
+                                    tableHeader: header
+                                }}>
+                                    <Table />
+                                </TableContext.Provider>
+
+                                {/* <Table
                                     tableHeader={header}
                                     tableData={patientData}
                                     isLoading={patientListLoading}
                                     onChecked={(data) => handleOnchecked(data)}
-                                    onClick={(data) => handleOnclick('clickedRows', data)}
+                                    onClick={(data) => handleOnclick('clickedRowIPD', data)}
                                     onEdit={(id) => setCheckIds(id)} 
-                                />
-                            </div>
+                                /> */}
 
-                            {/* <Table 
-                                title="Patient List" 
-                                action={false}
-                                slug={slug}
-                                tableHeader={Object.keys(patientIPD[0])}
-                                tableData={patientIPD} 
-                            /> */}
+                                
+                            </div>
 
                             <div className="flex flex-wrap py-1">
                                 <div className="flex items-center justify-center flex-grow">
@@ -707,7 +654,7 @@ const SubModule = () => {
                                         currentPage={currentPage} 
                                         totalPages={totalPages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleNewPage(newPage)}
+                                        onPageChange={(newPage) => handleOnChange("newPage", newPage)}
                                     />
                                 </div>
 
@@ -846,14 +793,17 @@ const SubModule = () => {
                             </div>
 
                             <div className="bg-white overflow-hidden border border-gray-300 rounded">
-                                <Table
-                                    tableHeader={header}
-                                    tableData={patientData}
-                                    isLoading={patientListLoading}
-                                    onChecked={(data) => handleOnchecked(data)}
-                                    onClick={(data) => handleOnclick('clickedRows', data)}
-                                    onEdit={(id) => setCheckIds(id)} 
-                                />
+                                <TableContext.Provider value={{
+                                        tableHeader: header,
+                                        tableData: patientData,
+                                        isLoading: patientListLoading,
+                                        enableAddRow: true,
+                                        onChecked: handleOnChecked,
+                                        onClick: handleOnClick,
+                                        onEdit: handleOnEdit
+                                    }}>
+                                        <Table />
+                                </TableContext.Provider>
                             </div>
 
                             <div className="flex flex-wrap py-1">
@@ -862,7 +812,7 @@ const SubModule = () => {
                                         currentPage={pagination.current_page} 
                                         totalPages={pagination.total_pages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleNewPage(newPage)}
+                                        onPageChange={(newPage) => handleOnChange("newPage", newPage)}
                                     />
                                 </div>
 
@@ -918,19 +868,19 @@ const SubModule = () => {
                                         </div>
                                     </div>
 
-
-                                    <Form 
-                                        ref={formRef} 
-                                        initialFields={opdForms}
-                                        enableAutoSave={false}
-                                        enableAddRow={true}
-                                        onSuccess={handleRefetch}
-                                        onLoading={(data) => setBtnSpinner(data)}
-                                        onSetAlertType={(data) => setAlertType(data)}
-                                        onCloseSlider={() => setActiveContent("yellow")}
-                                        onSetAlertMessage={(data) => setAlertMessage(data)}
-                                    />
-
+                                    <FormContext.Provider value={{
+                                            ref: formRef,
+                                            initialFields: opdForms,
+                                            enableAutoSave: false,
+                                            enableAddRow: true,
+                                            onSuccess: handleRefetch,
+                                            onLoading: (data) => setBtnSpinner(data),
+                                            onSetAlertType: (data) => setAlertType(data),
+                                            onCloseSlider: () => setActiveContent("yellow"),
+                                            onSetAlertMessage: (data) => setAlertMessage(data)
+                                        }}>
+                                        <Form />
+                                    </FormContext.Provider>
                                 </>
                             )}
                             {contentType === 'tableRow' && (
@@ -979,16 +929,12 @@ const SubModule = () => {
             
             <div className="container mx-auto">
                 <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                    <Modal 
-                        // title={title}
-                        // charges={true} 
-                        slug={slug}
-                        isOpen={isModalOpen}
-                        data={updateForm}
-                        onClose={closeModal}
-                        // permission={permission} 
-                        // selectedRowId={selectedRows}
-                    />
+                    <ModalContext.Provider value={{
+                        isOpen: isModalOpen,
+                        onClose: closeModal
+                    }}>
+                        <Modal />
+                    </ModalContext.Provider>
 
                     {alertMessage &&
                         <Alert 
@@ -1001,260 +947,40 @@ const SubModule = () => {
 
                     {renderContent(slug)}
 
-                    {activeTab === 'tab2' && (
-                        <div className="fixed bottom-4 right-5 z-50">
-                            <button onClick={() => setIsDrDrawerOpen(!isDrDrawerOpen)} title="Doctor Request's" className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg focus:outline-none">
-                            <svg fill="#ffffff" height={20} width={20} version="1.1" id="Capa_1" viewBox="0 0 201.324 201.324" transform="matrix(1, 0, 0, 1, 0, 0)rotate(0)" stroke="#ffffff">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.805296"></g>
-                                <g id="SVGRepo_iconCarrier"> <circle cx="95.596" cy="10.083" r="10.083"></circle> <circle cx="149.018" cy="10.083" r="10.083"></circle> 
-                                    <path d="M179.06,19.254c-5.123-8.873-14.298-14.17-24.544-14.17v10c6.631,0,12.568,3.428,15.884,9.17 c3.316,5.743,3.316,12.599,0.001,18.342l-32.122,55.636c-3.315,5.742-9.253,9.17-15.884,9.171c-6.631,0-12.569-3.428-15.885-9.171 L74.389,42.595c-3.315-5.742-3.315-12.599,0-18.341s9.254-9.171,15.885-9.171v-10c-10.246,0-19.422,5.297-24.545,14.171 s-5.123,19.468,0,28.341l32.121,55.636c4.272,7.399,11.366,12.299,19.545,13.727v26.832c0,26.211-15.473,47.535-34.492,47.535 c-19.019,0-34.491-21.324-34.491-47.535v-31.948C59.802,109.52,68.4,99.424,68.4,87.356c0-13.779-11.21-24.989-24.989-24.989 s-24.989,11.21-24.989,24.989c0,12.067,8.598,22.163,19.989,24.486v31.948c0,31.725,19.959,57.535,44.492,57.535 c24.532,0,44.491-25.81,44.491-57.535v-26.832c8.178-1.428,15.273-6.328,19.544-13.727l32.122-55.636 C184.184,38.722,184.184,28.127,179.06,19.254z">
-
-                                    </path> 
-                                </g>
-                            </svg>
-                            </button>
-                        </div>
-                    )}
 
                     {isDrDrawerOpen && (
-                        <div>
-                            <div className={`fixed inset-0 top-0 p-4 bg-black opacity-50 transition-opacity ${isDrDrawerOpen ? 'visible' : 'hidden'}`}></div>
-                            <div className={`fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-2/5 transition-transform duration-500 ease-in-out ${isDrDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                                <h5 id="drawer-right-label" class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400">
-                                    <svg class="w-4 h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                                </svg>Doctor's Request
-                                </h5>
-                                <button 
-                                    onClick={() => {
-                                        setIsDrDrawerOpen(!isDrDrawerOpen)
-                                        setDrRequestForms([])
-                                        setAddedMedicine([])
-                                        setAlertMessage("")
-                                    }}
-                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
-                                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                    </svg>
-                                    <span className="sr-only">Close menu</span>
-                                </button>
-
-                                <div className="pt-7">
-                                    {Object.entries(testsData).map(([category, tests]) => (
-                                        <>
-                                            <div key={category} className="border border-gray-400">
-                                                <div className="bg-gray-200">
-                                                    <button onClick={() => setOpenCategory(openCategory === category ? null : category)} className="text-gray-500 font-medium p-2 uppercase text-xs">
-                                                        {category}
-                                                    </button>
-                                                </div>
-
-                                                <div style={{ display: openCategory === category ? 'block' : 'none' }} className="p-4">
-                                                    <ul className="space-y-1">
-                                                        {tests.map(test => (
-                                                            <li key={test.id}>
-                                                                <div className="flex items-center space-x-4">
-                                                                    <input
-                                                                        type="checkbox" 
-                                                                        className="w-3 h-3"
-                                                                        onChange={(e) => handleCheckbox(test, e.target.checked, 'pathology')}
-                                                                    />
-                                                                    <p className="text-sm text-gray-500">{test.test_name}</p>
-                                                                </div>
-                                                            </li>    
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </>
-                                    ))}
-
-                                    <div className="border border-gray-400">
-                                        <div className="bg-gray-200">
-                                            <p className="text-gray-500 font-medium p-2 uppercase text-xs">Imaging</p>
-                                        </div>
-
-                                        <ul className="space-y-1 p-4">
-                                            {radiologyList?.map(test => (
-                                                <li key={test.id}>
-                                                    <div className="flex items-center space-x-4">
-                                                        <input
-                                                            type="checkbox" 
-                                                            className="w-3 h-3"
-                                                            onChange={(e) => handleCheckbox(test, e.target.checked, 'radiology')}
-                                                        />
-                                                        <p className="text-sm text-gray-500">{test.test_name}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    <div className="grid justify-items-center py-4">
-                                        <button 
-                                            onClick={() => handleSubmitButton("doctor-request")} 
-                                            className={`${isOptionDisabled || btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
-                                            disabled={isOptionDisabled || btnSpinner}>
-                                            
-                                            
-                                            {btnSpinner ? (
-                                                <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin' viewBox="0 0 100 100" fill="none">
-                                                    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" strokeDasharray="50.26548245743669 50.26548245743669" fill="none" strokeLinecap="round"/>
-                                                </svg>
-                                            ) : (
-                                                <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                                </svg>
-                                            )}
-
-                                            Submit
-                                        </button>
-                                    </div>
-
-                                    <div className="border border-gray-400 ">
-                                        <div className="bg-gray-200">
-                                            <p className="text-gray-500 font-medium p-2 uppercase text-xs">Medications</p>
-                                        </div>
-                                        <div className="flex justify-center">
-                                            <div className="flex-col w-full border scroll-custom">
-                                                <div className="overflow-y-auto scroll-custom">
-                                                    {!isShowMedForm && (
-                                                        <div className="sticky top-0">
-                                                            <input
-                                                                type="search"
-                                                                value={searchMedicine}
-                                                                onChange={(e) => handleSearchMedQuery(e)}
-                                                                placeholder="Search..."
-                                                                className="p-1 w-full border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                                            />
-                                                            <div className="">
-                                                                {medicationList?.map((data) => (
-                                                                    <div
-                                                                        key={data.id}
-                                                                        className={`p-2 text-sm text-gray-500 ${data?.status === 'ps' ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-300 cursor-pointer' }`}
-                                                                        onClick={data?.status !== 'ps' ? () => selectMedicine(data) : undefined}
-                                                                    >
-                                                                        {`${data?.medicine.generic_name} (${data?.dose})`}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {isShowMedForm && (
-                                                        <div className="p-4">
-                                                            <div className="mb-4">
-                                                                <label className="block text-sm font-medium text-gray-700">Brand name:</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
-                                                                    value={selectedMedicine?.medicine.brand_name}
-                                                                    readOnly
-                                                                    
-                                                                />
-                                                                <label className="block text-sm font-medium text-gray-700">Generic name:</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
-                                                                    value={selectedMedicine?.medicine.generic_name}
-                                                                    readOnly
-                                                                />
-
-                                                                <label className="block text-sm font-medium text-gray-700">Dose:</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                                                    value={selectedMedicine.dose}
-                                                                    onChange={(e) => handleAddMedicine(e, "dose")}
-                                                                />
-
-                                                                <label className="block text-sm font-medium text-gray-700">Qty:</label>
-                                                                <input
-                                                                    type="number"
-                                                                    className={`mt-1 block w-full p-2 border bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500 ${alertMessage !== "" ? 'border-red-600' :  'border-gray-300'}`}
-                                                                    value={selectedMedicine.qty}
-                                                                    onChange={(e) => handleAddMedicine(e, "qty")}
-                                                                />
-                                                                {alertMessage && (
-                                                                    <p className="text-xs text-red-600"><span class="font-medium">Error!</span> {alertMessage}</p>
-                                                                )}
-   
-
-                                                                <label className="block text-sm font-medium text-gray-700">Frequency:</label>
-                                                                <select 
-                                                                    className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
-                                                                    onChange={(e) => handleAddMedicine(e, "frequency")}>
-                                                                    <option>Select options</option>
-                                                                    <option value="once a day">once a day</option>
-                                                                    <option value="twice a day">twice a day</option>
-                                                                    <option value="every other day">every other day</option>
-                                                                    <option value="every 12 hours">every 12 hours</option>
-                                                                </select>
-
-                                                                <label className="block text-sm font-medium text-gray-700">Sig:</label>
-                                                                <textarea 
-                                                                    type="text"
-                                                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                                                    value={selectedMedicine.sig}
-                                                                    onChange={(e) => handleAddMedicine(e, "sig")}
-                                                                />
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <button
-                                                                    onClick={backToList}
-                                                                    className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-                                                                >&larr; Back
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleSubmitButton({
-                                                                        link: "add-medicine",
-                                                                        qty: selectedMedicine.qty,
-                                                                        id: selectedMedicine.id
-                                                                    })}
-                                                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
-                                                                    Add
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="flex-col w-full h-58 border border-l-gray-500">
-                                                <div className="overflow-y-auto scroll-custom h-full">
-                                                    {addedMedicine.map((data, index) => (
-                                                        <div 
-                                                            key={data.id} 
-                                                            className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
-                                                            // onClick={() => moveItemToLeft(item.id)}
-                                                        >
-                                                            {`${data?.medicine.generic_name} (${data.dose})`}
-                                                        </div>
-                                                    ))}
-
-                                                    {/* {medicationList?.filter(data => data.status === 'ps').map((data) => (
-                                                        <div 
-                                                            key={data.id} 
-                                                            className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
-                                                            // onClick={() => moveItemToLeft(item.id)}
-                                                        >
-                                                            {`${data?.medicine.generic_name} (${data.dose})`}
-                                                        </div>
-                                                    ))} */}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-
-                                    
-                                </div>
-                            </div>
-                        </div>
+                        <ComponentContext.Provider value={{
+                            state: {
+                                selectedMedicine: selectedMedicine,
+                                searchMedicine: searchMedicine,
+                                drRequestForms: drRequestForms,
+                                isShowMedForm: isShowMedForm,
+                                isDrDrawerOpen: isDrDrawerOpen,
+                                addedMedicine: addedMedicine,
+                                btnSpinner: btnSpinner,
+                                isOptionDisabled: isOptionDisabled
+                            },
+                            patientData: patientData,
+                            pathologyData: testsData,
+                            radiologyData: radiologyList,
+                            medicationData: medicationList,
+                            isDrDrawerOpen: isDrDrawerOpen,
+                            alertMessage: alertMessage,
+                            onAddMedicine: (data) => handleAddMedicine(data.data, data.field),
+                            onClickOpenMed: (data) => handleSelectMedicine(data), 
+                            onClickCloseMed: (data) => handleOnClick(data.type), 
+                            onClickCloseMed: (data) => handleOnClick(data.type), 
+                            onChange: () => handleOnChange,
+                            onCheck: (data) => handleCheckBox(data),
+                            onClose: (data) => handleOnClose(data),
+                            onSubmitData: (data) => handleSubmitButton(data),
+                            onSubmitDrRequest: (data) => handleSubmitButton(data)
+                        }}>
+                            <DoctorRequest />
+                        </ComponentContext.Provider>
                     )}
                 </div>
             </div>
-
         </AppLayout>
     )
 }
