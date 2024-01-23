@@ -1,5 +1,24 @@
 import { createContext, useContext } from "react"
 
+export const ComponentContext = createContext({
+    state: null,
+    alertMessage: "",
+    patientData: null,
+    pathologyData: null,
+    radiologyData: null,
+    medicationData: null,
+    isDrawerOpen: false,
+    onAddMedicine: () => {},
+    onChange: () => {},
+    onClose: () => {},
+    onSubmitData:() => {},
+    onClick: () => {},
+    onClickOpenMed: () => {},
+    onClickCloseMed: () => {},
+    onSubmitDrRequest: () => {}
+    // onSet
+})
+
 export const FormContext = createContext({
     // PatientInformation component
     data: null,
@@ -22,7 +41,9 @@ export const FormContext = createContext({
     onLoading: () => {},
     onCloseSlider: () => {},
     onSetAlertType: () => {},
-    onSetAlertMessage: () => {}
+    onSetAlertMessage: () => {},
+
+    onClickFAB: () => {}
 })
 
 export const TableContext = createContext({
@@ -41,6 +62,7 @@ export const ModalContext = createContext({
     onClose: () => {}
 })
 
-export const useModalContext = () => useContext(ModalContext)
 export const useFormContext = () => useContext(FormContext)
+export const useModalContext = () => useContext(ModalContext)
 export const useTableContext = () => useContext(TableContext)
+export const useComponentContext = () => useContext(ComponentContext)
