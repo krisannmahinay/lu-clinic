@@ -16,15 +16,9 @@ const formMedication = [
     "softgels",
 ]
 
-const DoctorRequest = ({ onSubmitRequestForm }) => {
+const DoctorRequest = () => {
     const context = useComponentContext()
     const [openCategory, setOpenCategory] = useState(null)
-    const [isShowMedForm, setIsShowMedForm] = useState(false)
-    const [selectedMedicine, setSelectedMedicine] = useState(null)
-    const [addedMedicine, setAddedMedicine] = useState([])
-    const [isOptionDisabled, setIsOptionDisabled] = useState(true)
-    const [drRequestForms, setDrRequestForms] = useState([])
-    const [btnSpinner, setBtnSpinner] = useState(false)
 
     const renderMedication = () => {
         return (
@@ -45,7 +39,6 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                         <div
                                             key={data.id}
                                             className={`p-2 text-sm text-gray-500 ${data?.status === 'ps' ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-300 cursor-pointer' }`}
-                                            // onClick={data?.status !== 'ps' ? () => handleOnClick('selectMedicine',data) : undefined}
                                             onClick={data?.status !== 'ps' ? () => context?.onClickOpenMed(data)  : undefined}
                                         >
                                             {`${data?.medicine.generic_name} (${data?.dose})`}
@@ -146,7 +139,7 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
 
                 <div className="flex-col w-full h-58 border border-l-gray-500">
                     <div className="overflow-y-auto scroll-custom h-full">
-                        {addedMedicine.map((data, index) => (
+                        {context?.state.addedMedicine.map((data, index) => (
                             <div 
                                 key={data.id} 
                                 className="p-2 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
@@ -159,32 +152,6 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                 </div>
             </div>
         )
-    }
-
-    const handleOnClose = () => {
-        // context?.isDrawerOpen = false
-        setDrRequestForms([])
-        setAddedMedicine([])
-        setAlertMessage("")
-    }
-    
-
-    const handleCheckbox = (test, isChecked, labCategory) => {
-        if(isChecked) {
-            setDrRequestForms(prevForms => [...prevForms, {
-                patient_id: context?.patientData?.patient_id,
-                physician_id: context?.patientData?.admitting_physician,
-                test_id: test.id,
-                lab_category: labCategory,
-                charge: test.charge
-
-            }])
-            context?.onSubmitData(drRequestForms)
-            setIsOptionDisabled(false)
-        } else {
-            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== test.id))
-            setIsOptionDisabled(true)
-        }
     }
 
     return (
@@ -223,7 +190,6 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                                     <input
                                                         type="checkbox" 
                                                         className="w-3 h-3"
-                                                        // onChange={(e) => handleCheckbox(test, e.target.checked, 'pathology')}
                                                         onChange={(e) => context?.onCheck({type:test, event:e.target.checked, category:'pathology'})}
                                                     />
                                                     <p className="text-sm text-gray-500">{test.test_name}</p>
@@ -259,7 +225,7 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
 
                     <div className="grid justify-items-center py-4">
                         <button 
-                            onClick={() => handleOnClick('doctor-request', _)} 
+                            onClick={() => context?.onSubmitDrRequest('doctor-request')} 
                             className={`${context?.state.isOptionDisabled || context?.state.btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
                             disabled={context?.state.isOptionDisabled || context?.state.btnSpinner}>
                             {context?.state.btnSpinner ? (
