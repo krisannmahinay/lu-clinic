@@ -25,52 +25,13 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
     const [isOptionDisabled, setIsOptionDisabled] = useState(true)
     const [drRequestForms, setDrRequestForms] = useState([])
     const [btnSpinner, setBtnSpinner] = useState(false)
-    const [searchMedicine, setSearchMedicine] = useState("")
-    const [alertMessage, setAlertMessage] = useState("")
-
-    useEffect(() => {
-        let spinnerTimer
-        if(btnSpinner) {
-            spinnerTimer = setTimeout(() => {
-                setBtnSpinner(false)
-            }, 500)
-        }
-
-        return () => {
-            if(spinnerTimer) {
-                clearTimeout(spinnerTimer)
-            }
-        }
-    }, [btnSpinner])
-
-    const handleOnClick = (type, medicine) => {
-        switch(type) {
-            case 'selectMedicine':
-                setSelectedMedicine(medicine)
-                setIsShowMedForm(true)
-                break
-
-            case 'backToList':
-                setSelectedMedicine(null)
-                setIsShowMedForm(false)
-                setAlertMessage("")
-                break
-
-            case '':
-                break
-
-            default:
-                break
-        }
-    }
-
 
     const renderMedication = () => {
         return (
             <div className="flex justify-center">
                 <div className="flex-col w-full border scroll-custom">
                     <div className="overflow-y-auto scroll-custom">
-                        {!isShowMedForm && (
+                        {!context?.state.isShowMedForm && (
                             <div className="sticky top-0">
                                 <input
                                     type="search"
@@ -84,7 +45,8 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                         <div
                                             key={data.id}
                                             className={`p-2 text-sm text-gray-500 ${data?.status === 'ps' ? 'bg-gray-200 cursor-not-allowed' : 'hover:bg-gray-300 cursor-pointer' }`}
-                                            onClick={data?.status !== 'ps' ? () => handleOnClick('selectMedicine',data) : undefined}
+                                            // onClick={data?.status !== 'ps' ? () => handleOnClick('selectMedicine',data) : undefined}
+                                            onClick={data?.status !== 'ps' ? () => context?.onClickOpenMed(data)  : undefined}
                                         >
                                             {`${data?.medicine.generic_name} (${data?.dose})`}
                                         </div>
@@ -93,14 +55,14 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                             </div>
                         )}
 
-                        {isShowMedForm && (
+                        {context?.state.isShowMedForm && (
                             <div className="p-4">
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Brand name:</label>
                                     <input
                                         type="text"
                                         className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
-                                        value={selectedMedicine?.medicine.brand_name}
+                                        value={context?.state?.selectedMedicine?.medicine.brand_name}
                                         readOnly
                                         
                                     />
@@ -108,7 +70,7 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                     <input
                                         type="text"
                                         className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
-                                        value={selectedMedicine?.medicine.generic_name}
+                                        value={context?.state?.selectedMedicine?.medicine.generic_name}
                                         readOnly
                                     />
 
@@ -116,15 +78,15 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                     <input
                                         type="text"
                                         className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                        value={selectedMedicine.dose}
-                                        onChange={(e) => handleAddMedicine(e, "dose")}
+                                        value={context?.state?.selectedMedicine?.dose}
+                                        onChange={(e) => context?.onAddMedicine({data:e, field:"dose"})}
                                     />
 
                                     <label className="block text-sm font-medium text-gray-700">Form:</label>
                                     <select 
                                         className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
-                                        value={selectedMedicine.form || ''}
-                                        onChange={(e) => handleAddMedicine(e, "form")}>
+                                        value={context?.state?.selectedMedicine?.form || ''}
+                                        onChange={(e) => context?.onAddMedicine({data:e, field:"form"})}>
                                         <option>Select options</option>
                                         {formMedication.map((option, index) => (
                                             <option key={index} value={option}>{option}</option>
@@ -135,8 +97,8 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                     <input
                                         type="number"
                                         className={`mt-1 block w-full p-2 border bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500 ${context?.alertMessage !== "" ? 'border-red-600' :  'border-gray-300'}`}
-                                        value={selectedMedicine.qty}
-                                        onChange={(e) => handleAddMedicine(e, "qty")}
+                                        value={context?.state?.selectedMedicine?.qty}
+                                        onChange={(e) => context?.onAddMedicine({data:e, field:"qty"})}
                                     />
                                     {context?.alertMessage && (
                                         <p className="text-xs text-red-600"><span class="font-medium">Error!</span> {context?.alertMessage}</p>
@@ -145,8 +107,8 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                     <label className="block text-sm font-medium text-gray-700">Frequency:</label>
                                     <select 
                                         className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
-                                        value={selectedMedicine?.frequency || ''}
-                                        onChange={(e) => handleAddMedicine(e, "frequency")}>
+                                        value={context?.state?.selectedMedicine?.frequency || ''}
+                                        onChange={(e) => context?.onAddMedicine({data:e, field:"frequency"})}>
                                         <option>Select options</option>
                                         {frequencyOptions.map((option, index) => (
                                             <option key={index} value={option}>{option}</option>
@@ -157,27 +119,22 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                     <textarea 
                                         type="text"
                                         className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                        value={selectedMedicine.sig}
-                                        onChange={(e) => handleAddMedicine(e, "sig")}
+                                        value={context?.state?.selectedMedicine?.sig}
+                                        onChange={(e) => context?.onAddMedicine({data:e, field:"sig"})}
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => context?.onClick({type:'backToList', _})}
+                                        onClick={() => context?.onClose('backToList')}
                                         className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
                                     >&larr; Back
                                     </button>
                                     <button
                                         onClick={() => context?.onSubmitData({
                                             link: 'add-medicine',
-                                            qty: selectedMedicine.qty,
-                                            id: selectedMedicine.id
+                                            qty: context?.state?.selectedMedicine?.qty,
+                                            id: context?.state?.selectedMedicine?.id
                                         })}
-                                        // onClick={() =>  handleOnClick({
-                                        //     link: 'add-medicine',
-                                        //     qty: selectedMedicine.qty,
-                                        //     id: selectedMedicine.id
-                                        // }, _)}
                                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
                                         Add
                                     </button>
@@ -240,7 +197,7 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                 </svg>Doctor's Request
                 </h5>
                 <button 
-                    onClick={() => context?.onClose()}
+                    onClick={() => context?.onClose('closeMenu')}
                     className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
                     <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -266,7 +223,8 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                                     <input
                                                         type="checkbox" 
                                                         className="w-3 h-3"
-                                                        onChange={(e) => handleCheckbox(test, e.target.checked, 'pathology')}
+                                                        // onChange={(e) => handleCheckbox(test, e.target.checked, 'pathology')}
+                                                        onChange={(e) => context?.onCheck({type:test, event:e.target.checked, category:'pathology'})}
                                                     />
                                                     <p className="text-sm text-gray-500">{test.test_name}</p>
                                                 </div>
@@ -290,7 +248,7 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                                         <input
                                             type="checkbox" 
                                             className="w-3 h-3"
-                                            onChange={(e) => handleCheckbox(test, e.target.checked, 'radiology')}
+                                            onChange={(e) => context?.onCheck({type:test, event:e.target.checked, category:'radiology'})}
                                         />
                                         <p className="text-sm text-gray-500">{test.test_name}</p>
                                     </div>
@@ -302,11 +260,9 @@ const DoctorRequest = ({ onSubmitRequestForm }) => {
                     <div className="grid justify-items-center py-4">
                         <button 
                             onClick={() => handleOnClick('doctor-request', _)} 
-                            className={`${isOptionDisabled || btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
-                            disabled={isOptionDisabled || btnSpinner}>
-                            
-                            
-                            {btnSpinner ? (
+                            className={`${context?.state.isOptionDisabled || context?.state.btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
+                            disabled={context?.state.isOptionDisabled || context?.state.btnSpinner}>
+                            {context?.state.btnSpinner ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin' viewBox="0 0 100 100" fill="none">
                                     <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" strokeDasharray="50.26548245743669 50.26548245743669" fill="none" strokeLinecap="round"/>
                                 </svg>
