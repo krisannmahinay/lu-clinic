@@ -1,12 +1,17 @@
 
 import CustomTextarea from "@/components/CustomTextarea"
 import Form from "@/components/Form"
-import { FormContext } from "@/utils/context"
+import { ComponentContext, FormContext } from "@/utils/context"
 import { generateSoapForms } from "@/utils/forms"
 import React, { useState, useEffect } from "react"
 import HighlightWithinTextarea from 'react-highlight-within-textarea'
+import DoctorRequest from "./DoctorRequest"
 
-const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster,onSearchQuery}) => {
+const Soap = ({
+    onClick,
+    dummyData, 
+    physiciansOrder, 
+}) => {
     const [formData, setFormData] = useState({
         soap_subj_symptoms: "",
         soap_obj_findings: "",
@@ -22,10 +27,6 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
     const [othersSelected, setOthersSelected] = useState({})
     const [searchQuery, setSearchQuery] = useState("")
 
-    const [isShowMedForm, setIsShowMedForm] = useState(false)
-    const [selectedMedicine, setSelectedMedicine] = useState(null)
-    const [addedMedicine, setAddedMedicine] = useState([])
-    
     const [subjectiveText, setSubjectiveText] = useState("")
     const [height, setHeight] = useState('')
     const [weight, setWeight] = useState('')
@@ -59,62 +60,18 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
         setRightItems(prev => prev.filter(item => item.id !== id))
         setLeftItems(prev => [...prev, item])
     }
-
-    const handleCheckbox = (id, name) => {
-        if(checkedItem.includes(id)) {
-            // setCheckedItem(checkedItem.filter((checked) => checked !== moduleId))
-            setCheckedItem((prevChecked) => prevChecked.filter((itemId) => itemId !== id))
-            if (name === "Others") {
-                setOthersSelected({ ...othersSelected, [id]: false })
-            }
-        } else {
-            // setCheckedItem([...checkedItem, moduleId])
-            setCheckedItem((prevChecked) => [...prevChecked, id])
-            if (name === "Others") {
-                setOthersSelected({ ...othersSelected, [id]: true })
-            }
-        }
-    }
-
-    // console.log(soapData)
-    const panthologyData = soapData?.reduce((acc, item) => {
-        // console.log(item)
-        const categoryName = item?.panthology_category?.category_name
-        if(!acc[categoryName]) {
-            acc[categoryName] = []
-        }
-        acc[categoryName].push(item)
-        return acc
-    }, {})
-
-    // console.log(panthologyData)
-
-    const selectMedicine = (medicine) => {
-        setSelectedMedicine(medicine);
-        setIsShowMedForm(true)
-    }
     
-    const addMedicine = () => {
-        if (selectedMedicine) {
-            setAddedMedicine((current) => [...current, selectedMedicine])
-            setIsShowMedForm(false)
-        }
+
+    const handleOnClick = () => {
+        onClick()
     }
 
-    const handleSearch = (e) => {
-        onSearchQuery(e.target.value)
-    }
-    
-    const backToList = () => {
-        setSelectedMedicine(null)
-        setIsShowMedForm(false)
-    }
-  
     const highlightAll = (content) => content
     const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
     return (
         <div>
+
             <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
                 {accordionIdOpen && (
                 <></>
@@ -157,24 +114,26 @@ const Soap = ({soapData, soapHeaders, dummyData, physiciansOrder, medicineMaster
                 ) : (
                     
                 <div>
-                    <div className="lg:ml-[10rem] lg:mr-[10rem] :ml-0 md:mr-0 pb-7">
+                    
+
+                    <div className="xl:pl-[10rem] xl:pr-[10rem] lg:pl-0 lg:pr-0 md:pl-0 md:pr-0 pb-7">
                         <FormContext.Provider value={{
                             initialFields: patientInfo,
-                            enableAutoSave:true
+                            enableAutoSave:true,
+                            // onClickFAB: handleClickedFAB,
+                            // initialFields={patientInfo}
+                            // enableAutoSave={true}
+                            // onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
+                            // onSuccess={handleRefetch}
+                            // onCloseSlider={() => setActiveContent("yellow")}
+                            // onLoading={(data) => setBtnSpinner(data)}
+                            // onSetAlertType={(data) => setAlertType(data)}
+                            // onSetAlertMessage={(data) => setAlertMessage(data)}
                         }}>
-                            <Form />
+                            <Form
+                                onClick={handleOnClick} 
+                            />
                         </FormContext.Provider>
-
-                        {/* <Form
-                            initialFields={patientInfo}
-                            enableAutoSave={true}
-                            onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
-                            onSuccess={handleRefetch}
-                            onCloseSlider={() => setActiveContent("yellow")}
-                            onLoading={(data) => setBtnSpinner(data)}
-                            onSetAlertType={(data) => setAlertType(data)}
-                            onSetAlertMessage={(data) => setAlertMessage(data)}
-                        /> */}
                     </div>
                 </div>
                 )}
