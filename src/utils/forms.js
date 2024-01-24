@@ -36,7 +36,7 @@ export const generateOpdForms = (physicianList) => {
             ]
         },
         {
-            name: 'admiting_physician',
+            name: 'admitting_physician',
             type: 'dropdown',
             label: 'Physician',
             options: phyisicianOptions
@@ -87,13 +87,9 @@ export const generateIpdForms = (physicianList, activeBedList) => {
     ]
 }
 
-export const generateInfoForms = (data, newData, province, municipality, barangay, icd10code) => {
+export const generateInfoForms = (data, province, municipality, barangay /*icd10code*/) => {
+    // console.log(province)
     const provOptions = province?.map(data => ({
-        label: data.name,
-        value: data.code
-    })) 
-
-    const brgyOptions = barangay?.map(data => ({
         label: data.name,
         value: data.code
     })) 
@@ -103,10 +99,15 @@ export const generateInfoForms = (data, newData, province, municipality, baranga
         value: data.code
     })) 
 
-    const icd10CodeOptions = icd10code?.map(data => ({
-        label: `${icd.icd10_code} ${icd.icd10_desc}`,
-        value: data.icd10_code
+    const brgyOptions = barangay?.map(data => ({
+        label: data.name,
+        value: data.code
     })) 
+
+    // const icd10CodeOptions = icd10code?.map(data => ({
+    //     label: `${icd.icd10_code} ${icd.icd10_desc}`,
+    //     value: data.icd10_code
+    // })) 
 
     return [
         // #######################################################################################################################
@@ -207,9 +208,9 @@ export const generateInfoForms = (data, newData, province, municipality, baranga
 
 export const generateSoapForms = (formData) => {
     return [
-        {name: 'soap_subj_symptoms', type: 'textarea', value: formData.soap_subj_symptoms, label: 'Subjective Symptoms', placeholder: 'Type...'},
-        {name: 'soap_obj_findings', type: 'textarea', value: formData.soap_obj_findings, label: 'Objective Findings', placeholder: 'Type...'},
-        {name: 'soap_assessment', type: 'textarea', value: formData.soap_assessment, label: 'Assessment', placeholder: 'Type...'},
-        {name: 'soap_plan', type: 'textarea', value: formData.soap_plan, label: 'Plan', placeholder: 'Type...'},
+        {name: 'soap_subj_symptoms', type: 'textarea', category: 'with_modal', label: 'Subjective Symptoms', placeholder: 'Type...'},
+        {name: 'soap_obj_findings', type: 'textarea', label: 'Objective Findings', placeholder: 'Type...'},
+        {name: 'soap_assessment', type: 'textarea', label: 'Assessment', placeholder: 'Type...'},
+        {name: 'soap_plan', type: 'textarea', label: 'Plan', placeholder: 'Type...'},
     ]
 }

@@ -95,26 +95,14 @@ const useRenderCount = () => {
     console.log(`Rendered ${renderCountRef.current} times`)
 }
 
-const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) => {
+const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data, onModalState}) => {
     useRenderCount()
     const [imagePreviewUrl, setImagePreviewUrl] = useState('/path/to/default-photo.png')
-    const [selectedProvince, setSelectedProvince] = useState(null)
-    const [selectedMunicipal, setSelectedMunicipal] = useState(null)
-    const [selectedBarangay, setSelectedBarangay] = useState(null)
-    const [selectedCountry, setSelectedCountry] = useState(null)
-    const [selectedSex, setSelectedSex] = useState(null)
-    const [selectedCivil, setSelectedCivil] = useState(null)
-    const [birthDate, setBirthDate] = useState("")
-    const [age, setAge] = useState("")
     const [provinceCode, setProvinceCode] = useState(null)
     const [initialInfoForms, setInitialInfoForms] = useState([])
     const [municipalCode, setMunicipalCode] = useState(null)
     const [initialOptions, setInitialOptions] = useState([]) 
     const [checkedItem, setCheckedItem] = useState([])
-    const [selectedSocService, setSelectedSocService] = useState(null)
-    const [selectedGovType, setSelectedGovType] = useState(null)
-    const [selectedDisposition, setSelectedDisposition] = useState(null)
-    const [selectedType, setSelectedType] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [personInfo, setPersonInfo] = useState([])
     const [patientInfo, setPatientInfo] = useState([])
@@ -336,6 +324,10 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
         })
     }
 
+    const handleModalState = (data) => {
+        onModalState(data)
+    }
+
     return (
         <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
             {/* <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
@@ -360,6 +352,7 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data}) 
                     municipalityData: municipalityData,
                     barangayData: barangayData,
                     enableAutoSave: true, 
+                    onModalOpen: handleModalState,
                     onSelectedProvince: handleSelectedProvince,
                     onSelectedMunicipality: handleSelectedMunicipality,
                     // onSelectProvince: handleOnSelect
