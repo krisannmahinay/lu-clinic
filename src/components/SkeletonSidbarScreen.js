@@ -1,3 +1,4 @@
+import React from "react"
 
 
 const SkeletonSidebarScreen = () => {
@@ -27,4 +28,4 @@ const SkeletonSidebarScreen = () => {
     )
 }
 
-export default SkeletonSidebarScreen
+export default React.memo(SkeletonSidebarScreen)
