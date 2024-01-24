@@ -44,6 +44,7 @@ export default function Login() {
     const [password, setPassword] = useState('')
     const [database, setDatabase] = useState(options[0])
     const [btnSpinner, setBtnSpinner] = useState(false)
+    const [contentHeight, setContentHeight] = useState(0)
     const selectedDB = database.value
     
     // const [shouldRemember, setShouldRemember] = useState(false)
@@ -60,11 +61,20 @@ export default function Login() {
             }, 500)
         }
 
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+
         return () => {
             if(spinnerTimer) {
                 clearTimeout(spinnerTimer)
             }
-            // clearTimeout(highlightTimeout)
+            window.removeEventListener('resize', calculateHeight)
         }
     }, [btnSpinner])
 
@@ -107,7 +117,7 @@ export default function Login() {
 
     return (
         <GuestLayout>
-            {alertMessage &&
+            {/* {alertMessage &&
                 <Alert 
                     alertType={alertType}
                     isOpen={alertType !== null}
@@ -115,21 +125,14 @@ export default function Login() {
                     message={alertMessage} 
                     duration={3000}
                 /> 
-            }
-            <div className='flex items-center justify-center max-h-full '>
-
-                <div className="bg-white p-8 border border-gray-300 rounded">
-                    <div className="flex flex-col items-center mb-6 ">
-                        {/* <img src="https://i.imgur.com/WyzP2gd.png" alt="Logo" className="mb-4 w-28 h-30" /> */}
-                        <h2 className="text-lg font-medium uppercase">Login</h2>
-                    </div>
-                    
-
+            } */}
+            <div className="flex justify-center">
+                <div className="pt-20">
                     <form>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="email">Email</label>
+                            <label className="block text-gray-700 text-xs uppercase font-medium mb-2" htmlFor="email">Email</label>
                             <input 
-                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
+                                className="border border-gray-300 font-sm px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
                                 id="email" 
                                 type="email" 
                                 placeholder="Enter your email"
@@ -139,9 +142,9 @@ export default function Login() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="password">Password</label>
+                            <label className="block text-gray-700 text-xs uppercase font-medium mb-2" htmlFor="password">Password</label>
                             <input 
-                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
+                                className="border border-gray-300 font-sm px-3 py-2 focus:border-gray-500 focus:outline-none w-full" 
                                 id="password" 
                                 type="password" 
                                 placeholder="Enter your password"
@@ -152,11 +155,11 @@ export default function Login() {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-xs uppercase font-bold mb-2" htmlFor="password">Database</label>
+                            <label className="block text-gray-700 text-xs uppercase font-medium mb-2" htmlFor="password">Database</label>
                             <select 
                                 value={database.value}
                                 onChange={handleChange}
-                                className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full"
+                                className="border border-gray-300 font-sm px-3 py-2 focus:border-gray-500 focus:outline-none w-full"
                             >
                                 {options.map(option => (
                                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -180,11 +183,10 @@ export default function Login() {
 
                             {/* <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
                                 type="submit">
-                                     Login
+                                        Login
                             </button> */}
                         </div>
                     </form>
-
                     
                     <p className="text-center text-gray-600 text-xs py-3">&copy; 2023. All rights reserved.</p>
                 </div>
