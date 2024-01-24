@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react"
 
 export const ComponentContext = createContext({
+    data: null,
     state: null,
     alertMessage: "",
     patientData: null,

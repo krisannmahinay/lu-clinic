@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useRouter } from 'next/router'
 
 // components
 import NavLink from "./Navlink";
 import { useSelector } from "react-redux";
+import { useComponentContext } from "@/utils/context";
 
-const Module = ({data, menuGroup}) => {
-    
+const Module = () => {
+    const context = useComponentContext()
     const router = useRouter()
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
 
     useEffect(() => {
-        if(data && data?.module) {
+        if(context?.data.module && context?.data.module.module) {
             const uniquePermissions = new Set()
-            const filteredMenus = data?.module.filter((item) => {
-                if(item.menu_group === menuGroup && !uniquePermissions.has(item.permission_id)) {
+            const filteredMenus = context?.data.module.module.filter((item) => {
+                if(item.menu_group === context?.data.menuGroup && !uniquePermissions.has(item.permission_id)) {
                     uniquePermissions.add(item.permission_id)
                     return true
                 }
@@ -24,15 +25,13 @@ const Module = ({data, menuGroup}) => {
             // console.log(filteredMenus)
             setMenus(filteredMenus)
         }
-    }, [data, menuGroup])
+    }, [context?.data.module, context?.data.menuGroup])
 
     const toggleAccordion = (module) => {
         if(module === 'settings') {
             setIsExpanded((prevIsExpanded) => !prevIsExpanded)
         }
     }
-
-    // console.log(menuGroup)
     
     return (
         <>
@@ -60,7 +59,7 @@ const Module = ({data, menuGroup}) => {
                             <ul className="mx-1 my-1">
                                 {item.module?.type === 'sub' ? (
                                     <>
-                                        {menuGroup === 'patients' && (
+                                        {context?.data.menuGroup === 'patients' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
@@ -76,7 +75,7 @@ const Module = ({data, menuGroup}) => {
                                             </NavLink>
                                         )}
 
-                                        {menuGroup === 'settings' && (
+                                        {context?.data.menuGroup === 'settings' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
@@ -94,7 +93,7 @@ const Module = ({data, menuGroup}) => {
                                             </NavLink>
                                         )}
 
-                                        {menuGroup === 'inventory' && (
+                                        {context?.data.menuGroup === 'inventory' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
@@ -147,4 +146,4 @@ const Module = ({data, menuGroup}) => {
     )
 }
 
-export default Module
+export default React.memo(Module) 
