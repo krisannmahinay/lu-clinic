@@ -196,9 +196,13 @@ const Setting = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
-    const handleOnchecked = (data) => {
+    const handleOnChecked = (data) => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
+    }
+
+    const handleSelectAll = (data) => {
+        console.log(data)
     }
 
     const handleOnchange = (type, e) => {
@@ -351,20 +355,12 @@ const Setting = () => {
                         <TableContext.Provider value={{
                             tableData: userData,
                             tableHeader: header,
-                            onChecked: (data) => handleOnchecked(data),
+                            onChecked: (data) => handleOnChecked(data),
                             onClick: (data) => handleOnclick('clickedRows', data),
                             onEdit: (id) => setCheckIds(id)
                         }}>
                             <Table />
                         </TableContext.Provider>
-
-                        {/* <Table
-                            tableData={userData}
-                            tableHeader={header}
-                            onChecked={(data) => handleOnchecked(data)}
-                            onClick={(data) => handleOnclick('clickedRows', data)}
-                            onEdit={(id) => setCheckIds(id)}
-                        /> */}
                     </div>
         
                     <div className="flex flex-wrap py-1">
@@ -508,42 +504,42 @@ const Setting = () => {
                 <title>Laravel - Setting</title>
             </Head>
 
-            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                {alertMessage &&
-                    <Alert 
-                        alertType={alertType}
-                        isOpen={alertType !== ""}
-                        onClose={() => handleOnclose('closeAlert')}
-                        message={alertMessage} 
-                    /> 
-                }
+            <div className="container mx-auto">
+                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+                    {alertMessage &&
+                        <Alert 
+                            alertType={alertType}
+                            isOpen={alertType !== ""}
+                            onClose={() => handleOnclose('closeAlert')}
+                            message={alertMessage} 
+                        /> 
+                    }
 
-                <Modal 
-                    // title={title}
-                    openId={modalId}
-                    slug={moduleId} 
-                    isOpen={isModalOpen} 
-                    initialFields={userRegistration}
-                    addUserBtn={true}
-                    onClose={() => handleOnclose('closeModal')}
-                    onSuccess={handleRefetch}
-                    onSetAlertType={(data) => setAlertType(data)}
-                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                    // permission={permission} 
-                    // selectedRowId={selectedRows}
-                />
-                
-                {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
-                    renderContent()
-                )} 
+                    <Modal 
+                        // title={title}
+                        openId={modalId}
+                        slug={moduleId} 
+                        isOpen={isModalOpen} 
+                        initialFields={userRegistration}
+                        addUserBtn={true}
+                        onClose={() => handleOnclose('closeModal')}
+                        onSuccess={handleRefetch}
+                        onSetAlertType={(data) => setAlertType(data)}
+                        onSetAlertMessage={(data) => setAlertMessage(data)}
+                        // permission={permission} 
+                        // selectedRowId={selectedRows}
+                    />
+                    
+                    {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
+                        renderContent()
+                    )} 
 
-                {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
-                    <>
-                        <ProfileInformation information={userInfo}/>
-                    </>
-                )} 
-
-                
+                    {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
+                        <>
+                            <ProfileInformation information={userInfo}/>
+                        </>
+                    )} 
+                </div>
             </div>
 
 
