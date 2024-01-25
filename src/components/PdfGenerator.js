@@ -65,11 +65,11 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                 
                 const bday = context?.data.user_data_info?.birth_date
                 const parts = bday.split("-")
-                firstPage.drawText(`${parts[1]}  ${parts[2]}    ${parts[0]}`, {
+                firstPage.drawText(`${parts[1]}  ${parts[2]} ${parts[0]}`, {
                     x: 463,
                     // y: height - 250,
                     y: height - 485,
-                    size: 12,
+                    size: 13,
                     font: courierFont
                 })
                 break
@@ -112,7 +112,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
     }
 
     return (
-        <button onClick={() => context?.onClick()} className="w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out">
+        <button onClick={() => context?.onClick()} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
             {context?.state.title}
         </button>    
     )
