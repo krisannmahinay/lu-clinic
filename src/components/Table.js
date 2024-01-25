@@ -355,7 +355,7 @@ const Table = forwardRef(({
         switch(type) {
             case 'tickedCheckbox':
                 e.stopPropagation()
-                if(context?.state?.type === 'inpatient') {
+                if(context?.state?.type === 'inpatient' || context?.state?.type === 'outpatient') {
                     context?.onCheckPatient({
                         checked: e.target.checked,
                         data: data
