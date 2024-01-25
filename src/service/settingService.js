@@ -371,16 +371,26 @@ export const settingApi = createApi({
                             selectedDB: session
                         }
                         break
-
+                    
                     case 'createInPatient':
+                        // console.log(data)
                         url = '/create-in-patient',
                         body = {
-                            patientType: 'new',
+                            patientType: 'new_ipd',
                             actionType: actionType,
                             data: data.map(item => item.fields),
                             selectedDB: session
                         }
-                        break
+
+                    // case 'createInPatient':
+                    //     url = '/create-in-patient',
+                    //     body = {
+                    //         patientType: 'new',
+                    //         actionType: actionType,
+                    //         data: data.map(item => item.fields),
+                    //         selectedDB: session
+                    //     }
+                    //     break
 
                     default:
                         break
