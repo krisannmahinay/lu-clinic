@@ -157,11 +157,11 @@ const DoctorRequest = () => {
     return (
         <div>
             <div className={`fixed inset-0 top-0 p-4 bg-black opacity-50 transition-opacity ${context?.isDrDrawerOpen ? 'visible' : 'hidden'}`}></div>
-            <div className={`fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-2/5 transition-transform duration-500 ease-in-out ${context?.isDrDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                <h5 id="drawer-right-label" class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400">
+            <div className={`fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-[30%] transition-transform duration-500 ease-in-out ${context?.isDrDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <h5 class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400">
                     <svg class="w-4 h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                </svg>Doctor's Request
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                    </svg>Doctor's Request
                 </h5>
                 <button 
                     onClick={() => context?.onClose('closeMenu')}
