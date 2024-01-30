@@ -19,8 +19,12 @@ import {
 } from "@/service/authService"
 import { authApi } from "@/service/authService"
 import Timer from "./Timer"
-
-
+import { ComponentContext, FormContext, useModalContext } from "@/utils/context"
+import { debounce } from "lodash"
+import { useSearchQuery } from "@/service/searchService"
+import { searchApi } from "@/service/searchService"
+import Prescription from "./Patient/OPD/Prescription"
+import Medication from "./Patient/IPD/Medication"
 
 const genderOPD = [
     {value: "male", label: "Male", },
@@ -80,6 +84,25 @@ const bedRoomData = [
     {id:6, type: "bed", roomNo: 4, description: "Wider bed ", status: "occupied"}
 ]
 
+const doctorOrderField = [
+    {name: 'do_po_medication', type: 'text', label: 'Medication', placeholder: 'Type...'},
+    {name: 'do_po_ivfluids', type: 'text', label: 'IV Fluids', placeholder: 'Type...'},
+    {name: 'do_po_lab_tests', type: 'text', label: 'Labs and Tests', placeholder: 'Type...'},
+    {name: 'do_po_imaging', type: 'text', label: 'Imaging', placeholder: 'Type...'},
+    {name: 'do_po_instructions', type: 'textarea', label: 'Instructions', placeholder: 'Type...'},
+]
+
+const ivFluidField = [
+    {name: 'ivf_bottle_no', type: 'text', label: 'Bottle No', placeholder: 'Type...'},
+    {name: 'ivf_type_iv', type: 'text', label: 'Type of IV and Drug Incorporated', placeholder: 'Type...'},
+    {name: 'ivf_volumn_ml', type: 'text', label: 'Volume in ml', placeholder: 'Type...'},
+    {name: 'ivf_rate_flow', type: 'text', label: 'Rate of Flow', placeholder: 'Type...'},
+    {name: 'ivf_date_time_start', type: 'text', label: 'Date/Time Started', placeholder: 'Type...', disabled: true},
+    {name: 'ivf_date_time_end', type: 'text', label: 'Date/Time Consumed', placeholder: 'Type...', disabled: true},
+    {name: 'ivf_nurse_duty', type: 'text', label: 'Nurse on Duty', placeholder: 'Type...'},
+    {name: 'ivf_remarks', type: 'textarea', label: 'Remarks', placeholder: 'Type...'},
+]
+
 const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
 const Modal = ({
@@ -97,179 +120,32 @@ const Modal = ({
         onSetAlertType,
         patientData,
         children,
+        onSelectMedicine,
         ...props
     }) => {
         
     const router = useRouter()
     const formRef = useRef(null)
     const dispatch = useDispatch()
-    const [checkedItem, setCheckedItem] = useState([])
+    const context = useModalContext()
+    const [searchInput, setSearchInput] = useState("")
+    const [searchResults, setSearchResults] = useState([])
+    const [isLoading, setIsLoading] = useState(false)
+    const [contentHeight, setContentHeight] = useState(0)
     const [activeTab, setActiveTab] = useState('tab1')
-    const [navTab, setNavTab] = useState([])
-    const [triggerSubmit, setTriggerSubmit] = useState(false)
-    const [openModalId, setOpenModalId] = useState("")
-    const [selectedType, setSelectedType] = useState(null)
-
-    const [currentTime, setCurrentTime] = useState(new Date())
-    const [savedDate, setSavedDate] = useState(null)
-    const [savedTime, setSavedTime] = useState(null)
-
-    const [formData, setFormData] = useState({
-        last_name: "",
-        first_name: "",
-        middle_name: "",
-        gender: "",
-        physician: "",
-        standard_charge: "",
-        birthday: "",
-        age: ""
-    })
-    
-    // console.log(data)
-    useEffect(() => {
-        if(data) {
-            setFormData({
-                last_name: data?.patient_identity?.last_name || "",
-                first_name: data?.patient_identity?.first_name || "",
-                middle_name: data?.patient_identity?.middle_name || "",
-                gender: data?.patient_identity?.gender || "",
-                physician: data?.physician_identity?.user_id || "",
-                standard_charge: "",
-                birthday: data?.patient_identity?.birth_date || "",
-                age: data?.patient_identity?.age || ""
-            })
-        }
-    },[data])
-    
-    const { data: userDetails, isError: dataError, refetch: refetchUserDetails } = useGetUserByIdQuery({
-        user_id: openId
-    })
-
-    // console.log(moduleData)
-
-
-    const handleRoomChange = (type) => {
-        if (selectedType === type) {
-            setSelectedType(null) // Uncheck if already checked
-        } else {
-            // const extractRm = bedRoomData.map
-            setSelectedType(type)
-
-        }
-    }
-
-    const handleSelectedType = () => {
-
-    }
-
-    const handleFieldChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prevData => ({
-            ...prevData, 
-            [name]: value
-        }))
-    }
-
-    const handleGenderOPD = (selectedOption) => {
-        setFormData({
-            ...formData,
-            gender: selectedOption?.value
-        })
-    }
-
-    const handlePhysicianOPD = (selectedOption) => {
-        setFormData({
-            ...formData,
-            physician: selectedOption?.label,
-            standard_charge: selectedOption?.charge
-        })
-    }
-
-    const handleBirthdateOPD = (e) => {
-        const birth = new Date(e.target.value)
-        const today = new Date()
-        let calculatedAge = today.getFullYear() - birth.getFullYear() - (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0)
-
-        setFormData({
-            ...formData,
-            birthday: birth,
-            age: calculatedAge
-        })
-    }
-
-    const handleDispositionOPD = () => {
-
-    }
-
-    const handleAncillaryOPD = () => {
-
-    }
-    
-    const userData = userDetails?.user[0] ?? []
-    
-    // const excludeDashboard = ["dashboard"]
-    // const dashboard = (groupModules?.dashboard || []).filter(module => !excludeDashboard.includes(module.module_id))
-    
-    // const excludePatient = ["dashboard", "patients"]
-    // const patients = (groupModules?.patients || []).filter(module => !excludePatient.includes(module.module_id))
-    // const excluceInventory = ["inventory"]
-    // const inventory = (groupModules?.inventory || []).filter(module => !excluceInventory.includes(module.module_id))
-
-    // const excludeSettings = ["dashboard", "inventory", "radiology", "panthology", "pharmacy", "settings", "patients"]
-    // const settings = (groupModules?.settings || []).filter(module => !excludeSettings.includes(module.module_id))
-
-    const handleCheckedData = (data) => {
-        setNavTab(data)
-    }
 
     const handleClose = () => {
-        onClose()
-        setCheckedItem([])
-        setFormData({})
-        // dispatch(authApi.util.invalidateTags([{ type: 'UserDetails', id: 'LIST' }]));
-    }
-
-    const handleCloseModal = (data) => {
-        data !== null && (
-            handleClose(),
-            onSetAlertType(data)
-        )
-    }
-
-    const moduleClose = () => {
-        onClose()
-    }
-
-    const renderUpdateForm = () => {
-        
+        context?.onClose()
+        setSearchInput("")
+        setSearchResults([])
+        // setCheckedItem([])
+        // setFormData({})
     }
 
     const handleSave = () => {
         // e.preventDefault()
         if(slug === "out-patient") {
-            console.log(formData)
-        }
-        
-        if(groupModules) {
-        //     grantUserModule({checkedItem, identity_id:selectedRowId})
-        //     .unwrap()
-        //     .then(response => {
-        //         if(response.status === "success") {
-        //             onSetAlertType("success")
-        //             onSetAlertMessage(response.message)
-        //             setAlertOpen(true)
-        //             setFormData([])
-        //             moduleClose()
-        //         }
-        //     })
-        //     .catch(error => {
-        //         // console.log(error)
-        //         if(error.status === 500) {
-        //             onSetAlertType("error")
-        //             onSetAlertMessage("Unsuccessful")
-        //             setAlertOpen(true)
-        //         }
-        //     })
+            // console.log(formData)
         }
 
         if(slug === "settings") {
@@ -277,188 +153,182 @@ const Modal = ({
         }
     }
 
+    useEffect(() => {
+        if(searchInput) {
+            debouncedFetchData(searchInput)
+        } else {
+            setSearchInput(null)
+        }
+    }, [searchInput])
+    // const { data: searchResults } = useSearchQuery({ keywords: searchQuery, model: "icd-codes" })
+    const debouncedFetchData = debounce((searchQuery) => {
+        setIsLoading(true)
+        dispatch(searchApi.endpoints.search.initiate({ keywords: searchQuery, model: context?.state.modalType }))
+            .unwrap()
+            .then((data) => {
+                setSearchResults(data)
+                setIsLoading(false)
+            })
+            .catch((error) => {
+                // console.log(error)
+            })
+        
+    }, 500)
+
+    const handleSearchInputChange = (e) => {
+        setSearchInput(e.target.value)
+    }
+
+    const handleCallBackData = (data) => {
+        if(data?.field === 'selectMedicine') {
+            onSelectMedicine(data.data)
+        } else if(data === 'backToList') {
+            context?.onClick(data)
+        } else if(data?.link === 'add-medicine') {
+            context?.onSubmitData(data)
+        }
+    }
+    
     return (
-        <div className={`fixed inset-0 flex top-0 p-4 items-center justify-center z-50 ${isOpen ? 'visible': 'hidden'}`}>
-            <div className={`fixed inset-0 top- p-4 bg-black opacity-50 transition-opacity ${isOpen ? 'visible' : 'hidden'}`}></div>
-            <div className={`bg-white p-6 rounded shadow-md z-50 transition-opacity ${isOpen ? 'visible' : 'hidden'}`}>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold"></h2>
-                    {/* <button
-                        className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                        onClick={onClose}>
-                        <svg
-                            className="h-6 w-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button> */}
+        <div className={`grid fixed p-10 right-0 left-0 z-50 pt-[4rem] w-full place-items-center ${context?.isOpen ? 'visible' : 'hidden'}`}>
+            <div className={`fixed inset-0 p-4 w-full bg-black opacity-50 transition-opacity ${context?.isOpen ? 'visible' : 'hidden'}`}></div>
+            <div className="relative p-4 w-full max-w-2xl">
+                <div className=" bg-white rounded-lg shadow">
+                    <div className="flex items-center justify-between p-2 md:p-2 border-b rounded-t">
+                        {context?.state?.modalType === 'icd-codes' || context?.state?.modalType === 'opt-procedure' && (
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    // value={searchQuery}
+                                    onChange={(e) => handleSearchInputChange(e)}
+                                    className="border-none w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
+                                    placeholder="Search icd codes"
+                                />
+                                <svg fill="none" stroke="currentColor" className="mx-2 h-6 w-4 text-sm text-gray-400 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
+                        )}
+
+                        {context?.state?.modalType === 'physician-order' && (
+                            <div className="px-2">
+                                <h5 class="inline-flex items-center text-base font-semibold text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                    </svg>Doctor's Order
+                                </h5>
+                            </div>
+                        )}
+
+                        {context?.state?.modalType === 'nurses-notes' && (
+                            <div className="flex justify-items-center border-gray-300">
+                                <div className="rounded-tl-lg ml-3">
+                                    <button onClick={() => setActiveTab('tab1')} className={`${activeTab === 'tab1' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                        Notes
+                                    </button>
+                                    <button onClick={() => setActiveTab('tab2')} className={`${activeTab === 'tab2' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                        IV Fluids
+                                    </button>
+                                    <button onClick={() => setActiveTab('tab3')} className={`${activeTab === 'tab3' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                        Medication
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* {context?.state.modalType === 'icd-codes' || context?.state.modalType === 'opt-procedure' ? (
+                        ) : (
+                            <div></div>
+                        ) } */}
+                        
+                        <button type="button" onClick={handleClose} className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center ">
+                            <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                            </svg>
+                            <span className="sr-only">Close modal</span>
+                        </button>
+                    </div>
+                    
+                    <div className={`p-4 md:p-5 space-y-1 scroll-custom overflow-y-auto ${searchResults.length > 0 ? 'h-[30rem]' : ''}`}>
+                    {/* <div className="p-4 md:p-5 space-y-1 scroll-custom" style={{ height: `${contentHeight}px`, overflowY: 'auto' }}> */}
+                        {isLoading ? (
+                            <div className="p-10 flex justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className='w-10 h-10 animate-spin text-gray-400' viewBox="0 0 100 100" fill="none">
+                                    <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                        ) : (
+                            
+                            searchResults.length > 0 ? (
+                                context?.state.modalType === 'icd-codes' && (
+                                    searchResults.map((item, index) => (
+                                        <div className="divide-dashed divide-y-2 divide-gray-300">
+                                            <div 
+                                                key={item.id} 
+                                                className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
+                                                // onClick={() => moveItemToLeft(item.id)}
+                                            >
+                                                <p dangerouslySetInnerHTML={{ __html: `${item.icd10_code} &bull; ${item.icd10_desc} `}}></p>
+                                            </div>
+                                            <div></div>
+                                        </div>
+                                    ))
+                                ),
+                                context?.state.modalType === 'opt-procedure' && (
+                                    searchResults.map((item, index) => (
+                                        <div className="divide-dashed divide-y-2 divide-gray-300">
+                                            <div 
+                                                key={item.id} 
+                                                className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
+                                                // onClick={() => moveItemToLeft(item.id)}
+                                            >
+                                                <p dangerouslySetInnerHTML={{ __html: `${item.proc_code} &bull; ${item.proc_desc} `}}></p>
+                                            </div>
+                                            <div></div>
+                                        </div>
+                                    ))
+                                )
+                            ) : (
+                                context?.state?.modalType === 'physician-order' ? (
+                                    <FormContext.Provider value={{
+                                        initialFields: doctorOrderField
+                                    }}>
+                                        <Form />
+                                    </FormContext.Provider>
+                                ) : context?.state?.modalType === 'nurses-notes' ? (
+                                    activeTab === 'tab1' ? (
+                                        <textarea 
+                                            type="text" 
+                                            name="no_notes" 
+                                            placeholder="Type..." 
+                                            // onClick={() => handleClickedPO("po")}
+                                            className="border-none h-32 w-full focus:border-gray-500 text-xs focus:outline-none" 
+                                        />
+                                    ) : activeTab === 'tab2' ? (
+                                        <FormContext.Provider value={{
+                                            initialFields: ivFluidField
+                                        }}>
+                                            <Form />
+                                        </FormContext.Provider>
+                                    ) : activeTab === 'tab3' ? (
+                                        <Medication />
+                                    ) : ''
+                                ) : (
+                                    <span>No Records Found</span>
+                                )
+                            )
+                        )}
+                    </div>
+                    
+                    <div className="flex items-end p-4 text-xs text-gray-400 border-t border-gray-300 rounded-b">
+                        {context?.state?.modalType === 'icd-codes' || context?.state?.modalType === 'opt-procedure' && (
+                            <span>Advanced Search Box</span>
+                        )}
+                    </div>
                 </div>
-                <div className="w-full">
 
-                {slug === 'pharmacy' && (
-                    tabNumber === 'tab1' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full mb-4">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Category Name</label>
-                                    <input type="text" placeholder="Enter symptoms" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    ) : tabNumber === 'tab2' ? (
-                        <>
-                            <div className="w-80">
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Supplier Name</label>
-                                    <input type="text" placeholder="Enter supplier name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Supplier Contact</label>
-                                    <input type="text" placeholder="Enter supplier contact" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Contact Person Name</label>
-                                    <input type="text" placeholder="Enter name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Contact Person Phone</label>
-                                    <input type="text" placeholder="Enter person contact" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-
-                                <div className="flex flex-col w-full">
-                                    <label className="ml-2 mb-2 text-gray-700 uppercase text-medium">Address</label>
-                                    <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                                </div>
-                            </div>
-                        </>
-                    )  : null
-                )}
-
-                {slug === 'settings' && (
-                    <div className="max-h-[40vh] overflow-y-auto scroll-custom">
-                        <Form 
-                            ref={formRef} 
-                            initialFields={props.initialFields}
-                            addUserBtn={props.addUserBtn}
-                            onSuccess={props.handleRefetch}
-                            onSetAlertMessage={onSetAlertMessage}
-                            onSetAlertType={(data) => handleCloseModal(data)}
-                        />
-                    </div>
-                )}
-
-                {slug === 'out-patient' && (
-                    <div className="w-full">
-                        <div className="flex flex-col w-full mb-4">
-                            <label className={labelCss}>DATE | TIME - <Timer /></label>
-                            {/* <input type="text" placeholder="Enter code" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" /> */}
-                        </div>
-
-                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>LAST NAME</label>
-                                <input type="text" name="last_name" value={formData.last_name} onChange={(e) => handleFieldChange(e)} placeholder="Enter last name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                            </div>
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>GIVEN NAME</label>
-                                <input type="text" name="first_name" value={formData.first_name} onChange={(e) => handleFieldChange(e)}  placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                            </div>
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>MIDDLE NAME</label>
-                                <input type="text" name="middle_name" value={formData.middle_name} onChange={(e) => handleFieldChange(e)}  placeholder="Enter given name" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4 mb-2 sm:flex-row">
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>Birthday</label>
-                                <input type="date" name="birthday" value={
-                                    formData.birthday ? new Date(formData.birthday).toISOString().substring(0, 10) : ""
-                                } onChange={(e) => handleBirthdateOPD(e)} className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none" />
-                            </div>
-
-                            <div className="flex flex-col w-full mb-4">
-                                <label className={labelCss}>Age</label>
-                                <input type="text" value={formData.age} onChange={(e) => handleFieldChange(e)} className="border-none bg-gray-200 px-3 py-2 focus:outline-none" disabled/>
-                            </div>
-
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>Gender</label>
-                                <Select 
-                                    options={
-                                        genderOPD?.map(genderopd => ({ 
-                                            value: genderopd.value, 
-                                            label: genderopd.label 
-                                        }))}
-                                    onChange={handleGenderOPD}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder="Select gender..."
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                    
-                                />
-                            </div>
-                            
-                        </div>
-
-                        <div className="flex flex-col w-full mb-4 gap-4 sm:flex-row">
-                            <div className="flex flex-col w-full">
-
-                                <label className={labelCss}>Physician</label>
-                                <Select 
-                                    options={
-                                        physicianOPD?.map(physic => ({ 
-                                            value: physic.user_id, 
-                                            label: physic.name, 
-                                            charge: physic.physician_charge 
-                                        }))}
-                                    onChange={handlePhysicianOPD}
-                                    isSearchable={true}
-                                    isClearable={true}
-                                    placeholder="Select physician..."
-                                    classNamePrefix="react-select"
-                                    styles={styleDropdown} 
-                                />
-                            </div>
-                            
-                            <div className="flex flex-col w-full">
-                                <label className={labelCss}>Standard Charge</label>
-                                <input type="text" value={formData.standard_charge} onChange={(e) => handleFieldChange(e)} className="border-none bg-gray-200 px-3 py-2 focus:outline-none" disabled/>
-                            </div>
-
-                        </div>
-                    </div>
-                )}
                 
-                {children}
-                </div>
-                <div className="mt-6 flex justify-end">
-                    <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2"
-                        onClick={handleClose}
-                    >
-                        Close
-                    </button>
-                    <button
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-500"
-                        onClick={handleSave}
-                        disabled
-                    >
-                        Save
-                    </button>
-                </div>
             </div>
         </div>
     )
