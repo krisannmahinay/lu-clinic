@@ -58,14 +58,14 @@ const NurseNote = ({onModalState}) => {
             <table className="border-none min-w-full divide-y divide-gray-200">
                 <thead>
                     <tr onMouseEnter={() => setHoveringOverTh(true)} onMouseLeave={() => setHoveringOverTh(false)} className="hover:cursor-pointer">
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className={`${hoveringOverTh ? 'bg-green-200' : 'bg-white'} px-6 py-3 text-left text-xs font-normal text-gray-500 uppercase tracking-wider`}>
                             Date/Time
                         </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className={`${hoveringOverTh ? 'bg-green-200' : 'bg-white'} px-6 py-3 text-left text-xs font-normal text-gray-500 uppercase tracking-wider`}>
                             Nurses Notes
                         </th>
                         {hoveringOverTh && (
-                            <button onClick={handleAddRow} title="Add Row" className="flex justify-center bg-gray-300 hover:bg-gray-400 absolute p-2 -translate-x-10 text-gray-500 hover:text-white">
+                            <button onClick={handleAddRow} title="Add Row" className="flex justify-center bg-green-200 hover:bg-green-300 absolute p-2 -translate-x-10 text-gray-500 hover:text-white">
                                 <svg dataSlot="icon" fill="none" className="w-6 h-6 " strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
