@@ -19,7 +19,7 @@ const formMedication = [
 const Medication = () => {
     const context = useComponentContext()
     const modalContext = useModalContext()
-
+    
     return (
         <div className="flex justify-center">
             <div className="flex-col w-full">
@@ -134,14 +134,14 @@ const Medication = () => {
 
             <div className="flex-col w-full h-58 border border-l-gray-500">
                 <div className="overflow-y-auto scroll-custom h-full">
-                    {modalContext?.state.addedMedicine.map((data, index) => (
+                    {modalContext?.state?.medication?.map((data, index) => (
                         <div 
                             key={data.id} 
                             className="p-2 bg-gray-200 hover:bg-gray-200 cursor-pointer text-sm text-gray-500"
                             // onClick={() => moveItemToLeft(item.id)}
                         >
-                            
-                            <p dangerouslySetInnerHTML={{ __html: `${data?.generic_name} (${data.dose}) &bull; ${data.form} &bull; ${data.frequency}`}}></p>
+                            {console.log(data)}
+                            <p dangerouslySetInnerHTML={{ __html: `${data?.medicine?.generic_name} (${data?.dose}) &bull; ${data?.form} &bull; ${data?.frequency}`}}></p>
                         </div>
                     ))}
                 </div>
