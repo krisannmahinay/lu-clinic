@@ -30,7 +30,7 @@ const DoctorRequest = () => {
                                 <input
                                     type="search"
                                     value={context?.state.searchMedicine}
-                                    onChange={(e) => context?.onChange({type:'searchMedQuery', value:e})}
+                                    onChange={(e) => context?.onChange({type:'searchMedQuery', value:e.target.value})}
                                     placeholder="Search..."
                                     className="p-1 w-full border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
                                 />
