@@ -50,8 +50,9 @@ const Module = () => {
                 
                     const baseClasses = 'flex items-center py-[4px] my-1 px-2 cursor-pointer rounded-lg text-sm'
                     const activeClasses = 'bg-[#5e6064] text-[#fff]'
-                    const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#fff] text-[#c2c7d0]'
+                    const inactiveClasses = 'hover:bg-[#485159] hover:text-[#fff] text-[#c2c7d0]'
                     const subModuleClasses = item.module?.type === 'sub' ? 'pl-6' : ''
+                    
 
                     return (
                         // console.log(item)
@@ -122,7 +123,7 @@ const Module = () => {
                                             <div
                                                 className={`${router.pathname.startsWith(`/${item.module?.module_id}`)
                                                         ? 'bg-[#5e6064] cursor-pointer text-[#fff] rounded-lg text-sm ' 
-                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] cursor-pointer text-[#c2c7d0] rounded-lg text-sm' }
+                                                        : 'hover:bg-[#485159] hover:text-[#fff] cursor-pointer text-[#c2c7d0] rounded-lg text-sm' }
                                                         ${item.module?.type === 'sub' ? 'pl-9' : ''} flex items-center py-[5px] my-1 px-2`}>
                                                 <svg 
                                                     className="" 
