@@ -136,9 +136,23 @@ const PatientInformation = () => {
             case 'gender':
             case 'civil_status':
             case 'contact_no':
+            case 'street':
+            case 'no_blk_lot':
+            case 'nationality':
+            case 'religion':
+            case 'occupation':
+            case 'employer_name':
+            case 'employer_address':
+            case 'employer_contact':
+            case 'father_name':
             case 'father_address':
+            case 'father_contact':
+            case 'mother_name':
             case 'mother_address':
+            case 'mother_contact':
+            case 'spouse_name':
             case 'spouse_address':
+            case 'spouse_contact':
                 setFormData((prev) => ({
                     ...prev,
                     [data.type]: data.value
@@ -150,7 +164,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        father_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}` || ""
+                        father_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}`
                     }))
                 } else {
                     setFormData((prev) => ({...prev, father_address: ''}))
@@ -162,7 +176,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        mother_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}` || ""
+                        mother_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}`
                     }))
                 } else {
                     setFormData((prev) => ({...prev, mother_address: ''}))
@@ -174,7 +188,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        spouse_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}` || ""
+                        spouse_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}`
                     }))
                 } else {
                     setFormData((prev) => ({...prev, spouse_address: ''}))
@@ -244,7 +258,11 @@ const PatientInformation = () => {
                 mother_contact: profileData.mother_contact || "",
                 spouse_name: profileData.spouse_name || "",
                 spouse_address: profileData.spouse_address || "",
-                spouse_contact: profileData.spouse_contact || ""
+                spouse_contact: profileData.spouse_contact || "",
+                occupation: profileData.occupation || "",
+                employer_name: profileData.employer_name || "",
+                employer_address: profileData.employer_address || "",
+                employer_contact: profileData.employer_contact || ""
             })
         }
 
@@ -583,6 +601,7 @@ const PatientInformation = () => {
                             <input
                                 title="My Address"
                                 type="checkbox"
+                                onBlur={handleBlur}
                                 checked={!!addressTickBox.fatherAddressTick}
                                 onChange={(e) => handleOnChange({type: "tick_father_address", value:e.target.checked})}
                                 className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1"
@@ -638,6 +657,7 @@ const PatientInformation = () => {
                             <input
                                 title="My Address"
                                 type="checkbox"
+                                onBlur={handleBlur}
                                 checked={!!addressTickBox.motherAddressTick}
                                 onChange={(e) => handleOnChange({type: "tick_mother_address", value:e.target.checked})}
                                 className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1"
@@ -693,7 +713,8 @@ const PatientInformation = () => {
                             <input
                                 title="My Address"
                                 type="checkbox"
-                                checked={!!addressTickBox.spouseAddressTick}
+                                onBlur={handleBlur}
+                                checked={!!addressTickBox.spouseAddressTick || profileData?.spouse_address !== null ? addressTickBox.spouseAddressTick : ""}
                                 onChange={(e) => handleOnChange({type: "tick_spouse_address", value:e.target.checked})}
                                 className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1"
                             />
@@ -715,6 +736,12 @@ const PatientInformation = () => {
                         />
                     </div>
                 </div>
+
+                <div>
+                    <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Patient Information</h3>
+                    <hr className="drop-shadow-md pb-5"/>
+                </div>
+
             </div>
         </div>
     )
