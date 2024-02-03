@@ -25,27 +25,43 @@ import {
     useGetMedicationListQuery,
     useGetImgResultListQuery,
     useGetLabResultListQuery,
+    useGetNurseNoteListQuery,
+    useAutoSaveDataMutation
 } from '@/service/patientService'
 import { 
     useGetModuleListQuery,
     useCreateBulkMutation,
     useUpdateBulkMutation
 } from '@/service/settingService'
+import { 
+    useGetProvinceDataQuery, 
+    useGetMunicipalityDataQuery, 
+    useGetBarangayDataQuery 
+} from '@/service/psgcService'
 
 import Tabs from '@/components/Tabs'
 import Alert from '@/components/Alert'
 import Soap from '@/components/Patient/OPD/Soap'
 import LabResult from '@/components/Patient/OPD/LabResult'
 import ImagingResult from '@/components/Patient/OPD/ImagingResult'
-import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+// import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+import PatientInformation from '@/components/Patient/PatientInformation'
 import Prescription from '@/components/Patient/OPD/Prescription'
 // import Prescription from '@/components/Prescription'
 import ProfileInformation from '@/components/ProfileInformation'
 import Profile from '@/components/Profile'
 import { generateOpdForms, generateIpdForms } from '@/utils/forms' 
 import SkeletonScreen from '@/components/SkeletonScreen'
-import { ComponentContext, FormContext, ModalContext, TableContext } from '@/utils/context'
+import { ComponentContext, FormContext, ModalContext, PdfContext, TableContext, useComponentContext } from '@/utils/context'
 import DoctorRequest from '@/components/Patient/OPD/DoctorRequest'
+import PdfGenerator from '@/components/PdfGenerator'
+import MedicalHistory from '@/components/Patient/IPD/MedicalHistory'
+import DoctorOrder from '@/components/Patient/IPD/DoctorOrder'
+import NurseNote from '@/components/Patient/IPD/NurseNote'
+import HealthMonitor from '@/components/HealthMonitor'
+import VitalSign from '@/components/Patient/OPD/VitalSign'
+import MedicationSheet from '@/components/Patient/IPD/MedicationSheet'
+import AutoSaveSpinner from '@/components/AutoSaveSpinner'
 
 
 const dummyData = [
@@ -91,6 +107,7 @@ const useRenderCount = () => {
 
 const SubModule = () => {
     // useRenderCount()
+    const componentContext = useComponentContext()
     const formRef = useRef(null)
     const router = useRouter()
     const { slug } = router.query
@@ -120,12 +137,13 @@ const SubModule = () => {
     const [testsData, setTestsData] = useState({})
     const [openCategory, setOpenCategory] = useState(null)
     const [drRequestForms, setDrRequestForms] = useState([])
+    const [autoSaveLoader, setAutoSaveLoader] = useState(false)
 
     // medications
     const [isShowMedForm, setIsShowMedForm] = useState(false)
     const [addedMedicine, setAddedMedicine] = useState([])
     const [selectedMedicine, setSelectedMedicine] = useState(null)
-    
+    const [modalType, setModalType] = useState("")
 
     const [pageTitle, setPageTitle] = useState("")
     const [alertType, setAlertType] = useState("")
@@ -138,49 +156,177 @@ const SubModule = () => {
     const [drRequestBtnEbled, setDrRequestBtnEnabled] = useState(false)
     const [floatAccessBtn, setFloatAccessBtn] = useState(false)
 
-    const [enableQuery, setEnableQuery] = useState({
-        opd: false
+    const [provinceCode, setProvinceCode] = useState(null)
+    const [municipalCode, setMunicipalCode] = useState(null)
+    
+    const currentDate = new Date()
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const formattedCurrentDate = `${currentDate.getDate().toString().padStart(2, '0')} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
+    const [displayedDateTime, setDisplayedDateTime] = useState(formattedCurrentDate)
+    const [lastAddedDate, setLastAddedDate] = useState(formattedCurrentDate)
+    const [hour, setHour] = useState('')
+    const [pulseRate, setPulseRate] = useState('')
+    const [temperature, setTemperature] = useState('')
+    const [respiratoryRate, setRespiratoryRate] = useState('')
+    const [chartData, setChartData] = useState({
+        labels: [],
+        datasets: [
+            { label: 'Respiratory Rate', data: [], borderColor: '#FF5733', backgroundColor: 'rgba(255, 87, 51, 0.2)' },
+            { label: 'Pulse Rate', data: [], borderColor: '#33FF57', backgroundColor: 'rgba(51, 255, 87, 0.2)' },
+            { label: 'Temperature', data: [], borderColor: '#3357FF', backgroundColor: 'rgba(51, 87, 255, 0.2)' }
+        ]
+    })
+
+    const handleClearData = () => {
+        setChartData({
+            labels: [],
+            datasets: [
+                { label: 'Respiratory Rate', data: [], borderColor: '#FF5733', backgroundColor: 'rgba(255, 87, 51, 0.2)' },
+                { label: 'Pulse Rate', data: [], borderColor: '#33FF57', backgroundColor: 'rgba(51, 255, 87, 0.2)' },
+                { label: 'Temperature', data: [], borderColor: '#3357FF', backgroundColor: 'rgba(51, 87, 255, 0.2)' }
+            ]
+        })
+    }
+
+    const handleAddData = () => {
+        let newLabels = [...chartData.labels];
+        let newDataset0Data = [...chartData.datasets[0].data]
+        let newDataset1Data = [...chartData.datasets[1].data]
+        let newDataset2Data = [...chartData.datasets[2].data]
+
+        // If date has changed and hasn't been filled in with new 24-hour set, do so.
+        if (/*displayedDateTime !== lastAddedDate &&*/ newLabels.length === 0) {
+            for (let i = 0; i < 24; i++) {
+                newLabels.push(i.toString().padStart(2, '0'))
+                newDataset0Data.push(null)
+                newDataset1Data.push(null)
+                newDataset2Data.push(null)
+            }
+            setLastAddedDate(displayedDateTime) // Update the last added date.
+        }
+        // const currentHourIndex = parseInt(hour.split(":")[0])
+        const currentHourIndex = parseInt(hour.slice(0, 2))
+        newDataset0Data[currentHourIndex] = respiratoryRate
+        newDataset1Data[currentHourIndex] = pulseRate
+        newDataset2Data[currentHourIndex] = temperature
+
+        setChartData({
+            ...chartData,
+            labels: newLabels,
+            datasets: [
+                { ...chartData.datasets[0], data: newDataset0Data },
+                { ...chartData.datasets[1], data: newDataset1Data },
+                { ...chartData.datasets[2], data: newDataset2Data }
+            ]
+        })
+
+        // setChartData(prevData => ({
+        //     ...prevData,
+        //     labels: [...prevData.labels, hour],
+        //     datasets: [
+        //         { ...prevData.datasets[0], data: [...prevData.datasets[0].data, respiratoryRate] },
+        //         { ...prevData.datasets[1], data: [...prevData.datasets[1].data, pulseRate] },
+        //         { ...prevData.datasets[2], data: [...prevData.datasets[2].data, temperature] }
+        //     ]
+        // }))
+    }
+
+    const moduletest = componentContext?.state?.module ?? "testModule"
+    console.log(moduletest)
+    
+    const [autoSaveData] = useAutoSaveDataMutation()
+    const { data: provinceData } = useGetProvinceDataQuery()
+    const { data: municipalityData } = useGetMunicipalityDataQuery({
+        provinceCode: provinceCode || profileData?.user_data_info?.province
+    }, {
+        enabled: !!provinceCode || !!profileData?.user_data_info?.province
+    })
+    const { data: barangayData } = useGetBarangayDataQuery({
+        municipalCode: municipalCode || profileData?.user_data_info?.municipality
+    }, {
+        enabled: !!municipalCode || !!profileData?.user_data_info?.municipality
+    })
+
+    const { data: medicineList, refetch: medicineRefetch } = useGetMedicineListQuery({
+        keywords: searchMedicine,
+    }, {
+        enabled: !!searchMedicine
     })
     
-    const { isLoading: moduleListLoading} = useGetModuleListQuery()
+    const { 
+        isLoading: moduleListLoading
+    } = useGetModuleListQuery()
 
-    const { data: patientList, isLoading: patientListLoading, isError: userErr,  isSuccess: patientSuccess } = useGetPatientListQuery(
-        {
-            slug: slug,
-            items: itemsPerPage,
-            page: currentPage,
-            keywords: searchQuery,
-            patientType: 'opd'
-        }, {
-            enabled: !!searchQuery && !!itemsPerPage
-        }
-    )
+    const { 
+        data: patientList, 
+        isLoading: patientListLoading, 
+        refetch: refetchPatientData,
+        isError: userErr,  
+        isSuccess: patientSuccess 
+    } = useGetPatientListQuery({
+        slug: slug,
+        items: itemsPerPage,
+        page: currentPage,
+        keywords: searchQuery,
+        patientType: 'opd'
+    }, {
+        enabled: !!searchQuery && !!itemsPerPage
+    })
 
-    const [createBulk, { isLoading: createBulkLoading, isSuccess: createUserSuccess }] = useCreateBulkMutation()
-    const [updateBulk, {isLoading: updateBulkLoading}] = useUpdateBulkMutation()
+    const {data: nurseNoteList} = useGetNurseNoteListQuery({
+        patient_id: profileData?.patient_id
+    })
 
-    const { data: activeBedList } = useGetActiveBedListQuery(undefined, {skip: !refetchRTK})
-    const { data: physicianList } = useGetPhysicianListQuery(undefined, {skip: !refetchRTK})
-    const { data: icd10List } = useGetIcd10ListQuery(undefined, {skip: !refetchRTK})
-    const { data: medicationList, refetch: medicationRefetch } = useGetMedicationListQuery({
+    // console.log(nurseNoteList)
+
+    const [
+        createBulk, {
+            isLoading: createBulkLoading, 
+            isSuccess: createUserSuccess 
+        }] = useCreateBulkMutation()
+    
+    const [
+        updateBulk, {
+            isLoading: updateBulkLoading
+        }] = useUpdateBulkMutation()
+
+    const { 
+        data: activeBedList 
+    } = useGetActiveBedListQuery(undefined, {skip: !refetchRTK})
+
+    const { 
+        data: physicianList 
+    } = useGetPhysicianListQuery(undefined, {skip: !refetchRTK})
+    
+    const { 
+        data: icd10List 
+    } = useGetIcd10ListQuery(undefined, {skip: !refetchRTK})
+    
+    const { 
+        data: medicationList, 
+        refetch: medicationRefetch 
+    } = useGetMedicationListQuery({
         keywords: searchMedicine,
         patient_id: profileData?.patient_id
     }, {
         enabled: !!searchMedicine,
     })
-    const { data: imgResultList } = useGetImgResultListQuery(
-        {
-            slug: 'imaging', 
-            patient_id: profileData?.patient_id 
-        }
-    )
+
+    const { 
+        data: imgResultList 
+    } = useGetImgResultListQuery({
+        slug: 'imaging', 
+        patient_id: profileData?.patient_id 
+    })
     
-    const { data: labResultList } = useGetLabResultListQuery(
-        { 
-            slug: 'laboratory', 
-            patient_id: profileData?.patient_id 
-        }
-    )
+    const { 
+        data: labResultList,
+        refetch: labResultRefetch 
+    } = useGetLabResultListQuery({ 
+        slug: 'laboratory', 
+        patient_id: profileData?.patient_id 
+    })
+
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
     const { data: radiologyList } = useGetRadiologyListQuery()
@@ -205,21 +351,12 @@ const SubModule = () => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
     }
-
-    // const panthologyCategoryListData = pathologyCategoryList?.map(el => el.category_name)
-
-    // console.log(patientList)
-    // console.log(profileData)
-
     const formatTitlePages = (str) => {
         return str
             .split('-')
             .map(part => part.charAt(0).toUpperCase() + part.slice(1))
             .join(' ')
     }
-
-    // const initialOpdForms = useMemo(() => generateOpdForms(physicianList), [physicianList])
-    // console.log(initialOpdForms)
 
     useEffect(() => {
         if(pathologyCategoryList && pathologyList) {
@@ -254,12 +391,22 @@ const SubModule = () => {
             }, 500)
         }
 
+        let autoSaveSpinner
+        if(autoSaveLoader) {
+            autoSaveSpinner = setTimeout(() => {
+                setAutoSaveLoader(false)
+            }, 1500)
+        }
+
         if(slug) {
             setPageTitle(formatTitlePages(slug))
-            setEnableQuery(prev => ({
-                ...prev,
-                opd: true
-            }))
+        }
+        
+        let timerAlertMessage
+        if(alertMessage) {
+            timerAlertMessage = setTimeout(() => {
+                setAlertMessage("")
+            }, 3000)
         }
 
         const calculateHeight = () => {
@@ -271,78 +418,50 @@ const SubModule = () => {
         // Recalculate height on window resize
         window.addEventListener('resize', calculateHeight)
         return () => {
-            if(spinnerTimer) {
-                clearTimeout(spinnerTimer)
-            }
+            if(spinnerTimer) { clearTimeout(spinnerTimer) } 
+            if(timerAlertMessage) { clearTimeout(timerAlertMessage) }
+            if(autoSaveSpinner) { clearTimeout(autoSaveSpinner) }
             window.removeEventListener('resize', calculateHeight)
         }
-    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList])
+    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList, autoSaveLoader])
 
-    // useEffect(() => {
-    //     if(physicianList) {
-    //         const opd = generateOpdForms(physicianList)
-    //         setOpdForms(opd)
-    //     }
-
-    //     if(physicianList && activeBedList) {
-    //         const ipd = generateIpdForms(physicianList, activeBedList)
-    //         setIpdForms(ipd)
-    //     }
-
-    //     let spinnerTimer
-    //     if(btnSpinner) {
-    //         spinnerTimer = setTimeout(() => {
-    //             setBtnSpinner(false)
-    //         }, 500)
-    //     }
-
-    //     return () => {
-    //         if(spinnerTimer) {
-    //             clearTimeout(spinnerTimer)
-    //         }
-    //     }
-
-    // }, [btnSpinner, physicianList])
-
-    const organizedData = {}
-
-    pathologyList?.forEach(item => {
-        const category = item.panthology_category?.category_name || 'unknown'
-        if(!organizedData[category]) {
-            organizedData[category] = []
-        }
-
-        organizedData[category].push({
-            id: item.id,
-            type: category,
-            name: item.test_name
-        })
-    })
-
-    const resultData = Object.keys(organizedData).map(category => ({
-        [category]: organizedData[category]
-    }))
-
-    const handleExportToPDF = () => {
-        
-    }
+    
     const handleItemsPerPageChange = (e) => {
         setItemsPerPage(e.target.value)
     }
 
-    const handleCurrentPage = (page) => {
-        setCurrentPage(page)
-    }
+    const handleOnChange = (data) => {
+        switch(data.type) {
+            case 'province':
+                setProvinceCode(data.value)
+                break
 
-    const handleOnChange = (type, data) => {
-        switch(type) {
+            case 'municipality':
+                setMunicipalCode(data.value)
+                break
+
             case 'newPage':
-                setCurrentPage(data)
+                setCurrentPage(data.value)
                 break
             
             case 'searchMedQuery':
-                setSearchMedicine(data.target.value)
+                setSearchMedicine(data.value)
                 break
+
+            case 'temp':
+                setTemperature(data.value)
+                break
+
+            case 'pr':
+                setPulseRate(data.value)
+                break
+
+            case 'rr':
+                setRespiratoryRate(data.value)
+                break
+
+            case 'hour':
+                setHour(data.value)
             
             default:
                 break
@@ -357,16 +476,39 @@ const SubModule = () => {
 
     const handleOnClose = (data) => {
         if(data === 'backToList') {
+            setAddedMedicine([])
             setSelectedMedicine(null)
             setIsShowMedForm(false)
             setAlertMessage("")
         } else if(data === 'closeMenu') {
             setIsDrDrawerOpen(false)
+        } else if(data === 'closeDrawer') {
+            setActiveContent("yellow")
+            setProfileData({})
+            // provinceData
+            // municipalityData
+            // barangayData
+        }
+    }
+
+    const handleCheckPatient = (data) => {
+        if(data.checked) {
+            setProfileData(data.data)
+        } else {
+            setProfileData([])
         }
     }
 
     const handleOnClick = (type, data) => {
         switch(type) {
+            case 'printPhilhealthCf1':
+                formRef.current.handleGeneratePDF('print-phealth-cf1')
+                break
+
+            case 'printPrescription':
+                formRef.current.handleGeneratePDF('print-prescription')
+                break
+
             case 'addRowBtn':
                 formRef.current.handleAddRow()
                 break
@@ -390,12 +532,6 @@ const SubModule = () => {
                 setProfileData(data)
                 setActiveContent("green")
                 setContentType("tableRow")
-
-                // query
-                setEnableQuery(prev => ({
-                    ...prev,
-                    opd: !prev.opd
-                }))
                 break
 
             default:
@@ -404,17 +540,17 @@ const SubModule = () => {
     }
 
     const handleSubmitButton = (slug) => {
-        console.log(slug)
         if(slug === 'out-patient') {
             formRef.current.handleSubmit('createOutPatient')
         } else if (slug === 'in-patient') {
-
+            formRef.current.handleSubmit('createInPatient')
         } else if(slug === 'doctor-request') {
             createBulk({actionType: 'createDoctorRequest', data: drRequestForms})
                 .unwrap()
                 .then(response => {
                     if(response.status === "success") {
                         setBtnSpinner(true)
+                        labResultRefetch()
                     }
                 })
                 .catch(error => {
@@ -425,31 +561,49 @@ const SubModule = () => {
                     }
                 })
         } else if(slug.link === 'add-medicine') {
-            if (slug.qty > selectedMedicine?.medicine.quantity) {
-                setAlertMessage(`Please refer to available stock (${selectedMedicine?.medicine.quantity})`)
+            if (slug.qty > selectedMedicine?.medicine?.quantity || slug.qty > selectedMedicine?.quantity) {
+                setAlertMessage(`Please refer to available stock (${selectedMedicine?.medicine?.quantity || selectedMedicine?.quantity})`)
             } else {
-                updateBulk({actionType: 'updateMedication', data: selectedMedicine, id: slug.id})
-                    .unwrap()
-                    .then(response => {
-                        if(response.status === "success") {
-                            setBtnSpinner(true)
-                        }
-                    })
-                    .catch(error => {
-                        //  console.log(error)
-                    })
-
-                setAddedMedicine((current) => [
-                    ...current, 
-                    selectedMedicine
-                ])
-                setIsShowMedForm(false)
+                if(slug.medication !== null) {
+                    const data = slug.medication
+                    const patientId = profileData?.patient_id
+                    const physicianId = profileData?.admitting_physician
+                    createBulk({data:{data, patientId, physicianId},actionType: 'createPrescription'})
+                        .unwrap()
+                        .then(response => {
+                            if(response.status === "success") {
+                                medicationRefetch()
+                                medicineRefetch()
+                            }
+                        })
+                        .catch(error => {
+                             console.log(error)
+                        })
+                    setAddedMedicine((current) => [
+                        ...current, 
+                        selectedMedicine
+                    ])
+                    setIsShowMedForm(false)
+                } else {
+                    updateBulk({actionType: 'updateMedication', data: selectedMedicine, id: slug.id})
+                        .unwrap()
+                        .then(response => {
+                            if(response.status === "success") {
+                                setBtnSpinner(true)
+                            }
+                        })
+                        .catch(error => {
+                            //  console.log(error)
+                        })
+    
+                    setAddedMedicine((current) => [
+                        ...current, 
+                        selectedMedicine
+                    ])
+                    setIsShowMedForm(false)
+                }
             }
         }
-    }
-
-    const handleSearchMedQuery = (e) => {
-        setSearchMedicine(e.target.value)
     }
 
     const handleSearch = (e) => {
@@ -484,29 +638,77 @@ const SubModule = () => {
     }
 
     const handleModalState = (data) => {
-        setIsModalOpen(data)
+        setIsModalOpen(data.modalState)
+        setModalType(data.field?.modal_type)
+        if(data.type === 'dro') {
+            setIsDrDrawerOpen(true)
+            console.log(data.modalType)
+            setModalType(data.modalType)
+        } else if(data.type === 'nsn') {
+            setModalType(data.modalType)
+        }
     }
 
-    const handleFloatAccessBtn = (data) => {
-        setFloatAccessBtn(data)
+    const handleActiveTab = (id) => {
+        setActiveTab(id)
+    }
+
+    const handleAddMedicine = (e, fieldName) => {
+        setSelectedMedicine(prevData => ({
+            ...prevData,
+            [fieldName]: e.target.value
+        }))
+    }
+
+    const handleCheckBox = (data) => {
+        if(data.event) {
+            setDrRequestForms(prevForms => [...prevForms, {
+                patient_id: profileData?.patient_id,
+                physician_id: profileData?.admitting_physician,
+                test_id: data.type.id,
+                lab_category: data.category,
+                charge: data.type.charge
+
+            }])
+            setIsOptionDisabled(false)
+        } else {
+            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== data.type.id))
+            setIsOptionDisabled(true)
+        }
+    }
+
+    const handleAutoSave = (data) => {
+        autoSaveData({data:data.value, actionType:'updatePatientDetails', patient_id:profileData?.patient_id})
+            .unwrap()
+            .then(response => {
+                if(response.status === "success") {
+                    setAutoSaveLoader(true)
+                    refetchPatientData()
+                }
+            })
+            .catch(error => {
+                if(error.status === 500) {
+                    console.log(error)
+                }
+            })
     }
 
     const tabsConfig = [{
             id: 'tab1',
             label: 'Patient Information and Consent',
             content: () => (
-                <PatientInformation
-                    patientDataMaster={profileData}
-                    icd10Data={icd10List}
-                    onModalState={handleModalState}
-                />
+                <div></div>
+                // <PatientInformation
+                //     patientDataMaster={profileData}
+                //     icd10Data={icd10List}
+                //     onModalState={handleModalState}
+                // />
             ) 
         }, {
             id: 'tab2',
             label: 'S.O.A.P',
             content: () => <Soap 
                                 id="tab2"
-                                onSetFloatAccessBtn={handleFloatAccessBtn}
                                 onClick={() => {
                                     setIsDrDrawerOpen(true)
                                     setDrRequestForms([])
@@ -542,33 +744,86 @@ const SubModule = () => {
         }
     ]
 
-    const handleActiveTab = (id) => {
-        setActiveTab(id)
-    }
+    
+    // console.log(barangayData)
+    const tabsConfigIpd = [
+        {
+            id: 'tab1',
+            label: 'Patient Information and Consent',
+            content: () => (
+                <ComponentContext.Provider value={{
+                    state: {
+                        provinceData: provinceData,
+                        profileData: profileData,
+                        municipalityData: municipalityData,
+                        barangayData: barangayData
+                    },
+                    onChange:(data) => handleOnChange(data),
+                    onAutoSave: (data) => handleAutoSave(data)
+                }}>
+                    <PatientInformation />
+                </ComponentContext.Provider>
+                // <PatientInformation
+                //     patientDataMaster={profileData}
+                //     icd10Data={icd10List}
+                //     onModalState={handleModalState}
+                // />
+            )
+        }, {
+            id: 'tab2',
+            label: 'Medical History',
+            content: () => 
+                <MedicalHistory />
+        }, {
+            id: 'tab3',
+            label: 'Laboratory Results',
+            content: () => 
+                <LabResult
+                    tableData={labResultList} 
+                    tableHeader={labResultList.length > 0 ? Object.keys(labResultList[0]) : []} 
+                />
+        }, {
+            id: 'tab4',
+            label: 'Imaging Results',
+            content: () => 
+                <ImagingResult
+                    tableData={imgResultList} 
+                    tableHeader={imgResultList.length > 0 ? Object.keys(imgResultList[0]) : []} 
+                />
+        }, {
+            id: 'tab5',
+            label: 'Doctors Orders',
+            content: () => 
+                <DoctorOrder onModalState={handleModalState}/>
+        }, {
+            id: 'tab6',
+            label: 'Monitoring Sheets',
+            content: () => 
+                <HealthMonitor
+                    onInputtedTemp={(data) => setTemperature(data)} 
+                    onInputtedRR={(data) => setRespiratoryRate(data)} 
+                    onInputtedPR={(data) => setPulseRate(data)} 
+                    onSetHour={(data) => setHour(data)}  
+                    onAddData={() => handleAddData()}
+                    onClearData={() => handleClearData()}
+                    data={chartData}
+                />
 
-    const handleAddMedicine = (e, fieldName) => {
-        setSelectedMedicine(prevData => ({
-            ...prevData,
-            [fieldName]: e.target.value
-        }))
-    }
-
-    const handleCheckBox = (data) => {
-        if(data.event) {
-            setDrRequestForms(prevForms => [...prevForms, {
-                patient_id: profileData?.patient_id,
-                physician_id: profileData?.admitting_physician,
-                test_id: data.type.id,
-                lab_category: data.category,
-                charge: data.type.charge
-
-            }])
-            setIsOptionDisabled(false)
-        } else {
-            setDrRequestForms(prevForms => prevForms.filter(form => form.test_id !== data.type.id))
-            setIsOptionDisabled(true)
+        }, {
+            id: 'tab7',
+            label: 'Nurses Notes',
+            content: () => 
+                <NurseNote 
+                    data={nurseNoteList}
+                    onModalState={handleModalState}
+                />
+        }, {
+            id: 'tab8',
+            label: 'Medication Sheet',
+            content: () => 
+                <MedicationSheet />
         }
-    }
+    ]
 
     const renderContent = (slug) => {
         switch(slug) {
@@ -580,15 +835,47 @@ const SubModule = () => {
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                         <div className="font-medium text-xl mb-2 text-gray-600">In Patient</div>
                             <div className="flex justify-between py-1">
-                                <Button
-                                    btnIcon="add"
-                                    onClick={() => {
-                                        handleActiveContent('addRow', '')
-                                        setRefetchRTK(true)
-                                    }}
-                                >
-                                Add
-                                </Button>
+                                <div className="flex space-x-1">
+                                    <Button
+                                        btnIcon="add"
+                                        onClick={() => {
+                                            handleActiveContent('addRow', '')
+                                            setRefetchRTK(true)
+                                        }}
+                                    >
+                                    Add
+                                    </Button>
+
+                                    <Dropdown
+                                        align="left"
+                                        width="48"
+                                        trigger={
+                                            <button onClick="" className={`${isOptionDisabled ? 'bg-gray-300' : 'bg-indigo-500 hover:bg-indigo-600'} flex items-center text-white text-sm px-2 gap-2 rounded focus:outline-none`} disabled={isOptionDisabled}>
+                                                <svg dataSlot="icon" fill="none" className="h-4 w-4" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                                </svg>
+
+                                                Options
+                                            </button>
+                                        }>
+
+                                        <PdfContext.Provider value={{
+                                            state: {
+                                                pdfCategory: 'print-phealth-cf1',
+                                                title: 'PHILHEALTH CF1',
+                                                isOptionEditDisabled: isOptionEditDisabled
+                                            },
+                                            data: {
+                                                profileData: profileData
+                                            },
+                                            ref: formRef,
+                                            onClick: () => handleOnClick('printPhilhealthCf1'),
+                                        }}>
+                                            <PdfGenerator />
+                                        </PdfContext.Provider>
+                                    </Dropdown>
+                                </div>
+                                
 
                                 <SearchExport>
                                     <div className="flex items-center">
@@ -630,22 +917,18 @@ const SubModule = () => {
                             
                             <div className="bg-white overflow-hidden border border-gray-300 rounded">
                                 <TableContext.Provider value={{
+                                    state: {
+                                        type: 'inpatient'
+                                    },
                                     tableData: patientData,
-                                    tableHeader: header
+                                    tableHeader: header,
+                                    onChecked: handleOnChecked,
+                                    onClick: handleOnClick,
+                                    onEdit: handleOnEdit,
+                                    onCheckPatient: handleCheckPatient
                                 }}>
                                     <Table />
                                 </TableContext.Provider>
-
-                                {/* <Table
-                                    tableHeader={header}
-                                    tableData={patientData}
-                                    isLoading={patientListLoading}
-                                    onChecked={(data) => handleOnchecked(data)}
-                                    onClick={(data) => handleOnclick('clickedRowIPD', data)}
-                                    onEdit={(id) => setCheckIds(id)} 
-                                /> */}
-
-                                
                             </div>
 
                             <div className="flex flex-wrap py-1">
@@ -654,7 +937,7 @@ const SubModule = () => {
                                         currentPage={currentPage} 
                                         totalPages={totalPages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleOnChange("newPage", newPage)}
+                                        onPageChange={(newPage) => handleOnChange({type:"newPage", value:newPage})}
                                     />
                                 </div>
 
@@ -673,7 +956,7 @@ const SubModule = () => {
                                 </ItemPerPage>
                             </div>
                         </div>
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
                                     <div className="font-bold text-lg mb-2 uppercase text-gray-600">Add In Patient</div>
@@ -681,7 +964,7 @@ const SubModule = () => {
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
-                                            onClick={() => setActiveContent("yellow")}
+                                            onClick={() => handleOnClose('closeDrawer')}
                                         >
                                             Close
                                         </Button>
@@ -698,17 +981,47 @@ const SubModule = () => {
                                         </div>
                                     </div>
 
-                                    <Form 
-                                        ref={formRef} 
-                                        initialFields={ipdForms}
-                                        onSuccess={handleRefetch}
-                                        onLoading={(data) => setBtnSpinner(data)}
-                                        onSetAlertType={(data) => setAlertType(data)}
-                                        onCloseSlider={() => setActiveContent("yellow")}
-                                        onSetAlertMessage={(data) => setAlertMessage(data)}
+                                    <FormContext.Provider value={{
+                                        ref: formRef,
+                                        initialFields: ipdForms,
+                                        onSuccess: handleRefetch,
+                                        onLoading: (data) => setBtnSpinner(data),
+                                        onSetAlertType: (data) => setAlertType(data),
+                                        onCloseSlider: () => setActiveContent("yellow"),
+                                        onSetAlertMessage: (data) => setAlertMessage(data) 
+                                    }}>
+                                        <Form />
+                                    </FormContext.Provider>
+                                </>
+                            )}
+
+                            {contentType === 'tableRow' && (
+                                <>
+                                    <div className="flex items-center py-2">
+                                        <Button
+                                            paddingY="2"
+                                            btnIcon="close"
+                                            onClick={() => {
+                                                setActiveContent("yellow")
+                                                setRefetchRTK(false)
+                                            }}
+                                            >
+                                            Close
+                                        </Button>
+
+                                        <div className="-space-x-5 border border-gray-300 rounded mb-2 w-full">
+                                            <Profile data={profileData}/>
+                                        </div>
+                                        
+                                    </div>
+
+
+                                    <Tabs
+                                        tabsConfig={tabsConfigIpd}
+                                        onActiveTab={(id) => handleActiveTab(id)}
                                     />
                                 </>
-                            )}             
+                            )}    
                         </div>
                     </div>
                 )
@@ -743,16 +1056,31 @@ const SubModule = () => {
                                                 Options
                                             </button>
                                         }>
-                                        <DropdownExport>
+
+                                        
+                                        <PdfContext.Provider value={{
+                                            state: {
+                                                pdfCategory: 'print-prescription',
+                                                title: 'Generate Prescription',
+                                                isOptionEditDisabled: isOptionEditDisabled
+                                            },
+                                            data: {
+                                                profileData: profileData,
+                                                testsData: labResultList,
+                                                medication: medicationList
+                                            },
+                                            ref: formRef,
+                                            onClick: () => handleOnClick('printPrescription'),
+                                        }}>
+                                            <PdfGenerator />
+                                        </PdfContext.Provider>
+                                        {/* <DropdownExport>
                                             Re-Visit
                                         </DropdownExport>
                                         <DropdownExport>
                                             Admit
-                                        </DropdownExport>
+                                        </DropdownExport> */}
                                     </Dropdown>
-
-                                    
-                                    
                                 </div>
 
                                 <SearchExport>
@@ -794,13 +1122,17 @@ const SubModule = () => {
 
                             <div className="bg-white overflow-hidden border border-gray-300 rounded">
                                 <TableContext.Provider value={{
+                                        state: {
+                                            type: 'outpatient'
+                                        },
                                         tableHeader: header,
                                         tableData: patientData,
                                         isLoading: patientListLoading,
                                         enableAddRow: true,
                                         onChecked: handleOnChecked,
                                         onClick: handleOnClick,
-                                        onEdit: handleOnEdit
+                                        onEdit: handleOnEdit,
+                                        onCheckPatient: handleCheckPatient
                                     }}>
                                         <Table />
                                 </TableContext.Provider>
@@ -812,7 +1144,7 @@ const SubModule = () => {
                                         currentPage={pagination.current_page} 
                                         totalPages={pagination.total_pages}
                                         // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleOnChange("newPage", newPage)}
+                                        onPageChange={(newPage) => handleOnChange({type:"newPage", value:newPage})}
                                     />
                                 </div>
 
@@ -918,6 +1250,8 @@ const SubModule = () => {
         }
     }
 
+    console.log(autoSaveLoader)
+    
     return (
         <AppLayout
             moduleId={slug}
@@ -929,11 +1263,35 @@ const SubModule = () => {
             
             <div className="container mx-auto">
                 <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+                    {autoSaveLoader && (
+                        <div className="flex justify-end w-full absolute inset-0 p-8 pt-[6rem] z-50">
+                            <AutoSaveSpinner />
+                        </div>
+                    )}
+
                     <ModalContext.Provider value={{
+                        state: {
+                            modalType: modalType,
+                            selectedMedicine: selectedMedicine,
+                            searchMedicine: searchMedicine,
+                            isShowMedForm: isShowMedForm,
+                            isDrDrawerOpen: isDrDrawerOpen,
+                            addedMedicine: addedMedicine,
+                            alertMessage: alertMessage,
+                            medicineList: medicineList,
+                            medication: medicationList,
+                            profileData: profileData,
+                            btnSpinner: btnSpinner
+                        },
                         isOpen: isModalOpen,
-                        onClose: closeModal
+                        onClose: closeModal,
+                        onClick: (data) => handleOnClose(data),
+                        onLoading: (data) => setBtnSpinner(data),
+                        onAddMedicine: (data) => handleAddMedicine(data.data, data.field), 
+                        onSubmitData: (data) => handleSubmitButton(data),
+                        onClickOpenMed: (data) => handleSelectMedicine(data.data), 
                     }}>
-                        <Modal />
+                        <Modal onSelectMedicine={handleSelectMedicine}/>
                     </ModalContext.Provider>
 
                     {alertMessage &&
