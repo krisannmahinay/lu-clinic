@@ -305,13 +305,7 @@ const Navigation = () => {
 
 
             <div className="sm:ml-64 top-0 bg-gray-100">
-                <ComponentContext.Provider value={{
-                    state: {
-                        userData: userData
-                    }
-                }}>
-                    <main>{context.children}</main>
-                </ComponentContext.Provider>
+                <main>{context.children}</main>
             </div>
         </>
     )
