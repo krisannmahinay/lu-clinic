@@ -38,7 +38,6 @@ import { ComponentContext } from '@/utils/context'
 const Navigation = () => {
     // props: user, children, moduleId, menuGroup
     const context = useContext(AppLayoutContext)
-
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
@@ -131,7 +130,7 @@ const Navigation = () => {
         setSidebarOpen(!sidebarOpen) 
     }
 
-    const userDetails = userData?.data[0] ?? []
+    // console.log(userData)
     
     const elapsedTime = (timestamp) => {
         const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
@@ -272,7 +271,7 @@ const Navigation = () => {
                                     width="48"
                                     trigger={
                                         <button className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
-                                            <div><ProfilePicture width={30} height={30} font={16} userDetails={userDetails}/></div>
+                                            <div><ProfilePicture width={30} height={30} font={16} userDetails={userData}/></div>
                                             <div className="ml-1">
                                                 <svg
                                                     className="fill-current h-4 w-4 text-white"
@@ -290,8 +289,8 @@ const Navigation = () => {
                                     {/* Authentication */}
                                     <div className="divide-y divide-gray-100">
                                         <div className="px-4 py-3" role="none">
-                                            <p className="text-sm text-gray-500" role="none">{userDetails?.identity?.first_name} {userDetails?.identity?.last_name}</p>
-                                            <p className="text-sm font-medium text-gray-500 truncate" role="none">{userDetails?.email}</p>
+                                            <p className="text-sm text-gray-500" role="none">{userData?.personal_information?.first_name} {userData?.personal_information?.last_name}</p>
+                                            <p className="text-sm font-medium text-gray-500 truncate" role="none">{userData?.email}</p>
                                         </div>
                                         <DropdownButton onClick={handleLogout}>
                                             Logout
@@ -306,7 +305,13 @@ const Navigation = () => {
 
 
             <div className="sm:ml-64 top-0 bg-gray-100">
-                <main>{context.children}</main>
+                <ComponentContext.Provider value={{
+                    state: {
+                        userData: userData
+                    }
+                }}>
+                    <main>{context.children}</main>
+                </ComponentContext.Provider>
             </div>
         </>
     )
