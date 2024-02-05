@@ -1,5 +1,13 @@
 import { createContext, useContext } from "react"
 
+export const PdfContext = createContext({
+    data: null,
+    state: null,
+    ref: null,
+    onClick: () => {},
+    onGeneratePdf: () => {}
+})
+
 export const ComponentContext = createContext({
     data: null,
     state: null,
@@ -9,6 +17,7 @@ export const ComponentContext = createContext({
     radiologyData: null,
     medicationData: null,
     isDrawerOpen: false,
+    onAutoSave: () => {},
     onAddMedicine: () => {},
     onChange: () => {},
     onClose: () => {},
@@ -16,12 +25,16 @@ export const ComponentContext = createContext({
     onClick: () => {},
     onClickOpenMed: () => {},
     onClickCloseMed: () => {},
-    onSubmitDrRequest: () => {}
+    onSubmitDrRequest: () => {},
+    onAddData: () => {},
+    onRemoveData: () => {},
+    onModalOpen: () => {}
     // onSet
 })
 
 export const FormContext = createContext({
     // PatientInformation component
+    state: null,
     data: null,
     provinceData: null,
     municipalityData: null,
@@ -48,21 +61,31 @@ export const FormContext = createContext({
 })
 
 export const TableContext = createContext({
+    state: null,
     // Table component
     tableHeader: null,
     tableData: null,
     isLoading: false,
+    // onSelectAll: () => {},
     onChecked: () => {},
     onClick: () => {},
     onEdit: () => {},
+    onCheckPatient: () => {}
 })
 
 export const ModalContext = createContext({
+    state: null,
     isOpen: false,
     isModalOpen: false,
-    onClose: () => {}
+    onLoading: () => {},
+    onClose: () => {},
+    onClick: () => {},
+    onClickBack: () => {},
+    onClickOpenMed: () => {},
+    onSubmitData: () => {}
 })
 
+export const usePdfContext = () => useContext(PdfContext)
 export const useFormContext = () => useContext(FormContext)
 export const useModalContext = () => useContext(ModalContext)
 export const useTableContext = () => useContext(TableContext)
