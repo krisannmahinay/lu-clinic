@@ -25,6 +25,7 @@ import { useSearchQuery } from "@/service/searchService"
 import { searchApi } from "@/service/searchService"
 import Prescription from "./Patient/OPD/Prescription"
 import Medication from "./Patient/IPD/Medication"
+import VitalSign from "./Patient/VitalSign"
 
 const genderOPD = [
     {value: "male", label: "Male", },
@@ -84,6 +85,10 @@ const bedRoomData = [
     {id:6, type: "bed", roomNo: 4, description: "Wider bed ", status: "occupied"}
 ]
 
+const nurseNoteField = [
+    {name: 'no_notes', type: 'textarea', label: 'Remarks', placeholder: 'Type...'},
+]
+
 const doctorOrderField = [
     {name: 'do_po_medication', type: 'text', label: 'Medication', placeholder: 'Type...'},
     {name: 'do_po_ivfluids', type: 'text', label: 'IV Fluids', placeholder: 'Type...'},
@@ -92,13 +97,23 @@ const doctorOrderField = [
     {name: 'do_po_instructions', type: 'textarea', label: 'Instructions', placeholder: 'Type...'},
 ]
 
+const vitalSignField = [
+    {name: 'vs_bp', type: 'text', label: 'Blood Pressure', placeholder: 'Systolic/Diastolic (e.g., 120/80 mmHg)'},
+    {name: 'vs_hr', type: 'text', label: 'Heart Rate', placeholder: '(e.g., 70-100 bpm)'},
+    {name: 'vs_temp', type: 'text', label: 'Temperature', placeholder: '(e.g., 36.5 °C)'},
+    {name: 'vs_o2sat', type: 'text', label: 'O2 Sat', placeholder: 'SpO2 (%)'},
+    {name: 'vs_height', type: 'text', label: 'Height', placeholder: '(cm)'},
+    {name: 'vs_weight', type: 'text', label: 'Weight', placeholder: '(kg)'},
+    {name: 'vs_bmi', type: 'text', label: 'BMI', disabled:true},
+]
+
 const ivFluidField = [
     {name: 'ivf_bottle_no', type: 'text', label: 'Bottle No', placeholder: 'Type...'},
     {name: 'ivf_type_iv', type: 'text', label: 'Type of IV and Drug Incorporated', placeholder: 'Type...'},
     {name: 'ivf_volumn_ml', type: 'text', label: 'Volume in ml', placeholder: 'Type...'},
     {name: 'ivf_rate_flow', type: 'text', label: 'Rate of Flow', placeholder: 'Type...'},
-    {name: 'ivf_date_time_start', type: 'text', label: 'Date/Time Started', placeholder: 'Type...', disabled: true},
-    {name: 'ivf_date_time_end', type: 'text', label: 'Date/Time Consumed', placeholder: 'Type...', disabled: true},
+    {name: 'ivf_date_time_start', type: 'datetime-local', label: 'Date/Time Started'},
+    {name: 'ivf_date_time_end', type: 'datetime-local', label: 'Date/Time Consumed'},
     {name: 'ivf_nurse_duty', type: 'text', label: 'Nurse on Duty', placeholder: 'Type...'},
     {name: 'ivf_remarks', type: 'textarea', label: 'Remarks', placeholder: 'Type...'},
 ]
@@ -140,6 +155,25 @@ const Modal = ({
         setSearchResults([])
         // setCheckedItem([])
         // setFormData({})
+    }
+
+    const handleSubmitButton = (type) => {
+        switch(type) {
+            case 'tab1':
+                formRef.current.handleSubmit('createNurseNote')
+                break
+            case 'tab2':
+                formRef.current.handleSubmit('createNurseIVF')
+                break
+            case 'tab3':
+                formRef.current.handleSubmit('createNurseMedication')
+                break
+            case 'tab4':
+                formRef.current.handleSubmit('createNurseVitalS')
+                break
+            default:
+                break
+        }
     }
 
     const handleSave = () => {
@@ -223,14 +257,17 @@ const Modal = ({
                         {context?.state?.modalType === 'nurses-notes' && (
                             <div className="flex justify-items-center border-gray-300">
                                 <div className="rounded-tl-lg ml-3">
-                                    <button onClick={() => setActiveTab('tab1')} className={`${activeTab === 'tab1' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                    <button onClick={() => setActiveTab('tab1')} className={`${activeTab === 'tab1' ? 'bg-gray-200 rounded-md' : ''} hover:bg-gray-200 p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
                                         Notes
                                     </button>
-                                    <button onClick={() => setActiveTab('tab2')} className={`${activeTab === 'tab2' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                    <button onClick={() => setActiveTab('tab2')} className={`${activeTab === 'tab2' ? 'bg-gray-200 rounded-md' : ''} hover:bg-gray-200 p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
                                         IV Fluids
                                     </button>
-                                    <button onClick={() => setActiveTab('tab3')} className={`${activeTab === 'tab3' ? 'bg-gray-200 rounded-md' : ''} p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                    <button onClick={() => setActiveTab('tab3')} className={`${activeTab === 'tab3' ? 'bg-gray-200 rounded-md' : ''} hover:bg-gray-200 p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
                                         Medication
+                                    </button>
+                                    <button onClick={() => setActiveTab('tab4')} className={`${activeTab === 'tab4' ? 'bg-gray-200 rounded-md' : ''} hover:bg-gray-200 p-2 rounded-sm text-xs uppercase font-medium text-gray-500`}>
+                                        Vital Sign
                                     </button>
                                 </div>
                             </div>
@@ -250,7 +287,7 @@ const Modal = ({
                         </button>
                     </div>
                     
-                    <div className={`p-4 md:p-5 space-y-1 scroll-custom overflow-y-auto ${searchResults.length > 0 ? 'h-[30rem]' : ''}`}>
+                    <div className={`p-2 md:p-5 space-y-1 scroll-custom overflow-y-auto ${searchResults.length > 0 ? 'h-[30rem]' : ''}`}>
                     {/* <div className="p-4 md:p-5 space-y-1 scroll-custom" style={{ height: `${contentHeight}px`, overflowY: 'auto' }}> */}
                         {isLoading ? (
                             <div className="p-10 flex justify-center">
@@ -259,7 +296,6 @@ const Modal = ({
                                 </svg>
                             </div>
                         ) : (
-                            
                             searchResults.length > 0 ? (
                                 context?.state.modalType === 'icd-codes' && (
                                     searchResults.map((item, index) => (
@@ -298,21 +334,31 @@ const Modal = ({
                                     </FormContext.Provider>
                                 ) : context?.state?.modalType === 'nurses-notes' ? (
                                     activeTab === 'tab1' ? (
-                                        <textarea 
-                                            type="text" 
-                                            name="no_notes" 
-                                            placeholder="Type..." 
-                                            // onClick={() => handleClickedPO("po")}
-                                            className="border-none h-32 w-full focus:border-gray-500 text-xs focus:outline-none" 
-                                        />
+                                        <FormContext.Provider value={{
+                                            ref: formRef,
+                                            initialFields: nurseNoteField,
+                                            onLoading: (data) => context?.onLoading(data)
+                                        }}>
+                                            <Form />
+                                        </FormContext.Provider>
                                     ) : activeTab === 'tab2' ? (
                                         <FormContext.Provider value={{
-                                            initialFields: ivFluidField
+                                            ref: formRef,
+                                            initialFields: ivFluidField,
+                                            onLoading: (data) => context?.onLoading(data)
                                         }}>
                                             <Form />
                                         </FormContext.Provider>
                                     ) : activeTab === 'tab3' ? (
                                         <Medication />
+                                    ) : activeTab === 'tab4' ? (
+                                        <FormContext.Provider value={{
+                                            ref: formRef,
+                                            initialFields: vitalSignField,
+                                            onLoading: (data) => context?.onLoading(data)
+                                        }}>
+                                            <Form />
+                                        </FormContext.Provider>
                                     ) : ''
                                 ) : (
                                     <span>No Records Found</span>
@@ -321,9 +367,28 @@ const Modal = ({
                         )}
                     </div>
                     
-                    <div className="flex items-end p-4 text-xs text-gray-400 border-t border-gray-300 rounded-b">
+                    <div className="flex items-center justify-end p-4 text-xs text-gray-400 border-t border-gray-300 rounded-b">
                         {context?.state?.modalType === 'icd-codes' || context?.state?.modalType === 'opt-procedure' && (
                             <span>Advanced Search Box</span>
+                        )}
+
+                        {context?.state?.modalType === 'nurses-notes' && (
+                            <button 
+                                onClick={() => handleSubmitButton(activeTab)} 
+                                className={`${context?.state?.btnSpinner ? 'bg-gray-300' : 'bg-emerald-500 hover:bg-emerald-600'} flex items-center text-white text-sm px-2 py-1 gap-2 rounded focus:outline-none`} 
+                                disabled={context?.state?.btnSpinner}>
+                                {context?.state?.btnSpinner ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin' viewBox="0 0 100 100" fill="none">
+                                        <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" strokeDasharray="50.26548245743669 50.26548245743669" fill="none" strokeLinecap="round"/>
+                                    </svg>
+                                ) : (
+                                    <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                    </svg>
+                                )}
+
+                                Submit
+                            </button>
                         )}
                     </div>
                 </div>
