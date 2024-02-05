@@ -26,7 +26,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
         })
     }
 
-    console.log(context?.data)
+    console.log(context?.data.medication)
 
     const handleGeneratePDF = async (actionType) => {
         const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
@@ -34,12 +34,12 @@ const PdfGenerator = forwardRef(({ }, ref) => {
         const courierFont = await pdfDoc.embedFont(StandardFonts.Courier)
         
         const page = pdfDoc.getPages()
+        const firstPage = page[0]
+        const secondPage = page[1]
+        const { height } = firstPage.getSize()
         switch(actionType) {
             case 'print-phealth-cf1':
-                const firstPage = page[0]
-                console.log(firstPage.getSize())
-                const { height } = firstPage.getSize()
-                firstPage.drawText(context?.data.user_data_info?.last_name, {
+                firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
                     x: 40,
                     // y: height - 250,
                     y: height - 485,
@@ -47,7 +47,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                     font: courierFont
                 })
 
-                firstPage.drawText(context?.data.user_data_info?.first_name, {
+                firstPage.drawText(context?.data.profileData.user_data_info?.first_name, {
                     x: 155,
                     // y: height - 250,
                     y: height - 485,
@@ -55,7 +55,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                     font: courierFont
                 })
 
-                firstPage.drawText(context?.data.user_data_info?.middle_name, {
+                firstPage.drawText(context?.data.profileData.user_data_info?.middle_name, {
                     x: 370,
                     // y: height - 250,
                     y: height - 485,
@@ -63,7 +63,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                     font: courierFont
                 })
                 
-                const bday = context?.data.user_data_info?.birth_date
+                const bday = context?.data.profileData.user_data_info?.birth_date
                 const parts = bday.split("-")
                 firstPage.drawText(`${parts[1]}  ${parts[2]} ${parts[0]}`, {
                     x: 463,
@@ -73,33 +73,69 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                     font: courierFont
                 })
                 break
+            
+            case 'print-prescription':
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name}, ${context?.data.profileData.user_data_info?.first_name}`, {
+                    x: 120,
+                    // y: height - 250,
+                    y: height - 136,
+                    size: 12,
+                    font: courierFont
+                })
+
+                secondPage.drawText(`${context?.data.profileData.user_data_info?.last_name}, ${context?.data.profileData.user_data_info?.first_name}`, {
+                    x: 120,
+                    // y: height - 250,
+                    y: height - 136,
+                    size: 12,
+                    font: courierFont
+                })
+
+                const dateNow = Date.now()
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; // Array of month names
+                const dateObj = new Date(dateNow);
+                const monthName = months[dateObj.getMonth()];
+                const day = dateObj.getDate();
+                const year = dateObj.getFullYear();
+                const formattedDate = `${monthName}/${day}/${year}`;
+                firstPage.drawText(`${formattedDate}`, {
+                    x: 465,
+                    // y: height - 250,
+                    y: height - 136,
+                    size: 12,
+                    font: courierFont
+                })
+
+                secondPage.drawText(`${formattedDate}`, {
+                    x: 465,
+                    // y: height - 250,
+                    y: height - 136,
+                    size: 12,
+                    font: courierFont
+                })
+
+                let currentY = height - 350
+                context?.data.medication.map((item) => {
+                    const text = `${item?.medicine.brand_name}/${item.dose} Sig:${item.form}/${item.frequency}`
+                    const textSize = 15 
+                    const textWidth = courierFont.widthOfTextAtSize(text, textSize) // Measure text width
+
+                    secondPage.drawText(text, {
+                        x: 120,
+                        // y: height - 250,
+                        // y: height - 450,
+                        y: currentY,
+                        size: textSize,
+                        font: courierFont
+                    })
+                    currentY -= courierFont.heightAtSize(50)
+                })
+
+                break
+
             default:
                 break
         }
-        
-        // const firstPage = page[0]
-        // const { height } = firstPage.getSize()
-        // firstPage.drawText(name, {
-        //     x: 200,
-        //     // y: height - 250,
-        //     y: height / 2 + 265,
-        //     size: 12,
-        // })
-
-        // firstPage.drawText(ageGender, {
-        //     x: 200,
-        //     // y: height - 250,
-        //     y: height / 2 + 240,
-        //     size: 12,
-        // })
-
-        // firstPage.drawText(date, {
-        //     x: 455,
-        //     // y: height - 250,
-        //     y: height / 2 + 265,
-        //     size: 12,
-        // })
-
         
         const pdfBytes = await pdfDoc.save();
         // Do something with the generated PDF bytes, e.g. download
