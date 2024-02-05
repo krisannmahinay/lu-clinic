@@ -381,7 +381,9 @@ const Table = forwardRef(({
                 setChecked(newChecked)
                 context?.onChecked(newChecked)
 
-                if(e.target.checked) { setLastCheckedUserId(userId) }
+                if(e.target.checked) { 
+                    setLastCheckedUserId(userId)
+                }
                 break
             
             case 'tblSelectAll':
