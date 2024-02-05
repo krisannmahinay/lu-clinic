@@ -39,12 +39,16 @@ import {
     useGetBarangayDataQuery 
 } from '@/service/psgcService'
 
+import { 
+    useGetUserDetailsQuery 
+} from '@/service/authService'
+
 import Tabs from '@/components/Tabs'
 import Alert from '@/components/Alert'
 import Soap from '@/components/Patient/OPD/Soap'
 import LabResult from '@/components/Patient/OPD/LabResult'
 import ImagingResult from '@/components/Patient/OPD/ImagingResult'
-// import PatientInformation from '@/components/Patient/OPD/PatientInformation'
+import PatientInformation2 from '@/components/Patient/OPD/PatientInformation'
 import PatientInformation from '@/components/Patient/PatientInformation'
 import Prescription from '@/components/Patient/OPD/Prescription'
 // import Prescription from '@/components/Prescription'
@@ -230,11 +234,10 @@ const SubModule = () => {
         //     ]
         // }))
     }
-
-    const moduletest = componentContext?.state?.module ?? "testModule"
-    console.log(moduletest)
     
     const [autoSaveData] = useAutoSaveDataMutation()
+
+    const { data: userDetails, refetch: refetchUserDetails } = useGetUserDetailsQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
     const { data: municipalityData } = useGetMunicipalityDataQuery({
         provinceCode: provinceCode || profileData?.user_data_info?.province
@@ -625,13 +628,6 @@ const SubModule = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
-    const handleOpenModal = (e, userId) => {
-        e.stopPropagation()
-        const patienData = patientData?.find(e => e.patient_identity?.user_id === userId)
-        setUpdateForm(patienData)
-        setIsModalOpen(true)
-    }
-
     const closeModal = () => {
         // setSelectedRows([])
         setIsModalOpen(false)
@@ -642,10 +638,15 @@ const SubModule = () => {
         setModalType(data.field?.modal_type)
         if(data.type === 'dro') {
             setIsDrDrawerOpen(true)
-            console.log(data.modalType)
             setModalType(data.modalType)
         } else if(data.type === 'nsn') {
             setModalType(data.modalType)
+        } else if(data.type === 'popt_proc') {
+            setModalType(data.modalType)
+        } else if(data.type === 'oopt_proc') {
+            setModalType(data.modalType)
+        } else if(data.type === 'icd_code') {
+
         }
     }
 
@@ -697,12 +698,24 @@ const SubModule = () => {
             id: 'tab1',
             label: 'Patient Information and Consent',
             content: () => (
-                <div></div>
-                // <PatientInformation
+                // <PatientInformation2
                 //     patientDataMaster={profileData}
                 //     icd10Data={icd10List}
                 //     onModalState={handleModalState}
                 // />
+                <ComponentContext.Provider value={{
+                    state: {
+                        provinceData: provinceData,
+                        profileData: profileData,
+                        municipalityData: municipalityData,
+                        barangayData: barangayData,
+                        userDetails: userDetails
+                    },
+                    onChange:(data) => handleOnChange(data),
+                    onAutoSave: (data) => handleAutoSave(data)
+                }}>
+                    <PatientInformation />
+                </ComponentContext.Provider>
             ) 
         }, {
             id: 'tab2',
@@ -744,8 +757,6 @@ const SubModule = () => {
         }
     ]
 
-    
-    // console.log(barangayData)
     const tabsConfigIpd = [
         {
             id: 'tab1',
@@ -756,10 +767,12 @@ const SubModule = () => {
                         provinceData: provinceData,
                         profileData: profileData,
                         municipalityData: municipalityData,
-                        barangayData: barangayData
+                        barangayData: barangayData,
+                        userDetails: userDetails
                     },
                     onChange:(data) => handleOnChange(data),
-                    onAutoSave: (data) => handleAutoSave(data)
+                    onAutoSave: (data) => handleAutoSave(data),
+                    onModalOpen: (data) => handleModalState(data)
                 }}>
                     <PatientInformation />
                 </ComponentContext.Provider>
@@ -997,7 +1010,7 @@ const SubModule = () => {
 
                             {contentType === 'tableRow' && (
                                 <>
-                                    <div className="flex items-center py-2">
+                                    {/* <div className="flex justify-end">
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
@@ -1008,12 +1021,17 @@ const SubModule = () => {
                                             >
                                             Close
                                         </Button>
+                                    </div> */}
 
-                                        <div className="-space-x-5 border border-gray-300 rounded mb-2 w-full">
-                                            <Profile data={profileData}/>
-                                        </div>
-                                        
-                                    </div>
+                                    <ComponentContext.Provider value={{
+                                            state: profileData,
+                                            onClick:() => {
+                                                setActiveContent("yellow")
+                                                setRefetchRTK(false)
+                                            }
+                                        }}>
+                                        <Profile />
+                                    </ComponentContext.Provider>
 
 
                                     <Tabs
@@ -1164,7 +1182,7 @@ const SubModule = () => {
                             </div>
                         </div>
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
                                     <div className="font-medium text-xl mb-2 text-gray-600">Add Out Patient</div>
@@ -1218,7 +1236,7 @@ const SubModule = () => {
                             {contentType === 'tableRow' && (
                                 <>
                                     <div className="flex items-center py-2">
-                                        <Button
+                                        {/* <Button
                                             paddingY="2"
                                             btnIcon="close"
                                             onClick={() => {
@@ -1227,11 +1245,22 @@ const SubModule = () => {
                                             }}
                                             >
                                             Close
-                                        </Button>
+                                        </Button> */}
 
-                                        <div className="-space-x-5 border border-gray-300 rounded mb-2 w-full">
-                                            <Profile data={profileData}/>
-                                        </div>
+                                        
+
+                                        <ComponentContext.Provider value={{
+                                                state: {
+                                                    profileData: profileData,
+                                                    patientData: patientData
+                                                },
+                                                onClick:() => {
+                                                    setActiveContent("yellow")
+                                                    setRefetchRTK(false)
+                                                }
+                                            }}>
+                                            <Profile />
+                                        </ComponentContext.Provider>
                                         
                                     </div>
 
@@ -1249,8 +1278,6 @@ const SubModule = () => {
             return null
         }
     }
-
-    console.log(autoSaveLoader)
     
     return (
         <AppLayout
