@@ -32,6 +32,10 @@ const Module = () => {
             setIsExpanded((prevIsExpanded) => !prevIsExpanded)
         }
     }
+
+    const handleOnClick = () => {
+        (context?.state ?? {}).module = "isClicked"
+    }
     
     return (
         <>
@@ -65,7 +69,7 @@ const Module = () => {
                                                 shallow
                                                 key={index}
                                                 href={`/patients/${item.module?.module_id}`}>
-                                                <div className={`${baseClasses} ${isPatientActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
+                                                <div onClick={() => handleOnClick()} className={`${baseClasses} ${isPatientActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
