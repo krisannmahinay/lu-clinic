@@ -18,16 +18,34 @@ export const patientApi = createApi({
     tagTypes: ['UpdateOPDtoLatest', 'ActiveBedList'],
     endpoints: (builder) => ({
         autoSaveData: builder.mutation({
-            query: dataArray => {
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { data, patient_id, actionType } = args
                 // const data = dataArray.map(item => item.fields)
                 // console.log(dataArray)
-                const session = Cookies.get('session')
                 return {
-                    url: '/auto-save',
-                    method: 'POST',
+                    url: `/auto-save/${patient_id}`,
+                    method: 'PUT',
                     body: {
-                        // data: data,
+                        data: data,
+                        actionType: actionType,
                         selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getNurseNoteList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { patient_id } = args
+                return {
+                    url: '/get-nurse-note',
+                    method: 'GET',
+                    params: {
+                        slug: 'nurse-note',
+                        selectedDB: session,
+                        patient_id: patient_id
                     }
                 }
             }
@@ -261,6 +279,7 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetNurseNoteListQuery,
     useAutoSaveDataMutation, 
     useGetPatientListQuery,
     useGetOutPatientListQuery,
