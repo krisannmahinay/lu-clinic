@@ -270,28 +270,24 @@ const SubModule = () => {
 
                     {slug === 'symptoms' && (
                         <div>
-                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Symptoms</div>
                             <Symptoms slug={slug}/>
                         </div>
                     )}
 
                     {slug === 'pharmacy-config' && (
                         <div>
-                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Pharmacy</div>
                             <Pharmacy slug={slug}/>
                         </div>
                     )}
 
                     {slug === 'panthology' && (
                         <div>
-                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Phantology</div>
                             <Phantology slug={slug}/>
                         </div>
                     )}
 
                     {slug === 'radiology' && (
                         <div>
-                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Radiology</div>
                             <Radiology slug={slug}/>
                         </div>
                     )}
