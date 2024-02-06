@@ -17,7 +17,7 @@ import {
 import { useGetPhysicianChargeQuery } from '@/service/patientService'
 import Select from 'react-select'
 import Modal from './Modal'
-import { useComponentContext, useFormContext } from '@/utils/context'
+import { useComponentContext, useFormContext, useModalContext } from '@/utils/context'
 import { generateInfoForms } from '@/utils/forms'
 
 
@@ -73,6 +73,7 @@ const Form = forwardRef(({
         style
     }, ref) => {
 
+    const modalContext = useModalContext()
     const context = useFormContext()
     const componentContext = useComponentContext()
     const router = useRouter()
@@ -97,21 +98,25 @@ const Form = forwardRef(({
 
     const { data: physicianChargeMaster } = useGetPhysicianChargeQuery()
 
+    // console.log(modalContext?.state?.profileData.patient_id)
+
     useImperativeHandle(context?.ref, () => ({
         handleSubmit: (actionType) => handleSubmit(actionType),
         handleAddRow
-    }));
+    }))
 
     const handleGetValueField = (field, contextData) => {
         const value = context?.initialFields?.find((f) => f.name === field.name)?.value ||
         field.name in contextData?.user_data_info
             ? context?.data?.user_data_info?.[field.name]
+            // : field.name === 'last_name' ? contextData?.last_name
             : field.name === 'admission_date' ? contextData?.admission_date
             : field.name === 'discharge_date' ? contextData?.discharge_date
             : field.name === 'total_no_day' ? contextData?.total_no_day
             : field.name === 'admitting_physician' ? `Dr. ${contextData?.physician_data_info?.first_name} ${contextData?.physician_data_info?.last_name}`
             : field.name === 'province' ? contextData?.user_data_info?.province || processFormData?.find((f) => f.name === field.name)?.value
             : '' 
+        console.log(contextData?.last_name)
         return value
     }
     
@@ -134,15 +139,17 @@ const Form = forwardRef(({
                 ...acc, [field.name]: ''  
             }), {})
 
+        
         setFormData([{
             id: '_' + Date.now() + Math.random(), 
+            patientId: modalContext?.state?.profileData.patient_id || '',
             fields: initialFields
         }])
 
         let timer
         if(resetFormTimer) {
             timer = setTimeout(() => {
-                context?.onCloseSlider()
+                context?.onCloseSlider?.()
                 handleResetForm()
                 setResetFormTimer(false)
             }, 500)
@@ -166,7 +173,7 @@ const Form = forwardRef(({
     },[formData])
 
     
-    // console.log(processFormData)
+    // console.log(formData)
 
     // const memoizedSelectValue = useMemo(() => {
     //     return (field, row) => {
@@ -190,6 +197,16 @@ const Form = forwardRef(({
         }
         return age
     }
+
+    const calculateBMI = (ht, wt) => {
+        if (ht && wt) {
+            const heightInMeters = ht / 100 // assuming height is in centimeters
+            const computedBMI = wt / (heightInMeters * heightInMeters)
+            return computedBMI.toFixed(2)
+        } else {
+            return null
+        }
+    }
     
     // console.log(formData)
 
@@ -201,6 +218,12 @@ const Form = forwardRef(({
                 const age = calculatedAge(e.target.value)
                 updatedFields.age = age
                 updatedFields.birth_date = e.target.value
+            } else if(fieldName === 'vs_height' || fieldName === 'vs_weight') {
+                const ht = updatedFields.vs_height || ''
+                const wt = updatedFields.vs_weight || ''
+                const calculatedBMI = calculateBMI(ht, wt)
+                updatedFields.vs_bmi = calculatedBMI || ''
+                updatedFields[fieldName] = e.target.value
             } else if(fieldName === 'admitting_physician') {
                 updatedFields[fieldName] = e?.value
                 updatedFields.standard_charge = physicianChargeMaster?.find((charge) => charge.doctor_id === e?.value)?.standard_charge
@@ -265,29 +288,26 @@ const Form = forwardRef(({
                     context.onLoading(true)
                     setResetFormTimer(true)
                     context.onSuccess(1)
-                    // onSetAlertType("success")
-                    // onSetAlertMessage(response.message)
-                    // setAlertMessage(response.message)
-                    // setAlertOpen(true)
                 }
             })
             .catch(error => {
-            //  console.log(error)
                 if(error.status === 500) {
-                    onSetAlertType("error")
-                    onSetAlertMessage("Unsuccessful")
-                    setAlertMessage("Unsuccessful")
-                    setAlertOpen(true)
+                    console.log(error)
+                    context?.onAlert({msg: "Unsuccessfull", type: "error"})
+                    // onSetAlertType("error")
+                    // onSetAlertMessage("Unsuccessful")
+                    // setAlertMessage("Unsuccessful")
+                    // setAlertOpen(true)
                 }
             })
     }
 
-     const handleOnClick = (type) => {
-        if(type === 'clickedFas') {
+     const handleOnClick = (data) => {
+        if(data.action === 'clickedFas') {
             onClick()
-        } else if(type === 'clickedModal') {
+        } else if(data.action === 'clickedModal') {
             setModalOpen(true)
-            context?.onModalOpen(true)
+            context?.onModalOpen(data)
         } else {
 
         }
@@ -315,7 +335,7 @@ const Form = forwardRef(({
                         <div className="flex justify-center gap-4 py-6">
                             <div className="pt-2"><h3 className="text-gray-400 text-center font-bold uppercase text-medium">Doctor's Notes</h3></div>
                             <div>
-                                <button onClick={() => handleOnClick('clickedFas')} title="Doctor Request's" className="fixed p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg focus:outline-none">
+                                <button onClick={() => handleOnClick({action:'clickedFas'})} title="Doctor Request's" className="fixed p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg focus:outline-none">
                                     <svg fill="#ffffff" height={20} width={20} version="1.1" id="Capa_1" viewBox="0 0 201.324 201.324" transform="matrix(1, 0, 0, 1, 0, 0)rotate(0)" stroke="#ffffff">
                                         <g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" stroke="#CCCCCC" strokeWidth="0.805296"></g>
                                         <g id="SVGRepo_iconCarrier"> <circle cx="95.596" cy="10.083" r="10.083"></circle> <circle cx="149.018" cy="10.083" r="10.083"></circle> 
@@ -346,7 +366,7 @@ const Form = forwardRef(({
                                 name={field.name}
                                 value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                onClick={field.category === 'with_modal' ? () => handleOnClick('clickedModal') : undefined}
+                                onClick={field.category === 'with_modal' ? () => handleOnClick({action:'clickedModal', field:field, modalState: true}) : undefined}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
                                 placeholder={field.placeholder}
                             />
@@ -373,6 +393,29 @@ const Form = forwardRef(({
                                 className=" bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
                                 placeholder={field.placeholder}
                                 disabled
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {field.type === 'datetime-local' && (
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4">
+                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
+                                {field.label}
+                            </label>
+                        </div>
+                        
+                        <div className="w-3/5">
+                            <input
+                                required
+                                type={field.type}
+                                id={field.name}
+                                name={field.name}
+                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                                className=" border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                                placeholder={field.placeholder}
                             />
                         </div>
                     </div>
@@ -548,7 +591,8 @@ const Form = forwardRef(({
                             <Select 
                                 options={field.options?.map(option => ({ 
                                     value: option.value,    
-                                    label: option.label 
+                                    label: option.label,
+                                    isDisabled: option.isDisabled
                                 }))}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 isSearchable={true}
@@ -556,16 +600,17 @@ const Form = forwardRef(({
                                 placeholder={`Select ${field.label.toLowerCase()}...`}
                                 classNamePrefix=""
                                 styles={styleDropdown}
-                                // value={useMemo(() => {
-                                //     return field.options?.find(option =>
-                                //         option.value === processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]
-                                //     )
-                                // }, [processFormData, field, row.fields])}
-
-                                // value={handleSelectValue(field, row)}
-
                                 value={field.options?.find(option => 
                                     option.value === processFormData?.find((f) => f.name === field.name)?.value
+                                )}
+                                getOptionLabel={(option) => (
+                                    <div className="">
+                                        {option.isDisabled ? (
+                                            <p className="text-sm text-red-500 cursor-not-allowed ">{option.label} (not available)</p>
+                                        ) : (
+                                            option.label
+                                        )}
+                                    </div>
                                 )}
                             />
                         </div>
@@ -626,7 +671,7 @@ const Form = forwardRef(({
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveRow(rowIndex)}
-                                            className="inset-0 top-0 w-10  hover:bg-gray-200 rounded-md px-2 py-40 focus:outline-none text-[#cb4949] "
+                                            className="static w-10  hover:bg-gray-200 rounded-md px-2 py-40 focus:outline-none text-[#cb4949] "
                                         >
                                             <svg fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
