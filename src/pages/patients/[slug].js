@@ -989,8 +989,8 @@ const SubModule = () => {
                         <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 pr-[6rem] pl-[6rem] pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
-                                    <div className="font-bold text-lg mb-2 uppercase text-gray-600 pt-10">Add In Patient</div>
-                                    <div className="flex justify-between py-2">
+                                    <div className="font-bold text-lg mb-2 uppercase text-gray-600 pt-10 px-4">Add In Patient</div>
+                                    <div className="flex justify-between py-2 px-4">
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
@@ -1000,6 +1000,14 @@ const SubModule = () => {
                                         </Button>
 
                                         <div className="flex gap-2">
+                                            <Button
+                                                bgColor="indigo"
+                                                btnIcon="add"
+                                                onClick={() => formRef.current.handleAddRow()}
+                                            >
+                                                Add Row
+                                            </Button>
+
                                             <Button
                                                 bgColor={btnSpinner ? 'disable': 'emerald'}
                                                 btnIcon={btnSpinner ? 'disable': 'submit'}
@@ -1014,11 +1022,15 @@ const SubModule = () => {
                                     <FormContext.Provider value={{
                                         ref: formRef,
                                         initialFields: ipdForms,
+                                        enableAddRow: true,
                                         onSuccess: handleRefetch,
                                         onLoading: (data) => setBtnSpinner(data),
                                         onSetAlertType: (data) => setAlertType(data),
                                         onCloseSlider: () => setActiveContent("yellow"),
-                                        onSetAlertMessage: (data) => setAlertMessage(data) 
+                                        onAlert: (data) => {
+                                            setAlertMessage(data.msg)
+                                            setAlertType(data.type)
+                                        }
                                     }}>
                                         <Form />
                                     </FormContext.Provider>
@@ -1244,7 +1256,10 @@ const SubModule = () => {
                                             onLoading: (data) => setBtnSpinner(data),
                                             onSetAlertType: (data) => setAlertType(data),
                                             onCloseSlider: () => setActiveContent("yellow"),
-                                            onSetAlertMessage: (data) => setAlertMessage(data)
+                                            onAlert: (data) => {
+                                                setAlertMessage(data.msg)
+                                                setAlertType(data.type)
+                                            }
                                         }}>
                                         <Form />
                                     </FormContext.Provider>
@@ -1334,7 +1349,7 @@ const SubModule = () => {
                 }}>
                     <Modal onSelectMedicine={handleSelectMedicine}/>
                 </ModalContext.Provider>
-
+                
                 {alertMessage &&
                     <Alert 
                         alertType={alertType}
