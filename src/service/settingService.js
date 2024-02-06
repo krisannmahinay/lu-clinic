@@ -238,8 +238,44 @@ export const settingApi = createApi({
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'createNurseNote':
+                        console.log(data)
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseIVF':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseMedication':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseVitalS':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+
                     case 'createPrescription':
-                        // console.log(data)
                         url = '/create-prescription',
                         body = {
                             data: data,
@@ -249,8 +285,6 @@ export const settingApi = createApi({
                             actionType: actionType,
                         }
                         break
-
-
                     case 'createDoctorRequest':
                         url = '/create-doctor-request',
                         body = {
