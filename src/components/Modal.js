@@ -229,14 +229,14 @@ const Modal = ({
             <div className="relative p-4 w-full max-w-2xl">
                 <div className=" bg-white rounded-lg shadow">
                     <div className="flex items-center justify-between p-2 md:p-2 border-b rounded-t">
-                        {context?.state?.modalType === 'icd-codes' || context?.state?.modalType === 'opt-procedure' && (
+                        {['icd_codes', 'popt_proc', 'oopt_proc'].includes(context?.state?.modalType) && (
                             <div className="relative">
                                 <input
                                     type="text"
                                     // value={searchQuery}
                                     onChange={(e) => handleSearchInputChange(e)}
                                     className="border-none w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
-                                    placeholder="Search icd codes"
+                                    placeholder="Search..."
                                 />
                                 <svg fill="none" stroke="currentColor" className="mx-2 h-6 w-4 text-sm text-gray-400 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -297,34 +297,53 @@ const Modal = ({
                             </div>
                         ) : (
                             searchResults.length > 0 ? (
-                                context?.state.modalType === 'icd-codes' && (
+                                ['icd_codes', 'popt_proc', 'oopt_proc'].includes(context?.state.modalType) && (
                                     searchResults.map((item, index) => (
                                         <div className="divide-dashed divide-y-2 divide-gray-300">
                                             <div 
                                                 key={item.id} 
                                                 className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
-                                                // onClick={() => moveItemToLeft(item.id)}
+                                                onClick={() => context?.onClickFromSearch({modalState:false, value:item, type: context?.state.modalType, clicked: true })}
                                             >
-                                                <p dangerouslySetInnerHTML={{ __html: `${item.icd10_code} &bull; ${item.icd10_desc} `}}></p>
-                                            </div>
-                                            <div></div>
-                                        </div>
-                                    ))
-                                ),
-                                context?.state.modalType === 'opt-procedure' && (
-                                    searchResults.map((item, index) => (
-                                        <div className="divide-dashed divide-y-2 divide-gray-300">
-                                            <div 
-                                                key={item.id} 
-                                                className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
-                                                // onClick={() => moveItemToLeft(item.id)}
-                                            >
-                                                <p dangerouslySetInnerHTML={{ __html: `${item.proc_code} &bull; ${item.proc_desc} `}}></p>
+                                                <p dangerouslySetInnerHTML={{ 
+                                                    __html: context?.state.modalType === 'icd_codes' ? `${item.icd10_code} &bull; ${item.icd10_desc}` 
+                                                            : context?.state.modalType === 'popt_proc' ? `${item.proc_code} &bull; ${item.proc_desc}`
+                                                            : context?.state.modalType === 'oopt_proc' ? `${item.proc_code} &bull; ${item.proc_desc}`
+                                                            : ''
+                                                        }}></p>
                                             </div>
                                             <div></div>
                                         </div>
                                     ))
                                 )
+                                // context?.state.modalType === 'icd-codes' && (
+                                //     searchResults.map((item, index) => (
+                                //         <div className="divide-dashed divide-y-2 divide-gray-300">
+                                //             <div 
+                                //                 key={item.id} 
+                                //                 className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
+                                //                 // onClick={() => moveItemToLeft(item.id)}
+                                //             >
+                                //                 <p dangerouslySetInnerHTML={{ __html: `${item.icd10_code} &bull; ${item.icd10_desc} `}}></p>
+                                //             </div>
+                                //             <div></div>
+                                //         </div>
+                                //     ))
+                                // ),
+                                // context?.state.modalType === 'opt-procedure' && (
+                                //     searchResults.map((item, index) => (
+                                //         <div className="divide-dashed divide-y-2 divide-gray-300">
+                                //             <div 
+                                //                 key={item.id} 
+                                //                 className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
+                                //                 // onClick={() => moveItemToLeft(item.id)}
+                                //             >
+                                //                 <p dangerouslySetInnerHTML={{ __html: `${item.proc_code} &bull; ${item.proc_desc} `}}></p>
+                                //             </div>
+                                //             <div></div>
+                                //         </div>
+                                //     ))
+                                // )
                             ) : (
                                 context?.state?.modalType === 'physician-order' ? (
                                     <FormContext.Provider value={{
@@ -369,7 +388,7 @@ const Modal = ({
                     
                     <div className="flex items-center justify-end p-4 text-xs text-gray-400 border-t border-gray-300 rounded-b">
                         {context?.state?.modalType === 'icd-codes' || context?.state?.modalType === 'opt-procedure' && (
-                            <span>Advanced Search Box</span>
+                            <span>ASB</span>
                         )}
 
                         {context?.state?.modalType === 'nurses-notes' && (
