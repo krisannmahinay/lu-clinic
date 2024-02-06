@@ -34,6 +34,7 @@ export const ComponentContext = createContext({
 
 export const FormContext = createContext({
     // PatientInformation component
+    title: null,
     state: null,
     data: null,
     provinceData: null,
