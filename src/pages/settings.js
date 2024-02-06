@@ -62,6 +62,7 @@ const Setting = () => {
     const [contentType, setContentType] = useState("")
     const [profileData, setProfileData] = useState({})
     const [checkIds, setCheckIds] = useState(0)
+    const [pageTitle, setPageTitle] = useState("")
 
     const [contentHeight, setContentHeight] = useState(0)
     
@@ -124,12 +125,18 @@ const Setting = () => {
     const header = userList?.columns ?? []
     const hiddenUserIds = ['IMO-9999999999']
     const filteredUserData = userData.filter(user => !hiddenUserIds.includes(user.user_id))
-    console.log(userData)
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)
         const now = new Date()
         return (now - rowDate) / 1000 <= 5
+    }
+
+    const formatTitlePages = (str) => {
+        return str
+            .split('-')
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ')
     }
 
     useEffect(() => {
@@ -176,6 +183,10 @@ const Setting = () => {
             }, 1000)
         }
 
+        if(moduleId) {
+            setPageTitle(formatTitlePages(moduleId))
+        }
+
         return () => {
             if(spinnerTimer) {
                 clearTimeout(spinnerTimer)
@@ -183,7 +194,7 @@ const Setting = () => {
             // clearTimeout(highlightTimeout)
         }
 
-    }, [userSuccess, btnSpinner])
+    }, [userSuccess, btnSpinner, moduleId])
 
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
@@ -200,10 +211,6 @@ const Setting = () => {
     const handleOnChecked = (data) => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
-    }
-
-    const handleSelectAll = (data) => {
-        console.log(data)
     }
 
     const handleOnchange = (type, e) => {
@@ -271,7 +278,7 @@ const Setting = () => {
     const renderContent = () => {
         return (
             <>
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     <div className="flex justify-between py-1">
                         <div className="flex space-x-1">
                             <Button
@@ -390,10 +397,10 @@ const Setting = () => {
                     </div>
                 </div>
                 
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     {contentType === 'addUser' && (
                         <div>
-                            <div className="flex justify-between py-2">
+                            <div className="flex justify-between py-2 px-4">
                                 <Button
                                     paddingY="1"
                                     btnIcon="close"
@@ -498,18 +505,12 @@ const Setting = () => {
         <AppLayout
             isLoading={moduleListLoading}
             moduleId={moduleId}
-            menuGroup={menuGroup}
-            header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Inventory
-                </h2>
-            }>
+            menuGroup={menuGroup}>
             <Head>
-                <title>Laravel - Setting</title>
+                <title>{pageTitle}</title>
             </Head>
 
-            <div className="container mx-auto">
-                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
                     {alertMessage &&
                         <Alert 
                             alertType={alertType}
@@ -543,7 +544,6 @@ const Setting = () => {
                         </>
                     )} 
                 </div>
-            </div>
 
 
         </AppLayout>
