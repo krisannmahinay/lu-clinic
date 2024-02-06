@@ -45,6 +45,7 @@ export const FormContext = createContext({
     onFormChange: () => {},
     onSelectedProvince: () => {},
     onSelectedMunicipality: () => {},
+    onAlert:() => {},
 
     // Add OPD Form Context
     ref: null,
@@ -77,6 +78,7 @@ export const ModalContext = createContext({
     state: null,
     isOpen: false,
     isModalOpen: false,
+    onClickFromSearch: () => {},
     onLoading: () => {},
     onClose: () => {},
     onClick: () => {},
