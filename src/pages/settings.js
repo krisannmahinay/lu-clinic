@@ -120,10 +120,11 @@ const Setting = () => {
     const pagination = userList?.pagination ?? []
     // const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
-    const userInfo = userDetails?.data[0] ?? []
+    // const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
-    
-    // console.log(moduleList)
+    const hiddenUserIds = ['IMO-9999999999']
+    const filteredUserData = userData.filter(user => !hiddenUserIds.includes(user.user_id))
+    console.log(userData)
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)
@@ -353,7 +354,7 @@ const Setting = () => {
 
                     <div className="border border-gray-300 rounded">
                         <TableContext.Provider value={{
-                            tableData: userData,
+                            tableData: filteredUserData,
                             tableHeader: header,
                             onChecked: (data) => handleOnChecked(data),
                             onClick: (data) => handleOnclick('clickedRows', data),
@@ -423,6 +424,9 @@ const Setting = () => {
                             </div>
 
                             <FormContext.Provider value={{
+                                state: {
+                                    userDetails: userDetails
+                                },
                                 ref: formRef,
                                 initialFields: userRegistration,
                                 enableAutoSave: false,
@@ -529,12 +533,11 @@ const Setting = () => {
                         // permission={permission} 
                         // selectedRowId={selectedRows}
                     />
-                    
-                    {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
+                    {['x', 'admin', 'superadmin'].includes(userDetails?.roles) && (
                         renderContent()
-                    )} 
+                    )}
 
-                    {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
+                    {(userDetails?.roles === "nurse" || userDetails?.roles === "doctor") && (
                         <>
                             <ProfileInformation information={userInfo}/>
                         </>
