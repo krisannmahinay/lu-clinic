@@ -162,6 +162,7 @@ const SubModule = () => {
 
     const [provinceCode, setProvinceCode] = useState(null)
     const [municipalCode, setMunicipalCode] = useState(null)
+    const [clickedValue, setClickedValue] = useState(null)
     
     const currentDate = new Date()
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -426,7 +427,7 @@ const SubModule = () => {
             if(autoSaveSpinner) { clearTimeout(autoSaveSpinner) }
             window.removeEventListener('resize', calculateHeight)
         }
-    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList, autoSaveLoader])
+    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList, autoSaveLoader, clickedValue])
 
     
     const handleItemsPerPageChange = (e) => {
@@ -694,6 +695,26 @@ const SubModule = () => {
             })
     }
 
+    const handleClickFromSearch = (data) => {
+        const { type, value } = data
+        const clickedFromSearch = type === 'popt_proc' || type === 'oopt_proc' ? {
+                code: value.proc_code,
+                description: value.proc_desc,
+                type
+            } : type === 'icd_codes' ? {
+                code: value.icd10_code,
+                description: value.icd10_desc,
+                type
+            } : null
+
+        // console.log(clickedValue)
+        setClickedValue((prev) => ({
+            ...prev,
+            [type]: clickedFromSearch
+        }))
+        setIsModalOpen(data.modalState)
+    }
+
     const tabsConfig = [{
             id: 'tab1',
             label: 'Patient Information and Consent',
@@ -768,7 +789,8 @@ const SubModule = () => {
                         profileData: profileData,
                         municipalityData: municipalityData,
                         barangayData: barangayData,
-                        userDetails: userDetails
+                        userDetails: userDetails,
+                        clickedValue: clickedValue
                     },
                     onChange:(data) => handleOnChange(data),
                     onAutoSave: (data) => handleAutoSave(data),
@@ -776,11 +798,6 @@ const SubModule = () => {
                 }}>
                     <PatientInformation />
                 </ComponentContext.Provider>
-                // <PatientInformation
-                //     patientDataMaster={profileData}
-                //     icd10Data={icd10List}
-                //     onModalState={handleModalState}
-                // />
             )
         }, {
             id: 'tab2',
@@ -845,7 +862,7 @@ const SubModule = () => {
                     <SkeletonScreen loadingType="table"/>
                 ) : (
                     <div>
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                         <div className="font-medium text-xl mb-2 text-gray-600">In Patient</div>
                             <div className="flex justify-between py-1">
                                 <div className="flex space-x-1">
@@ -969,10 +986,10 @@ const SubModule = () => {
                                 </ItemPerPage>
                             </div>
                         </div>
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 pr-[6rem] pl-[6rem] pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
-                                    <div className="font-bold text-lg mb-2 uppercase text-gray-600">Add In Patient</div>
+                                    <div className="font-bold text-lg mb-2 uppercase text-gray-600 pt-10">Add In Patient</div>
                                     <div className="flex justify-between py-2">
                                         <Button
                                             paddingY="2"
@@ -1048,7 +1065,7 @@ const SubModule = () => {
                     <SkeletonScreen loadingType="table"/>
                 ) : (
                     <div>
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                         <div className="font-medium text-xl mb-2 text-gray-600">Out Patient</div>
                             <div className="flex justify-between py-1">
                                 <div className="flex space-x-1">
@@ -1182,11 +1199,11 @@ const SubModule = () => {
                             </div>
                         </div>
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 p-8 pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 pr-[6rem] pl-[6rem] pt-[3.5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             {contentType === 'addRow' && (
                                 <>
-                                    <div className="font-medium text-xl mb-2 text-gray-600">Add Out Patient</div>
-                                    <div className="flex justify-between py-2">
+                                    <div className="font-medium text-xl mb-2 text-gray-600 pt-10 px-4">Add Out Patient</div>
+                                    <div className="flex justify-between py-2 px-4">
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
@@ -1249,18 +1266,15 @@ const SubModule = () => {
 
                                         
 
-                                        <ComponentContext.Provider value={{
-                                                state: {
-                                                    profileData: profileData,
-                                                    patientData: patientData
-                                                },
-                                                onClick:() => {
-                                                    setActiveContent("yellow")
-                                                    setRefetchRTK(false)
-                                                }
-                                            }}>
-                                            <Profile />
-                                        </ComponentContext.Provider>
+                                    <ComponentContext.Provider value={{
+                                        state: profileData,
+                                        onClick:() => {
+                                            setActiveContent("yellow")
+                                            setRefetchRTK(false)
+                                        }
+                                    }}>
+                                        <Profile />
+                                    </ComponentContext.Provider>
                                         
                                     </div>
 
@@ -1288,83 +1302,82 @@ const SubModule = () => {
                 <title>{pageTitle}</title>
             </Head>
             
-            <div className="container mx-auto">
-                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                    {autoSaveLoader && (
-                        <div className="flex justify-end w-full absolute inset-0 p-8 pt-[6rem] z-50">
-                            <AutoSaveSpinner />
-                        </div>
-                    )}
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px`}}>
+                {autoSaveLoader && (
+                    <div className="flex justify-end w-full absolute inset-0 p-8 pt-[6rem] z-50">
+                        <AutoSaveSpinner />
+                    </div>
+                )}
 
-                    <ModalContext.Provider value={{
+                <ModalContext.Provider value={{
+                    state: {
+                        modalType: modalType,
+                        selectedMedicine: selectedMedicine,
+                        searchMedicine: searchMedicine,
+                        isShowMedForm: isShowMedForm,
+                        isDrDrawerOpen: isDrDrawerOpen,
+                        addedMedicine: addedMedicine,
+                        alertMessage: alertMessage,
+                        medicineList: medicineList,
+                        medication: medicationList,
+                        profileData: profileData,
+                        btnSpinner: btnSpinner
+                    },
+                    isOpen: isModalOpen,
+                    onClose: closeModal,
+                    onClick: (data) => handleOnClose(data),
+                    onLoading: (data) => setBtnSpinner(data),
+                    onAddMedicine: (data) => handleAddMedicine(data.data, data.field), 
+                    onSubmitData: (data) => handleSubmitButton(data),
+                    onClickOpenMed: (data) => handleSelectMedicine(data.data), 
+                    onClickFromSearch: (data) => handleClickFromSearch(data)
+                }}>
+                    <Modal onSelectMedicine={handleSelectMedicine}/>
+                </ModalContext.Provider>
+
+                {alertMessage &&
+                    <Alert 
+                        alertType={alertType}
+                        isOpen={alertType !== ""}
+                        onClose={handleAlertClose}
+                        message={alertMessage} 
+                    /> 
+                }
+
+                {renderContent(slug)}
+
+
+                {isDrDrawerOpen && (
+                    <ComponentContext.Provider value={{
                         state: {
-                            modalType: modalType,
                             selectedMedicine: selectedMedicine,
                             searchMedicine: searchMedicine,
+                            drRequestForms: drRequestForms,
                             isShowMedForm: isShowMedForm,
                             isDrDrawerOpen: isDrDrawerOpen,
                             addedMedicine: addedMedicine,
-                            alertMessage: alertMessage,
-                            medicineList: medicineList,
-                            medication: medicationList,
-                            profileData: profileData,
-                            btnSpinner: btnSpinner
+                            btnSpinner: btnSpinner,
+                            isOptionDisabled: isOptionDisabled
                         },
-                        isOpen: isModalOpen,
-                        onClose: closeModal,
-                        onClick: (data) => handleOnClose(data),
-                        onLoading: (data) => setBtnSpinner(data),
-                        onAddMedicine: (data) => handleAddMedicine(data.data, data.field), 
+                        patientData: patientData,
+                        pathologyData: testsData,
+                        radiologyData: radiologyList,
+                        medicationData: medicationList,
+                        isDrDrawerOpen: isDrDrawerOpen,
+                        alertMessage: alertMessage,
+                        onAddMedicine: (data) => handleAddMedicine(data.data, data.field),
+                        onClickOpenMed: (data) => handleSelectMedicine(data), 
+                        onClickCloseMed: (data) => handleOnClick(data.type), 
+                        onClickCloseMed: (data) => handleOnClick(data.type), 
+                        onChange: () => handleOnChange,
+                        onCheck: (data) => handleCheckBox(data),
+                        onClose: (data) => handleOnClose(data),
                         onSubmitData: (data) => handleSubmitButton(data),
-                        onClickOpenMed: (data) => handleSelectMedicine(data.data), 
+                        onSubmitDrRequest: (data) => handleSubmitButton(data)
                     }}>
-                        <Modal onSelectMedicine={handleSelectMedicine}/>
-                    </ModalContext.Provider>
-
-                    {alertMessage &&
-                        <Alert 
-                            alertType={alertType}
-                            isOpen={alertType !== ""}
-                            onClose={handleAlertClose}
-                            message={alertMessage} 
-                        /> 
-                    }
-
-                    {renderContent(slug)}
-
-
-                    {isDrDrawerOpen && (
-                        <ComponentContext.Provider value={{
-                            state: {
-                                selectedMedicine: selectedMedicine,
-                                searchMedicine: searchMedicine,
-                                drRequestForms: drRequestForms,
-                                isShowMedForm: isShowMedForm,
-                                isDrDrawerOpen: isDrDrawerOpen,
-                                addedMedicine: addedMedicine,
-                                btnSpinner: btnSpinner,
-                                isOptionDisabled: isOptionDisabled
-                            },
-                            patientData: patientData,
-                            pathologyData: testsData,
-                            radiologyData: radiologyList,
-                            medicationData: medicationList,
-                            isDrDrawerOpen: isDrDrawerOpen,
-                            alertMessage: alertMessage,
-                            onAddMedicine: (data) => handleAddMedicine(data.data, data.field),
-                            onClickOpenMed: (data) => handleSelectMedicine(data), 
-                            onClickCloseMed: (data) => handleOnClick(data.type), 
-                            onClickCloseMed: (data) => handleOnClick(data.type), 
-                            onChange: () => handleOnChange,
-                            onCheck: (data) => handleCheckBox(data),
-                            onClose: (data) => handleOnClose(data),
-                            onSubmitData: (data) => handleSubmitButton(data),
-                            onSubmitDrRequest: (data) => handleSubmitButton(data)
-                        }}>
-                            <DoctorRequest />
-                        </ComponentContext.Provider>
-                    )}
-                </div>
+                        <DoctorRequest />
+                    </ComponentContext.Provider>
+                )}
             </div>
         </AppLayout>
     )
