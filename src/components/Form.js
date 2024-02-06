@@ -664,6 +664,12 @@ const Form = forwardRef(({
                             <div className={`${context.enableAddRow ? 'bg-white border border-gray-300 rounded py-5' : ''}`}>
                                 <div key={row.id} className="flex gap-4">
                                     <div className="md:flex md:flex-col  w-full gap-4">
+                                        {context.title !== undefined ? (
+                                            <div>
+                                                <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-3">{context.title}</h3>
+                                                <hr className="drop-shadow-md pb-5"/>
+                                            </div>
+                                        ) : ""}
                                         {renderForm(row, rowIndex)}
                                     </div>
 
