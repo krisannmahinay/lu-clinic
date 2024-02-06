@@ -73,6 +73,7 @@ const SubModule = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [pageTitle, setPageTitle] = useState("")
     
     const [contentHeight, setContentHeight] = useState(0)
     // console.log(hosptlChargeCategoryMaster)
@@ -83,6 +84,12 @@ const SubModule = () => {
     // console.log(userDetails.roles)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const formatTitlePages = (str) => {
+        return str
+            .split('-')
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ')
+    }
 
     useEffect(() => {
         const calculateHeight = () => {
@@ -91,12 +98,16 @@ const SubModule = () => {
         }
         calculateHeight()
 
+        if(slug) {
+            setPageTitle(formatTitlePages(slug))
+        }
+
         // Recalculate height on window resize
         window.addEventListener('resize', calculateHeight)
         return () => {
             window.removeEventListener('resize', calculateHeight)
         }
-    }, [])
+    }, [slug])
     
     const handleAccordion = (data) => {
         setAccordionSlug(data)
@@ -211,164 +222,167 @@ const SubModule = () => {
                 </h2>
             }>
             <Head>
-                <title>Laravel - {slug}</title>
+                <title>{pageTitle}</title>
             </Head>
-            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                <Modal 
-                    // title={title}
-                    // charges={true} 
-                    slug={slug}
-                    isOpen={isModalOpen}
-                    tabNumber={activeTab}
-                    onClose={closeModal}
-                    // permission={permission} 
-                    // selectedRowId={selectedRows}
-                />
-                {slug === 'system' && (
-                    <>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">System Configuration</div>
-                        <System slug={slug}/>
-                    </>
-                )}
 
-                {slug === 'hr' && (
+            <div className="pl-[5rem] pr-[5rem]">
+                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+                    <Modal 
+                        // title={title}
+                        // charges={true} 
+                        slug={slug}
+                        isOpen={isModalOpen}
+                        tabNumber={activeTab}
+                        onClose={closeModal}
+                        // permission={permission} 
+                        // selectedRowId={selectedRows}
+                    />
+                    {slug === 'system' && (
+                        <>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">System Configuration</div>
+                            <System slug={slug}/>
+                        </>
+                    )}
+
+                    {slug === 'hr' && (
+                        <div>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Human Resource</div>
+                            <HumanResource slug={slug}/>
+                        </div>
+                    )}
+
+                    {slug === 'charges' && (
+                        <div>
+                            <HospitalCharge 
+                                slug={slug}
+                                hosptlChargeTypeData={hosptlChargeTypeMaster}
+                                hosptlChargeCategoryData={hosptlChargeCategoryMaster}
+                                hosptlPhysicianListData={hosptlPhysicianListMaster}
+                            />
+                        </div>
+                    )}
+
+                    {slug === 'bed' && (
                     <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Human Resource</div>
-                        <HumanResource slug={slug}/>
+                            <Bed slug={slug}/>
                     </div>
-                )}
+                    )}
 
-                {slug === 'charges' && (
-                    <div>
-                        <HospitalCharge 
-                            slug={slug}
-                            hosptlChargeTypeData={hosptlChargeTypeMaster}
-                            hosptlChargeCategoryData={hosptlChargeCategoryMaster}
-                            hosptlPhysicianListData={hosptlPhysicianListMaster}
-                        />
-                    </div>
-                )}
+                    {slug === 'symptoms' && (
+                        <div>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Symptoms</div>
+                            <Symptoms slug={slug}/>
+                        </div>
+                    )}
 
-                {slug === 'bed' && (
-                   <div>
-                        <Bed slug={slug}/>
-                   </div>
-                )}
+                    {slug === 'pharmacy-config' && (
+                        <div>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Pharmacy</div>
+                            <Pharmacy slug={slug}/>
+                        </div>
+                    )}
 
-                {slug === 'symptoms' && (
-                    <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Symptoms</div>
-                        <Symptoms slug={slug}/>
-                    </div>
-                )}
+                    {slug === 'panthology' && (
+                        <div>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Phantology</div>
+                            <Phantology slug={slug}/>
+                        </div>
+                    )}
 
-                {slug === 'pharmacy-config' && (
-                    <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Pharmacy</div>
-                        <Pharmacy slug={slug}/>
-                    </div>
-                )}
+                    {slug === 'radiology' && (
+                        <div>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Radiology</div>
+                            <Radiology slug={slug}/>
+                        </div>
+                    )}
 
-                {slug === 'panthology' && (
-                    <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Phantology</div>
-                        <Phantology slug={slug}/>
-                    </div>
-                )}
-
-                {slug === 'radiology' && (
-                    <div>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Radiology</div>
-                        <Radiology slug={slug}/>
-                    </div>
-                )}
-
-                {slug === 'item-stock' && (
-                    <>
-                        <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Inventory</div>
-                        <SearchItemPage
-                            onExportToPDF={handleExportToPDF}
-                            onChangeItemPage={(item) => handleItemsPerPageChange(item)}
-                            onCurrentPage={(page) => handleCurrentPage(page)}
-                            // onSearchResults={(results) => handleSearchResults(results)}
-                            onSearch={(q) => handleSearch(q)}
-                            onAddClicked={() => setIsModalOpen(true)}
-                        />
-                        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div className="border rounded-lg">
-                                <div className="flex justify-items-center">
-                                    <button 
-                                        onClick={() => setActiveTab('tab1')}
-                                        className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab1' ? 'bg-white':'bg-gray-200'}`}>Item Category
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('tab2')}
-                                        className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Item Store
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('tab3')}
-                                        className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Item Supplier
-                                    </button>
-                                </div>
-                                
-                                <div className="tab-content p-2">
-                                    {activeTab === 'tab1' && (
-                                        <>
-                                            <Table 
-                                                title="User List" 
-                                                tableData={itemCategory} 
-                                                action={false}
-                                                // permission={permissionData} 
-                                                // module={moduleData} 
-                                                tableHeader={Object.keys(itemCategory[0])}
-                                                // isLoading={userListLoading}
-                                                // onOpenModal={handleOpenModal}
-                                            />
-                                        </>
-                                    )}
-                                    {activeTab === 'tab2' && (
-                                        <>
-                                            <Table 
-                                                title="User List" 
-                                                tableData={itemStore} 
-                                                action={false}
-                                                // permission={permissionData} 
-                                                // module={moduleData} 
-                                                tableHeader={Object.keys(itemStore[0])}
-                                                // isLoading={userListLoading}
-                                                // onOpenModal={handleOpenModal}
-                                            />
-                                        </>
-                                    )}
-                                    {activeTab === 'tab3' && (
-                                        <>
-                                            <Table 
-                                                title="User List" 
-                                                tableData={itemSupplier} 
-                                                action={false}
-                                                // permission={permissionData} 
-                                                // module={moduleData} 
-                                                tableHeader={Object.keys(itemSupplier[0])}
-                                                // isLoading={userListLoading}
-                                                // onOpenModal={handleOpenModal}
-                                            />
-                                        </>
-                                    )}
+                    {slug === 'item-stock' && (
+                        <>
+                            <div className="font-bold text-xl mb-2 ml-4 uppercase text-gray-600">Inventory</div>
+                            <SearchItemPage
+                                onExportToPDF={handleExportToPDF}
+                                onChangeItemPage={(item) => handleItemsPerPageChange(item)}
+                                onCurrentPage={(page) => handleCurrentPage(page)}
+                                // onSearchResults={(results) => handleSearchResults(results)}
+                                onSearch={(q) => handleSearch(q)}
+                                onAddClicked={() => setIsModalOpen(true)}
+                            />
+                            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                                <div className="border rounded-lg">
+                                    <div className="flex justify-items-center">
+                                        <button 
+                                            onClick={() => setActiveTab('tab1')}
+                                            className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab1' ? 'bg-white':'bg-gray-200'}`}>Item Category
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab2')}
+                                            className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab2' ? 'bg-white':'bg-gray-200'}`}>Item Store
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('tab3')}
+                                            className={`px-4 py-2 focus:outline-none font-medium uppercase text-sm text-gray-500 ${activeTab === 'tab3' ? 'bg-white':'bg-gray-200'}`}>Item Supplier
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="tab-content p-2">
+                                        {activeTab === 'tab1' && (
+                                            <>
+                                                <Table 
+                                                    title="User List" 
+                                                    tableData={itemCategory} 
+                                                    action={false}
+                                                    // permission={permissionData} 
+                                                    // module={moduleData} 
+                                                    tableHeader={Object.keys(itemCategory[0])}
+                                                    // isLoading={userListLoading}
+                                                    // onOpenModal={handleOpenModal}
+                                                />
+                                            </>
+                                        )}
+                                        {activeTab === 'tab2' && (
+                                            <>
+                                                <Table 
+                                                    title="User List" 
+                                                    tableData={itemStore} 
+                                                    action={false}
+                                                    // permission={permissionData} 
+                                                    // module={moduleData} 
+                                                    tableHeader={Object.keys(itemStore[0])}
+                                                    // isLoading={userListLoading}
+                                                    // onOpenModal={handleOpenModal}
+                                                />
+                                            </>
+                                        )}
+                                        {activeTab === 'tab3' && (
+                                            <>
+                                                <Table 
+                                                    title="User List" 
+                                                    tableData={itemSupplier} 
+                                                    action={false}
+                                                    // permission={permissionData} 
+                                                    // module={moduleData} 
+                                                    tableHeader={Object.keys(itemSupplier[0])}
+                                                    // isLoading={userListLoading}
+                                                    // onOpenModal={handleOpenModal}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </>
-                )}
+                        </>
+                    )}
 
-                {slug === "doh-report" && (
-                    
-                    <div>
-                        <DOHReport 
-                            onAccordionClicked={(data) => handleAccordion(data)}
-                            dohData={statisticalReport?.data}
-                        />
-                    </div>
-                )}
+                    {slug === "doh-report" && (
+                        
+                        <div>
+                            <DOHReport 
+                                onAccordionClicked={(data) => handleAccordion(data)}
+                                dohData={statisticalReport?.data}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </AppLayout>
     )
