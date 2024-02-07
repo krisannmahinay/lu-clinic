@@ -8,8 +8,7 @@ export const userRegistration = [
         label: 'Roles',
         options: [
             {value: 'admin', label: 'Admin'},
-            {value: 'nurse', label: 'Nurse'},
-            {value: 'doctor', label: 'Doctor'}
+            {value: 'user', label: 'User'},
         ]
     }
 ]
@@ -46,6 +45,10 @@ export const generateOpdForms = (physicianList) => {
 }
 
 export const generateIpdForms = (physicianList, activeBedList) => {
+    const isBedAvailable = (bed) => {
+        return !bed.is_active
+    }
+
     const physicOptions = physicianList?.map(ph => ({
         value: ph.user_id,
         label: `Dr. ${ph.identity?.first_name} ${ph.identity?.last_name}`,
@@ -53,8 +56,11 @@ export const generateIpdForms = (physicianList, activeBedList) => {
 
     const bedOptions = activeBedList?.map(bed => ({
         value: bed.id,
-        label: `${bed.name} (${bed.bed_group?.name} : ${bed.bed_group?.bed_floor?.floor})`
+        label: `${bed.name} • ${bed.bed_group?.name} • ${bed.bed_group?.bed_floor?.floor}`,
+        isDisabled: isBedAvailable(bed)
     })) 
+
+    // console.log(activeBedList)
 
     return [
         {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Type...'},
@@ -78,7 +84,7 @@ export const generateIpdForms = (physicianList, activeBedList) => {
             ]
         },
         {
-            name: 'admiting_physician',
+            name: 'admitting_physician',
             type: 'dropdown',
             label: 'Physician',
             options: physicOptions
@@ -198,10 +204,10 @@ export const generateInfoForms = (data, province, municipality, barangay /*icd10
         // other patient details
         {name: 'admission_diagnosis', type: 'textarea', label: 'Admission Diagnosis', placeholder: 'Type...'},
         {name: 'discharge_diagnosis', type: 'textarea', label: 'Discharge Diagnosis', placeholder: 'Type Principal Diagnosis/Other Diagnosis'},
-        {name: 'principal_opt_proc', type: 'textarea', label: 'Principal Operation/Procedures', placeholder: 'Type...'},
-        {name: 'other_opt_proc', type: 'textarea', label: 'Other Operation/Procedures', placeholder: 'Type...'},
+        {name: 'principal_opt_proc', type: 'text', category: 'with_modal', modal_type: 'opt-procedure', label: 'Principal Operation/Procedures', placeholder: 'Click to search...'},
+        {name: 'other_opt_proc', type: 'text', category: 'with_modal', modal_type: 'opt-procedure', label: 'Other Operation/Procedures', placeholder: 'Click to search...'},
         {name: 'accident_injury_poison', type: 'textarea', label: 'Accident/Injuries/Poisoning', placeholder: 'Type...'},
-        {name: 'icdo10_code', type: 'text', category: 'with_modal', label: 'ICD/RUV CODE'},
+        {name: 'icdo10_code', type: 'text', category: 'with_modal', modal_type: 'icd-codes', label: 'ICD/RUV CODE', placeholder: 'Click to search...'},
         {name: 'disposition', type: 'checkbox', category: 'disposition', label: 'Disposition'},
     ]
 }
