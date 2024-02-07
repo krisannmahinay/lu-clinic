@@ -772,6 +772,9 @@ const SubModule = () => {
             content: () => <Prescription 
                                 onRefetch={medicationRefetch}
                                 medication={medicationList}
+                                medicine={medicineList?.medicines}
+                                medicineForm={medicineList?.medForm}
+                                medicineFrequency={medicineList?.medFrequency}
                                 patientId={profileData?.patient_id}
                                 physicianId={profileData?.admitting_physician}
                             />
@@ -1333,7 +1336,9 @@ const SubModule = () => {
                         isDrDrawerOpen: isDrDrawerOpen,
                         addedMedicine: addedMedicine,
                         alertMessage: alertMessage,
-                        medicineList: medicineList,
+                        medicineList: medicineList?.medicines,
+                        medicineForm: medicineList?.medForm,
+                        medicineFrequency: medicineList?.medFrequency,
                         medication: medicationList,
                         profileData: profileData,
                         btnSpinner: btnSpinner
