@@ -212,6 +212,7 @@ export const settingApi = createApi({
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'updateMedicines':
                     case 'updateMedication':
                         url = `/update-patient-medication/${id}`,
                         body = {
