@@ -230,6 +230,25 @@ export const patientApi = createApi({
             } 
         }),
 
+        getFilteredMedicineList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-filter',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getMedicationList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -279,6 +298,7 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetFilteredMedicineListQuery,
     useGetNurseNoteListQuery,
     useAutoSaveDataMutation, 
     useGetPatientListQuery,
