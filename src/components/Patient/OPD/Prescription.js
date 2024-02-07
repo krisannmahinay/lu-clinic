@@ -167,9 +167,9 @@ const Prescription = ({patientId, physicianId, medication, onRefetch, medicine, 
                                 <label className="block text-sm font-medium text-gray-700">Dose:</label>
                                 <input
                                     type="text"
-                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-500"
-                                    value={selectedMedicine.dose}
-                                    onChange={(e) => handleOnChange(e, "addMedicine", "dose")}
+                                    className="mt-1 block w-full p-2 border border-gray-300 bg-gray-200 px-3 py-2 text-sm focus:outline-none cursor-not-allowed"
+                                    value={selectedMedicine?.dosage}
+                                    readOnly
                                 />
 
                                 <label className="block text-sm font-medium text-gray-700">Form:</label>
