@@ -239,8 +239,34 @@ export const settingApi = createApi({
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'createMedicine':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    
+                    case 'createMedicineForm':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    
+                    case 'createMedicineFrequency':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
                     case 'createNurseNote':
-                        console.log(data)
                         url = '/create-nurse-note',
                         body = {
                             actionType: actionType,

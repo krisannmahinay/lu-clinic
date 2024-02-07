@@ -233,7 +233,7 @@ export const patientApi = createApi({
         getFilteredMedicineList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
-                const { keywords, items, page } = args
+                const { keywords, items, page, tabs } = args
                 return {
                     url: '/get-medicine',
                     method: 'GET',
@@ -243,6 +243,45 @@ export const patientApi = createApi({
                         page: page,
                         sort: 'created_at',
                         slug: 'medicine-filter',
+                        tabs: tabs,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getMedicineFormList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-form',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getMedicineFrequencyList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-frequency',
                         selectedDB: session
                     }
                 }
@@ -298,6 +337,8 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetMedicineFormListQuery,
+    useGetMedicineFrequencyListQuery,
     useGetFilteredMedicineListQuery,
     useGetNurseNoteListQuery,
     useAutoSaveDataMutation, 
