@@ -78,8 +78,8 @@ const Medication = () => {
                                 className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
                                 onChange={(e) => modalContext?.onAddMedicine({data:e, field:"form"})}>
                                 <option>Select options</option>
-                                {formMedication.map((option, index) => (
-                                    <option key={index} value={option}>{option}</option>
+                                {modalContext?.state?.medicineForm?.map((option, index) => (
+                                    <option key={option.id} value={option.name}>{option.name}</option>
                                 ))}
                             </select>
 
@@ -99,8 +99,8 @@ const Medication = () => {
                                 className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
                                 onChange={(e) => modalContext?.onAddMedicine({data:e, field:"frequency"})}>
                                 <option>Select options</option>
-                                {frequencyOptions.map((option, index) => (
-                                    <option key={index} value={option}>{option}</option>
+                                {modalContext?.state?.medicineFrequency.map((option, index) => (
+                                    <option key={option.id} value={option.name}>{option.name}</option>
                                 ))}
                             </select>
 

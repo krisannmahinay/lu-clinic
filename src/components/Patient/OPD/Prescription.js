@@ -17,7 +17,7 @@ const formMedication = [
     "softgels",
 ]
 
-const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
+const Prescription = ({patientId, physicianId, medication, onRefetch, medicine, medicineForm, medicineFrequency}) => {
     const [isShowMedForm, setIsShowMedForm] = useState(false)
     const [searchMedicine, setSearchMedicine] = useState("")
     const [selectedMedicine, setSelectedMedicine] = useState(null)
@@ -28,11 +28,11 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
         isSuccess: createUserSuccess 
     }] = useCreateBulkMutation()
 
-    const { data: medicineList } = useGetMedicineListQuery({
-        keywords: searchMedicine,
-    }, {
-        enabled: !!searchMedicine
-    })
+    // const { data: medicineList } = useGetMedicineListQuery({
+    //     keywords: searchMedicine,
+    // }, {
+    //     enabled: !!searchMedicine
+    // })
 
     useEffect(() => {
         let timer
@@ -132,7 +132,7 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
                                 className="p-1 w-full border-b-gray-300 border-b-[1px] bg-gray-100 text-sm px-3 py-2 focus:outline-none focus:border-gray-400"
                             />
                             <div className="">
-                                {medicineList?.map((data) => (
+                                {medicine?.map((data) => (
                                     <div
                                         key={data.id}
                                         className={`p-2 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-800 ${data.quantity === 0 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
@@ -177,8 +177,8 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
                                     className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
                                     onChange={(e) => handleOnChange(e, "addMedicine", "form")}>
                                     <option>Select options</option>
-                                    {formMedication.map((option, index) => (
-                                        <option key={index} value={option}>{option}</option>
+                                    {medicineForm?.map((option, index) => (
+                                        <option key={option.id} value={option.name}>{option.name}</option>
                                     ))}
                                 </select>
 
@@ -198,8 +198,8 @@ const Prescription = ({patientId, physicianId, medication, onRefetch}) => {
                                     className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 mr-4 focus:outline-none focus:border-gray-500 text-sm"
                                     onChange={(e) => handleOnChange(e, "addMedicine", "frequency")}>
                                     <option>Select options</option>
-                                    {frequencyOptions.map((option, index) => (
-                                        <option key={index} value={option}>{option}</option>
+                                    {medicineFrequency?.map((option, index) => (
+                                        <option key={option.id} value={option.name}>{option.name}</option>
                                     ))}
                                 </select>
 
