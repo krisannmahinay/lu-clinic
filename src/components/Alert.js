@@ -72,17 +72,22 @@ const Alert = ({ isOpen: propIsOpen, message, alertType, onClose}) => {
           onExited={handleTransition} 
         >
         
-          <div className={`relative flex justify-center text-white px-4 py-2 border-0  rounded mb-4 w-38 z-50 ${color}`}>
-            <div className="flex items-center">
-              <span className="inline-block text-md mr-3">{icon}</span>
-              <span className="inline-block align-middle mr-8 text-sm" dangerouslySetInnerHTML={{ __html: message }} />
-            </div>
-              {propIsOpen && (
-                <button className="absolute bg-transparent text-md translate-y-3 font-semibold leading-none right-0 top-0 mr-6 outline-none focus:outline-none" onClick={close}>
-                  <span>×</span>
-                </button>
-              )}
+        <div className={`relative flex items-center p-3 mb-4 text-white z-50 w-56 top-[3.5rem] ${color} float-right`} role="alert">
+          <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+          </svg><span className="sr-only">Info</span>
+          <div className="ms-3 text-sm font-medium">
+              <span dangerouslySetInnerHTML={{ __html: message }} />
           </div>
+          {propIsOpen && (
+            <button type="button" onClick={close} className="ms-auto -mx-1.5 -my-1.5 bg-red-300  rounded-lg  p-1.5 hover:bg-red-400 inline-flex items-center justify-center h-8 w-8 " ariaLabel="Close">
+              <span className="sr-only">Close</span>
+              <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+              </svg>
+          </button>
+          )}
+        </div>
       </Transition>
   )
 }

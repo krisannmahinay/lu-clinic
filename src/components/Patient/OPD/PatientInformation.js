@@ -1,13 +1,25 @@
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useMemo, useRef, createContext } from "react"
 import AsyncSelect from 'react-select/async'
 import Select from 'react-select'
-import { debounce } from 'lodash'
+import { debounce, update } from 'lodash'
 
 import { useGetCountryDataQuery } from '@/service/countryService'
-import { useGetProvinceDataQuery, useGetMunicipalityDataQuery, useGetBarangayDataQuery } from '@/service/psgcService'
+import { 
+    useGetProvinceDataQuery, 
+    useGetMunicipalityDataQuery, 
+    useGetBarangayDataQuery 
+} from '@/service/psgcService'
 import { useAutoSaveDataMutation } from '@/service/patientService'
 import { useGetICDDataQuery } from '@/service/icdService'
+import Form from "@/components/Form"
+import { 
+    generateInfoForms, 
+    generateOtherPatientForms, 
+    generatePatientForms 
+} from "@/utils/forms"
+
+import { FormContext } from "@/utils/context"
 
 const genderData = [
     {value: "male", label: "Male"},
@@ -49,9 +61,6 @@ const accordionItem = [
     }
 ]
 
-
-// console.log(userDetails.identity)
-
 const styleDropdown = {
     control: (provided) => ({
         ...provided,
@@ -79,71 +88,153 @@ const labelCss = "ml-2 mb-2 text-gray-500 font-medium capitalize text-sm"
 const custom_label_style = "block text-gray-500 font-medium text-sm mt-4 capitalize"
 const custom_form_field_style = "border border-gray-200 px-3 py-1 focus:border-gray-500 bg-gray-200 focus:outline-none w-full"
 
-const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
-    const [formData, setFormData] = useState({
-        last_name: "",
-        first_name: "",
-        middle_name: "",
-        ward_bed_rm: "",
-        country: "",
-        province: "",
-        state_municipality: "",
-        barangay: "",
-        street: "",
-        no_blk_lot: "",
-        telNo: "",
-        sex: "",
-        civil_status: "",
-        birth_date: "",
-        age: "",
-        birth_place: "",
-        nationality: "",
-        religion: "",
-        occupation: "",
-        employer: "",
-        employer_address: "",
-        employer_contact: "",
-        father_name: "",
-        father_address: "",
-        father_contact: "",
-        mother_name: "",
-        mother_address: "",
-        mother_contact: "",
-        spouse_name: "",
-        spouse_address: "",
-        spouse_contact: "",
 
-        admitting_physician: "",
-        admitting_clerk: "",
+const useRenderCount = () => {
+    const renderCountRef = useRef(0)
+    renderCountRef.current++
+    console.log(`Rendered ${renderCountRef.current} times`)
+}
 
-    })  
-
+const PatientInformation = ({ipdForms, opdForms, patientDataMaster, icd10Data, onModalState}) => {
+    useRenderCount()
     const [imagePreviewUrl, setImagePreviewUrl] = useState('/path/to/default-photo.png')
-    const [selectedProvince, setSelectedProvince] = useState(null)
-    const [selectedMunicipal, setSelectedMunicipal] = useState(null)
-    const [selectedBarangay, setSelectedBarangay] = useState(null)
-    const [selectedCountry, setSelectedCountry] = useState(null)
-    const [selectedSex, setSelectedSex] = useState(null)
-    const [selectedCivil, setSelectedCivil] = useState(null)
-    const [birthDate, setBirthDate] = useState("")
-    const [age, setAge] = useState("")
     const [provinceCode, setProvinceCode] = useState(null)
+    const [initialInfoForms, setInitialInfoForms] = useState([])
     const [municipalCode, setMunicipalCode] = useState(null)
     const [initialOptions, setInitialOptions] = useState([]) 
     const [checkedItem, setCheckedItem] = useState([])
-    const [selectedSocService, setSelectedSocService] = useState(null)
-    const [selectedGovType, setSelectedGovType] = useState(null)
-    const [selectedDisposition, setSelectedDisposition] = useState(null)
-    const [selectedType, setSelectedType] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
+    const [personInfo, setPersonInfo] = useState([])
+    const [patientInfo, setPatientInfo] = useState([])
+    const [otherPatientInfo, setOtherPatientInfo] = useState([])
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    
+    const [formData, setFormData] = useState({
+        // last_name: "",
+        // first_name: "",
+        // middle_name: "",
+        // email: "",
+        // birth_date: "",
+        // birth_place: "",
+        // gender: "",
+        // civil_status: "",
+        // contact_no: "",
+        // age: 0,
+        // province: "",
+        // municipality: "",
+        // barangay: "",
+        // street: "",
+        // no_blk_lot: "",
+        // nationality: "",
+        // religion: "",
+        // occupation: "",
+        // employer_name: "",
+        // employer_address: "",
+        // employer_contact: "",
+        // father_name: "",
+        // father_address: "",
+        // father_contact: "",
+        // mother_name: "",
+        // mother_address: "",
+        // mother_contact: "",
+        // spouse_name: "",
+        // spouse_address: "",
+        // spouse_contact: "",
+        // admission_date: "",
+        // discharge_date: "",
+        // total_no_day: "",
+        // admitting_physician: "",
+        // admitting_clerk: "",
+        // type_visit: "",
+        // referred_by: "",
+        // soc_serv_classification: "",
+        // allergic_to: "",
+        // hospitalization_plan: "",
+        // health_insurance_name: "",
+        // phic: "",
+        // data_furnished_by: "",
+        // address_of_informant: "",
+        // relation_to_patient: "",
+        // admission_diagnosis: "",
+        // discharge_diagnosis: "",
+        // principal_opt_proc: "",
+        // other_opt_proc: "",
+        // accident_injury_poison: "",
+        // icdo10_code: "",
+        // disposition: "",
+
+        // last_name: "",
+        // first_name: "",
+        // middle_name: "",
+        // gender: "",
+        // birth_date: "",
+        // age: 0,
+        // patient_id: "",
+        // patient_hrn: "",
+        // date_visit: "",
+        // type_visit: "",
+        // admission_date: "",
+        // discharge_date: "",
+        // refered_by: "",
+        // total_no_day: 0,
+        // admitting_physician: "",
+        // admitting_clerk: "",
+        // soc_serv_classification: "",
+        // allergic_to: "",
+        // hospitalization_plan: "",
+        // health_insurance_name: "",
+        // phic: "",
+        // address_of_informant: "",
+        // relation_to_patient: "",
+        // admission_diagnosis: "",
+        // icd10_code: "",
+        // disposition: "",
+        // soap_subj_symptoms: "",
+        // soap_obj_findings: "",
+        // soap_assessment: "",
+        // soap_plan: "",
+        // vital_bp: 0,
+        // vital_hr: 0,
+        // vital_temp: 0,
+        // vital_height: 0,
+        // vital_weight: 0,
+        // vital_bmi: 0,
+        // case_number: "",
+        // bed_id: "",
+        // kin_to_notif: "",
+        // kintonotif_relationship: "",
+        // kintonotif_address: "",
+        // kintonotif_contact_no: "",
+        // data_furnished_by: "",
+        // dfby_relation_to_patient: "",
+        // dfby_address: "",
+        // dfby_contact_no: "",
+        // date_surgery: "",
+        // principal_opt_proc_code: "",
+        // other_opt_proc_code: "",
+        // rvs_code: "",
+        // allegic_to: "",
+        // name_surgeon: "",
+        // type_of_anesthesia: "",
+        // principal_diagnosis: "",
+        // other_diagnosis: "",
+        // name_physician: ""
+    })  
     
     const initialOpenIds = accordionItem.map(item => item.id)
-    const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
-
+    // const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
     const { data: countryData } = useGetCountryDataQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
-    const { data: municipalityData } = useGetMunicipalityDataQuery({provinceCode: provinceCode}, {enabled: !!provinceCode})
-    const { data: barangayData } = useGetBarangayDataQuery({municipalCode: municipalCode}, {enabled: !!municipalCode})
+    const { data: municipalityData } = useGetMunicipalityDataQuery({
+        provinceCode: provinceCode
+    }, {
+        enabled: !!provinceCode
+    })
+    const { data: barangayData } = useGetBarangayDataQuery({
+        municipalCode: municipalCode
+    }, {
+        enabled: !!municipalCode
+    })
 
     const { data: icdResultData, isLoading, isError, error, isSuccess } = useGetICDDataQuery({
         keywords: searchQuery
@@ -162,127 +253,20 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
 
     const [autoSaveData] = useAutoSaveDataMutation()
 
+
     useEffect(() => {
-        if (provinceData) {
-            const options = provinceData.map(item => ({
-                value: item.code,
-                label: item.name
-            }))
-            setInitialOptions(options)
+        if(provinceData) {
+            const data = generateInfoForms(_, provinceData, municipalityData, barangayData)
+            setInitialInfoForms(data)
         }
-        if (userDetails) {
-            setFormData(userDetails?.identity)
-        }
-        if(patientDataMaster) {
-            setFormData({
-                last_name: patientDataMaster?.patient_identity?.last_name || "",
-                first_name: patientDataMaster?.patient_identity?.first_name || "",
-                middle_name: patientDataMaster?.patient_identity?.middle_name || "",
-                gender: patientDataMaster?.patient_identity?.gender || "",
-                admitting_physician: `Dr. ${patientDataMaster?.physician_identity?.first_name} ${patientDataMaster?.physician_identity?.last_name}` || "",
-                standard_charge: "",
-                birth_date: patientDataMaster?.patient_identity?.birth_date || "",
-                age: patientDataMaster?.patient_identity?.age || ""
-            })
-        }   
-    }, [provinceData, userDetails, patientDataMaster])
+    }, [provinceData, municipalityData, barangayData])
 
-    console.log(patientDataMaster)
-
-    const filterProvinceData = provinceData ?? []
-    const loadProvince = (inputValue, callback) => {
-        // Simulate an async search with a timeout. Replace this with your actual API call.
-        setTimeout(() => {
-            const filteredData = filterProvinceData.filter(item => 
-                item.name.toLowerCase().includes(inputValue.toLowerCase())
-            )
-
-            const options = filteredData.map(item => ({
-                value: item.code,
-                label: item.name
-            }))
-            callback(options)
-        }, 1000)
+    const handleSelectedProvince = (code) => {
+        setProvinceCode(code)
     }
 
-    const handleGovType = (type) => {
-        if(selectedGovType === type) {
-            setSelectedGovType(null)
-        } else {
-            setSelectedGovType(type)
-        }
-    }
-
-    const handleSocService = (type) => {
-        if (selectedSocService === type) {
-            setSelectedSocService(null) // Uncheck if already checked
-        } else {
-            // const extractRm = bedRoomData.map
-            setSelectedSocService(type)
-
-        }
-    }
-
-    const handleDisposition = (type) => {
-        if(selectedDisposition === type) {
-            setSelectedDisposition(null)
-        } else {
-            setSelectedDisposition(type)
-        }
-    }
-
-    const autoSave = debounce(async (newData) => {
-        try {
-            console.log(newData)
-            // await autoSaveData(newData)
-            console.log("it works!")
-        } catch(err) {
-            console.log(err)
-        }
-    })
-
-    const handleFieldChange = useCallback((e) => {
-        const { name, value } = e.target
-        setFormData(prevData => ({
-            ...prevData, 
-            [name]: value
-        }))
-        autoSave({...formData, [name]: value})
-    }, [autoSave, formData])
-
-    const handleProvinceChange = (selectedOption) => {
-        setSelectedProvince(selectedOption?.label)
-        setProvinceCode(selectedOption?.value)
-    }
-
-    const handleMunicipalityChange = (selectedOption) => {
-        setSelectedMunicipal(selectedOption?.label)
-        setMunicipalCode(selectedOption?.value)
-        setFormData(prevData => ({
-            ...prevData,
-            state_municipality: selectedOption?.value
-            
-        }))
-    }
-
-    const handleBarangayChange = (selectedOption) => {
-        setSelectedBarangay(selectedOption?.label)
-    }
-
-    const handleCountryChange = (selectedOption) => {
-        setSelectedCountry(selectedOption?.label)
-    }
-    
-    const handleSexChange = (selectedOption) => {
-        setSelectedSex(selectedOption)
-    }
-
-    const handleCivilStatusChange = (selectedOption) => {
-        setSelectedCivil(selectedOption)
-    }
-
-    const handleSearchICD = (keywords) => {
-        setSearchQuery(keywords)
+    const handleSelectedMunicipality = (code) => {
+        setMunicipalCode(code)
     }
 
     const handleCheckbox = (moduleId) => {
@@ -294,13 +278,23 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
         }
     }
 
-    const handleBirthDateChange = (e) => {
-        setBirthDate(e.target.value)
-        const birth = new Date(e.target.value)
-        const today = new Date()
-        let calculatedAge = today.getFullYear() - birth.getFullYear() - (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate()) ? 1 : 0)
-        setAge(calculatedAge)
-    }
+    // const handleFieldChange = useCallback((e) => {
+    //     const { name, value } = e.target
+    //     setFormData(prevData => ({
+    //         ...prevData, 
+    //         [name]: value
+    //     }))
+    // }, [autoSave, formData])
+
+    const autoSave = debounce(async (newData) => {
+        try {
+            // console.log(newData)
+            // await autoSaveData(newData)
+            // console.log("it works!")
+        } catch(err) {
+            // console.log(err)
+        }
+    })
 
     const handleImageChange = async (e) => {
         e.preventDefault()
@@ -330,576 +324,44 @@ const PatientInformation = ({ipdForms, opdForms, patientDataMaster}) => {
         })
     }
 
+    const handleModalState = (data) => {
+        onModalState(data)
+    }
+
     return (
-        <div className="space-y-4">
-                {accordionItem.map(item => (
-                    <div key={item.id} className="border-none overflow-hidden disable-selecting-text sm:ml-[10rem] mr-[10rem] py-2 px-4">
-                        <div 
-                            className="cursor-pointer text-center bg-[#15803d] p-4" 
-                            onClick={() => toggleAccordion(item.id)}
-                        >
-                            <h3 className="text-white font-bold uppercase text-xs">{item.title}</h3>
-                        </div>
-                        
-                        <div className=" ">
-                            {accordionIdOpen.includes(item.id) && (
-                                item.id === 1 ? (
-                                    <>
-                                    <div className="py-3 space-y-2">
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>last name: </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="last_name"
-                                                    value={formData.last_name} 
-                                                    onChange={(e) => handleFieldChange(e)} 
-                                                    className={custom_form_field_style}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>given name: </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="first_name"
-                                                    value={formData.first_name} 
-                                                    onChange={(e) => handleFieldChange(e)} 
-                                                    className={custom_form_field_style}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>middle name: </label>
-                                                <input 
-                                                    type="text" 
-                                                    name="middle_name"
-                                                    value={formData.middle_name} 
-                                                    onChange={(e) => handleFieldChange(e)} 
-                                                    className={custom_form_field_style}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>ward-rm-bed</label>
-                                                <input 
-                                                    type="text" 
-                                                    name="ward_bed_rm"
-                                                    value={formData.ward_bed_rm} 
-                                                    onChange={(e) => handleFieldChange(e)} 
-                                                    className={custom_form_field_style}
-                                                />
-                                            </div>
-                                            
-                                            <div>
-                                                <label className={custom_label_style}>country</label>
-                                                <div className="w-full">
-                                                    <Select 
-                                                        options={countryData?.map(country => ({ value: country.name, label: country.name }))}
-                                                        onChange={handleCountryChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a country..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown} 
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>province</label>
-                                                <div className="w-full">
-                                                    <AsyncSelect 
-                                                        cacheOptions
-                                                        loadOptions={loadProvince}
-                                                        defaultOptions={initialOptions}
-                                                        onChange={handleProvinceChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a province..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>state/municipality</label>
-                                                <div className="w-full">
-                                                    <Select 
-                                                        options={municipalityData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
-                                                        onChange={handleMunicipalityChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a state..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown} 
-                                                        value={municipalityData?.find(data =>
-                                                            data.value === formData.state_municipality 
-                                                        )}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>barangay</label>
-                                                <div className="w-full">
-                                                    <Select 
-                                                        options={barangayData?.map(barangay => ({ value: barangay.code, label: barangay.name }))}
-                                                        onChange={handleBarangayChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a barangay..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown} 
-                                                        value={barangayData?.find(data =>
-                                                            data.value === formData.barangay 
-                                                        )}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>street</label>
-                                                <input type="text" placeholder="Enter street" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>No/blk/lot</label>
-                                                <input type="text" placeholder="Enter no" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>Mobile No.</label>
-                                                <input type="text" placeholder="Enter Mobile No." className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>Sex</label>
-                                                <div className="w-full">
-                                                    <Select 
-                                                        options={genderData?.map(gender => ({ value: gender.value, label: gender.label }))}
-                                                        onChange={handleSexChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a gender..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown}
-                                                        value={genderData?.find(data =>
-                                                            data.value === formData.gender 
-                                                        )}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>Civil Status</label>
-                                                <div className="w-full">
-                                                    <Select 
-                                                        options={civilStatusData?.map(country => ({ value: country.value, label: country.label }))}
-                                                        onChange={handleCivilStatusChange}
-                                                        isSearchable={true}
-                                                        isClearable={true}
-                                                        placeholder="Select a civil status..."
-                                                        classNamePrefix="react-select"
-                                                        styles={styleDropdown} 
-                                                        value={formData.civil_status}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>Birthday</label>
-                                                <input type="date" value={formData.birth_date} onChange={handleBirthDateChange} className={custom_form_field_style}/>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>age</label>
-                                                <input type="text" value={formData.age} disabled className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full"/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>birth place</label>
-                                                <input type="text" placeholder="Enter birth-place" className={custom_form_field_style}/>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>nationality</label>
-                                                <input type="text" placeholder="Enter nationality" className={custom_form_field_style}/>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>religion</label>
-                                                <input type="text" placeholder="Enter religion" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>occupation</label>
-                                                <input type="text" placeholder="Enter occupation" className={custom_form_field_style}/>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>employer (Type of Business)</label>
-                                                <input type="text" placeholder="Enter employer" className={custom_form_field_style}/>
-                                            </div>
-
-                                            <div>
-                                                <label className={custom_label_style}>address</label>
-                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>Mobile no</label>
-                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
-                                            </div>
-                                            {ipdForms && (
-                                                <>
-                                                    <div>
-                                                        <label className={custom_label_style}>Next of Kin or Whom to Notify</label>
-                                                        <input type="text" placeholder="Enter fathers name" className={custom_form_field_style}/>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className={custom_label_style}>Relationship</label>
-                                                        <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className={custom_label_style}>Address</label>
-                                                        <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
-                                                    </div>
-                                                    
-                                                    <div>
-                                                        <label className={custom_label_style}>Contact No</label>
-                                                        <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
-                                                    </div>
-                                                </>
-                                            )}
-                                            <div>
-                                                <label className={custom_label_style}>fathers name</label>
-                                                <input type="text" placeholder="Enter fathers name" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>address</label>
-                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>Mobile no</label>
-                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>mothers (Maiden) NAME</label>
-                                                <input type="text" placeholder="Enter mothers name" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>address</label>
-                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>Mobile no</label>
-                                                <input type="text" placeholder="Enter Mobile no" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>spouse name</label>
-                                                <input type="text" placeholder="Enter spouse name" className={custom_form_field_style}/>
-                                            </div>
-                                            <div>
-                                                <label className={custom_label_style}>address</label>
-                                                <input type="text" placeholder="Enter address" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className={custom_label_style}>Mobile no</label>
-                                                <input type="text" placeholder="Enter number" className={custom_form_field_style}/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </>
-                                ) : item.id === 2 ? (
-                                    <>
-                                        <div className="py-3 space-y-2">
-                                            <div className="grid grid-cols-4 gap-4">
-                                                <div>
-                                                    <label className={custom_label_style}>Admission</label>
-                                                    <input type="datetime-local" className={custom_form_field_style}/>
-                                                </div>
-
-                                                <div>
-                                                    <label className={custom_label_style}>discharge</label>
-                                                    <input type="datetime-local" className={custom_form_field_style}/>
-                                                </div>
-
-                                                <div>
-                                                    <label className={custom_label_style}>total days</label>
-                                                    <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-full" disabled/>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-4 gap-4">
-                                                <div>
-                                                    <label className={custom_label_style}>Admitting Clerk</label>
-                                                    <input type="text" value={formData.admitting_clerk} className={custom_form_field_style}/>
-                                                </div>
-                                                <div>
-                                                    <label className={custom_label_style}>admitting physician</label>
-                                                    <input type="text" placeholder="" value={formData.admitting_physician} className={custom_form_field_style}/>
-                                                </div>
-                                                <div>
-                                                    <label className={custom_label_style}>Type of Admission</label>
-                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
-                                                </div>
-                                                <div>
-                                                    <label className={custom_label_style}>Refered by (Physician/Health Facility)</label>
-                                                    <input type="text" placeholder="" className={custom_form_field_style}/>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                     <div className="py-4 space-y-2">
-                                         {/* <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Admission</label>
-                                             <input type="datetime-local" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">discharge</label>
-                                             <input type="datetime-local" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">TOTAL NO. OF DAY</label>
-                                             <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-1/2" disabled/>
-                                         </div>
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Admitting Clerk</label>
-                                             <input type="text" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">ADMITTING PHYSICIAN</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Type of Admission</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Refered by (Physician/Health Facility)</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-                                      
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Social Service Classification</label>
-                                             <div className="flex w-1/2 ml-2 space-x-3">
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'a'} onChange={() => handleSocService('a')} />
-                                                 <label className={labelCss}>A</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'b'} onChange={() => handleSocService('b')} />
-                                                 <label className={labelCss}>B</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c1'} onChange={() => handleSocService('c1')} />
-                                                 <label className={labelCss}>C1</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c2'} onChange={() => handleSocService('c2')} />
-                                                 <label className={labelCss}>C2</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'c3'} onChange={() => handleSocService('c3')} />
-                                                 <label className={labelCss}>C3</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedSocService === 'd'} onChange={() => handleSocService('d')} />
-                                                 <label className={labelCss}>D</label>
-                                             </div>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Hospitalization Plan (Company/Industrial Name)</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Health Insurance Name</label>
-                                             <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2"/>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">PHIC</label>
-                                             <div className="flex w-1/2 ml-2 space-x-3">
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'sss'} onChange={() => handleGovType('sss')} />
-                                                 <label className={labelCss}>SSS</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'sss_dependent'} onChange={() => handleGovType('sss_dependent')} />
-                                                 <label className={labelCss}>SSS Dependent</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'gsis'} onChange={() => handleGovType('gsis')} />
-                                                 <label className={labelCss}>GSIS</label>
-
-                                                 <input className="w-5 h-5" type="checkbox" checked={selectedGovType === 'gsis_dependent'} onChange={() => handleGovType('gsis_dependent')} />
-                                                 <label className={labelCss}>GSIS Dependent</label>
-                                             </div>
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Data Furnished By</label>
-                                             <input type="text" className="border-none bg-gray-200 px-3 py-2 focus:outline-none w-1/2" disabled/>
-                                         </div>
-                                      
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Address of Informant</label>
-                                             <input type="text" placeholder="Enter address" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2" />
-                                         </div>
-
-                                         <div className="flex items-center justify-between">
-                                             <label className="ml-2 text-gray-500 font-bold uppercase text-xs">Contact No</label>
-                                             <input type="text" placeholder="Enter number" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-1/2" />
-                                         </div> */}
-                                     </div>
-                                    </>
-
-                                ) : item.id === 3 ? (
-                                    <>
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Admission Diagnosis:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Discharge Diagnosis:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Principal Diagnosis:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Other Diagnosis:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Principal Operation/s Procedures:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Other Operation/s or Procedures:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>ICD Codes:</label>
-                                            <div className="w-full">
-                                                <Select 
-                                                    options={mappedIcdData?.map(icd => ({ 
-                                                        value: icd.name, 
-                                                        label: `${icd.icd_codes} ${icd.name}` 
-                                                    }))}
-                                                    onInputChange={handleSearchICD}
-                                                    isSearchable={true}
-                                                    isClearable={true}
-                                                    placeholder="Search for icd..."
-                                                    classNamePrefix="react-select"
-                                                    styles={styleDropdown} 
-                                                />
-                                            </div>
-                                        </div>
-
-                                        
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Accident/Injuries/Poisoning:</label>
-                                            <textarea 
-                                                className={`${custom_form_field_style} h-40`}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col w-full">
-                                            <label className={custom_label_style}>Disposition:</label>
-                                            <div className="flex flex-col w-1/2 mb-4">
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input  className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'improved'} onChange={() => handleDisposition('improved')} />
-                                                    <label className={labelCss}>Improved</label>
-                                                </div>
-                                                
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'unimproved'} onChange={() => handleDisposition('unimproved')} />
-                                                    <label className={labelCss}>Unimproved</label>
-                                                </div>
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'transferred'} onChange={() => handleDisposition('transferred')} />
-                                                    <label className={labelCss}>Transferred</label>
-                                                </div>
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'hama'} onChange={() => handleDisposition('hama')} />
-                                                    <label className={labelCss}>HAMA</label>
-                                                </div>
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'absconded'} onChange={() => handleDisposition('absconded')} />
-                                                    <label className={labelCss}>Absconded</label>
-                                                </div>
-                                                <div className="flex ml-2 space-x-2">
-                                                    <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'expired' || selectedDisposition === "u48h" || selectedDisposition === "m48h"} onChange={() => handleDisposition('expired')} />
-                                                    <label className={labelCss}>Expired</label>
-                                                </div>
-                                                {(selectedDisposition === "expired" || selectedDisposition === "u48h" || selectedDisposition === "m48h") && (
-                                                    <>
-                                                        <div className="flex ml-6 space-x-2">
-                                                            <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'u48h'} onChange={() => handleDisposition('u48h')} />
-                                                            <label className={labelCss}>under 48 hours</label>
-                                                        </div>
-                                                        
-                                                        <div className="flex ml-6 space-x-2">
-                                                            <input className="w-5 h-5" type="checkbox" checked={selectedDisposition === 'm48h'} onChange={() => handleDisposition('m48h')} />
-                                                            <label className={labelCss}>more than 48 hours</label>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : ""
-                            
-                            )}  
-                        </div>
-                    </div>
-                ))}
-                
+        <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
+            {/* <h3 className="text-gray-400 text-center font-bold uppercase text-medium">Part I</h3>
+            <hr className="drop-shadow-md"/> */}
+            <div className="lg:ml-[10rem] lg:mr-[10rem] :ml-0 md:mr-0 pb-7">
+                {/* <Form
+                    initialFields={personInfo}
+                    enableAutoSave={true}
+                    onFormChange={handleFormChange}
+                    onClick={setIsModalOpen(true)}
+                    onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
+                    onSuccess={handleRefetch}
+                    onCloseSlider={() => setActiveContent("yellow")}
+                    onLoading={(data) => setBtnSpinner(data)}
+                    onSetAlertType={(data) => setAlertType(data)}
+                    onSetAlertMessage={(data) => setAlertMessage(data)}
+                /> */}
+                <FormContext.Provider value={{ 
+                    data: patientDataMaster, 
+                    initialFields: initialInfoForms, 
+                    provinceData: provinceData,
+                    municipalityData: municipalityData,
+                    barangayData: barangayData,
+                    enableAutoSave: true, 
+                    onModalOpen: handleModalState,
+                    onSelectedProvince: handleSelectedProvince,
+                    onSelectedMunicipality: handleSelectedMunicipality,
+                    // onSelectProvince: handleOnSelect
+                }}>
+                    <Form />
+                </FormContext.Provider>
+            </div>
         </div>
     )
 }
 
-export default PatientInformation
+export default React.memo(PatientInformation)

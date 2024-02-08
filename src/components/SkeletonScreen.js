@@ -1,33 +1,59 @@
+import React from "react"
 
-const SkeletonCall = () => {
-    return <div className="w-full h-8 bg-gray-200 rounded animate-pulse mx-2"></div>
-}
 
-const SkeletonScreen = ({ columnCount, rowCount }) => {
-    const maxRowCount = Math.min(rowCount, 5)
-
-    const skeletonHeaders = Array.from({ length: columnCount }, (_, index) => (
-        <SkeletonCall key={index}/>
-    ))
-
-    const skeletonRows = Array.from({ length: 5 }, (_, rowIndex) => (
-        <div key={rowIndex} className="flex justify-between items-center">
-            {Array.from({ length: columnCount }, (_, colIndex) => (
-                // console.log(colIndex)
-                <SkeletonCall key={colIndex}/>
-            ))}
-        </div>
-    ))
-
+const SkeletonScreen = ({loadingType}) => {
     return (
-        <>
-        {/* Table Header */}
-        <div className="flex justify-between items-center py-4">{skeletonHeaders}</div>
-    
-        {/* Table Rows */}
-        <div className="space-y-4 py-4">{skeletonRows}</div>
-        </>
+        loadingType === 'table' ? (
+            <div className="grid px-7 gap-y-2 pr-[6rem] pl-[6rem] pt-[7rem]">
+                <div className="flex justify-between">
+                    <div className="flex space-x-3">
+                        <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                        <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    </div>
+
+                    <div>
+                        <div className="w-40 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    </div>
+                </div>
+                <div className="flex space-x-3">
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+
+                </div>
+                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+            </div>
+        ) : loadingType === 'mainPatientModule' ? (
+            <div className="grid px-7 gap-y-2 pt-[7rem]">
+                <div className="flex space-x-3">
+                    <div className="w-full h-40 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-full h-40 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-full h-40 bg-gray-300 rounded animate-pulse"></div>
+                </div>
+                <div className="flex justify-between">
+                    <div className="flex space-x-3">
+                        <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                        <div className="w-28 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    </div>
+
+                    <div>
+                        <div className="w-40 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    </div>
+                </div>
+                <div className="flex space-x-3">
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-8 bg-gray-300 rounded animate-pulse"></div>
+
+                </div>
+                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+            </div>
+        ) : ''
     )
 }
 
-export default SkeletonScreen
+export default React.memo(SkeletonScreen)

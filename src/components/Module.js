@@ -1,29 +1,31 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useRouter } from 'next/router'
 
 // components
 import NavLink from "./Navlink";
 import { useSelector } from "react-redux";
+import { useComponentContext } from "@/utils/context";
 
-const Module = ({data, menuGroup}) => {
-    
+const Module = () => {
+    const context = useComponentContext()
     const router = useRouter()
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
-    
+
     useEffect(() => {
-        if(data && data.module) {
-            const uniquePermissions = new Set();
-            const filteredMenus = data.module.filter((item) => {
-                if(item.menu_group === menuGroup && !uniquePermissions.has(item.permission_id)) {
+        if(context?.data.module && context?.data.module.module) {
+            const uniquePermissions = new Set()
+            const filteredMenus = context?.data.module.module.filter((item) => {
+                if(item.menu_group === context?.data.menuGroup && !uniquePermissions.has(item.permission_id)) {
                     uniquePermissions.add(item.permission_id)
                     return true
                 }
                 return false
-            });
+            })
+            // console.log(filteredMenus)
             setMenus(filteredMenus)
         }
-    }, [data, menuGroup])
+    }, [context?.data.module, context?.data.menuGroup])
 
     const toggleAccordion = (module) => {
         if(module === 'settings') {
@@ -31,7 +33,9 @@ const Module = ({data, menuGroup}) => {
         }
     }
 
-    // console.log(menus)
+    const handleOnClick = () => {
+        (context?.state ?? {}).module = "isClicked"
+    }
     
     return (
         <>
@@ -50,21 +54,22 @@ const Module = ({data, menuGroup}) => {
                 
                     const baseClasses = 'flex items-center py-[4px] my-1 px-2 cursor-pointer rounded-lg text-sm'
                     const activeClasses = 'bg-[#5e6064] text-[#fff]'
-                    const inactiveClasses = 'hover:bg-[#5e6064] hover:text-[#fff] text-[#c2c7d0]'
+                    const inactiveClasses = 'hover:bg-[#485159] hover:text-[#fff] text-[#c2c7d0]'
                     const subModuleClasses = item.module?.type === 'sub' ? 'pl-6' : ''
+                    
 
                     return (
                         // console.log(item)
-                        <nav className="bg-[#343a40]">
+                        <nav className="bg-[#343a40]" key={index}>
                             <ul className="mx-1 my-1">
                                 {item.module?.type === 'sub' ? (
                                     <>
-                                        {menuGroup === 'patients' && (
+                                        {context?.data.menuGroup === 'patients' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
                                                 href={`/patients/${item.module?.module_id}`}>
-                                                <div className={`${baseClasses} ${isPatientActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
+                                                <div onClick={() => handleOnClick()} className={`${baseClasses} ${isPatientActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
@@ -75,7 +80,7 @@ const Module = ({data, menuGroup}) => {
                                             </NavLink>
                                         )}
 
-                                        {menuGroup === 'settings' && (
+                                        {context?.data.menuGroup === 'settings' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
@@ -93,7 +98,7 @@ const Module = ({data, menuGroup}) => {
                                             </NavLink>
                                         )}
 
-                                        {menuGroup === 'inventory' && (
+                                        {context?.data.menuGroup === 'inventory' && (
                                             <NavLink 
                                                 shallow
                                                 key={index}
@@ -122,7 +127,7 @@ const Module = ({data, menuGroup}) => {
                                             <div
                                                 className={`${router.pathname.startsWith(`/${item.module?.module_id}`)
                                                         ? 'bg-[#5e6064] cursor-pointer text-[#fff] rounded-lg text-sm ' 
-                                                        : 'hover:bg-[#5e6064] hover:text-[#fff] cursor-pointer text-[#c2c7d0] rounded-lg text-sm' }
+                                                        : 'hover:bg-[#485159] hover:text-[#fff] cursor-pointer text-[#c2c7d0] rounded-lg text-sm' }
                                                         ${item.module?.type === 'sub' ? 'pl-9' : ''} flex items-center py-[5px] my-1 px-2`}>
                                                 <svg 
                                                     className="" 
@@ -146,4 +151,4 @@ const Module = ({data, menuGroup}) => {
     )
 }
 
-export default Module
+export default React.memo(Module) 

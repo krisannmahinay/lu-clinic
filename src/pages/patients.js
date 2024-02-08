@@ -16,6 +16,8 @@ import ItemPerPage from '@/components/ItemPerPage'
 import SearchExport from '@/components/SearchExport'
 import Dropdown from '@/components/Dropdown'
 import { DropdownExport } from '@/components/DropdownLink'
+import SkeletonScreen from '@/components/SkeletonScreen'
+import { TableContext } from '@/utils/context'
 
 const recentDoctorData = [
     {name: "schin kumar", department: "Allergist/Immunologist", mobile: "0982828282", status: "permanent"},
@@ -35,9 +37,24 @@ const Patients = () => {
     const [totalPages, setTotalPages] = useState(1)
     const [tableRecords, setTableRecords] = useState("recent_doctors")
     const [activeContent, setActiveContent] = useState("yellow")
+    const [contentHeight, setContentHeight] = useState(0)
     const { isLoading: moduleListLoading, refetch: refetchModules, isError } = useGetModuleListQuery({},{
         enabled: !!authToken
     })
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
 
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
@@ -69,30 +86,44 @@ const Patients = () => {
         setTableRecords(e)
     }
 
-    // const tableHeader = 
+    const renderContent = () => {
+
+    }
     
     const renderContentBySlug = (table) => {
         switch(table) {
             case 'recent_doctors':
                 return (
-                    <Table 
-                        slug={moduleId}
-                        title="User List"
-                        tableData={recentDoctorData} 
-                        tableHeader={Object.keys(recentDoctorData[0])}
-                        // isLoading={userListLoading}
-                    />
+                    <TableContext.Provider value={{
+                        tableData: recentDoctorData,
+                        tableHeader: Object.keys(recentDoctorData[0])
+                    }}>
+                        <Table />
+                    </TableContext.Provider>
+                    // <Table 
+                    //     slug={moduleId}
+                    //     title="User List"
+                    //     tableData={recentDoctorData} 
+                    //     tableHeader={Object.keys(recentDoctorData[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
 
             case 'recent_patients':
                 return (
-                    <Table 
-                        slug={moduleId}
-                        title="User List"
-                        tableData={recentPatientData} 
-                        tableHeader={Object.keys(recentPatientData[0])}
-                        // isLoading={userListLoading}
-                    />
+                    <TableContext.Provider value={{
+                        tableData: recentPatientData,
+                        tableHeader: Object.keys(recentPatientData[0])
+                    }}>
+                        <Table />
+                    </TableContext.Provider>
+                    // <Table 
+                    //     slug={moduleId}
+                    //     title="User List"
+                    //     tableData={recentPatientData} 
+                    //     tableHeader={Object.keys(recentPatientData[0])}
+                    //     // isLoading={userListLoading}
+                    // />
                 )
             
             default:
@@ -115,10 +146,13 @@ const Patients = () => {
             </Head>
 
             
-            <div className="p-4">
-                <div className="flex relative overflow-hidden h-screen">
-                    <div className="absolute inset-0 w-full">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
+            <div className="container mx-auto">
+                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+                    {moduleListLoading ? (
+                        <SkeletonScreen loadingType="mainPatientModule"/>
+                    ) : (
+                        <>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} p-8 pt-[5rem] absolute inset-0`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             <div className="flex gap-4">
                                 {/* Box 1: Total doctors with approval required */}
                                 <div onClick={() => setActiveContent("green")} className="border p-6 rounded shadow-md bg-red-500 text-white cursor-pointer w-full">
@@ -194,18 +228,10 @@ const Patients = () => {
                                 </SearchExport>
                             </div>
 
-
-                            <Table 
-                                slug={moduleId}
-                                title="User List"
-                                disableTable={true} 
-                                // tableData={recentDoctorData} 
-                                // tableHeader={Object.keys(recentDoctorData[0])}
-                                // isLoading={userListLoading}
-                                onOpenModal={(id) => setModalId(id)}
-                            >
+                            
+                            <div className="bg-white overflow-hidden border border-gray-300 rounded">
                                 {renderContentBySlug(tableRecords)}
-                            </Table>
+                            </div>
 
                             <div className="flex flex-wrap py-2">
                                 <div className="flex items-center justify-center flex-grow">
@@ -234,7 +260,7 @@ const Patients = () => {
                         </div>
 
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} p-8 pt-[5rem] absolute inset-0`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             <Button
                                 paddingY="2"
                                 btnIcon="close"
@@ -243,8 +269,8 @@ const Patients = () => {
                                 Close
                             </Button>
                         </div>
-                    </div>
-                    
+                        </>
+                    )}
                 </div>
             </div>
         </AppLayout>

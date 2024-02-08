@@ -12,6 +12,7 @@ import SkeletonScreen from "../SkeletonScreen"
 import { DropdownExport } from "../DropdownLink"
 import { useGetHospitalChargeQuery } from "@/service/chargeService"
 import Alert from "../Alert"
+import { FormContext } from "@/utils/context"
 
 
 const hospitalCharge = [
@@ -194,6 +195,7 @@ const HospitalCharge = ({
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [activeContent, setActiveContent] = useState("yellow")
+    const [contentHeight, setContentHeight] = useState(0)
 
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -212,6 +214,20 @@ const HospitalCharge = ({
     }, {
         enabled: !!activeTab
     })
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
 
     useEffect(() => {
         // const newRows = new Set()
@@ -383,10 +399,6 @@ const HospitalCharge = ({
                                 </th>
 
                             ))}
-    
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Action
-                            </th>
                         </tr>
                     </thead>
                     
@@ -414,16 +426,6 @@ const HospitalCharge = ({
                                             )}
                                         </td>
                                     ))}
-    
-                                    <td className="px-6 py-2 whitespace-nowrap">    
-                                        {/* <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}> */}
-                                        <button title="Add Modules" type="button">
-                                            {/* <span>ADD</span> */}
-                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
-                                        </button>
-                                    </td>
                                 </tr>
                             ))
                         )}
@@ -500,7 +502,7 @@ const HospitalCharge = ({
             <>
                 <div className="flex relative overflow-hidden h-screen">
                     <div className="absolute inset-0 w-full">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                             <div className="font-bold text-xl mb-2 uppercase text-gray-600">Hospital Charges</div>
                             <div className="flex justify-between py-1">
                                 <Button
@@ -549,7 +551,7 @@ const HospitalCharge = ({
 
                             
                             <div className="bg-white overflow-hidden border border-gray-300 rounded">
-                                <div className="flex justify-items-center">
+                                <div className="flex justify-items-center border-gray-300 border-b-[1px]">
                                     <div className="rounded-tl-lg py-3 ml-3">
                                         <button 
                                             onClick={() => setActiveTab('tab1')}
@@ -613,8 +615,16 @@ const HospitalCharge = ({
                             </div>
                         </div>
 
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
-                            <div className="flex justify-between py-2">
+                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]` } style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                            <div className="font-bold text-lg mb-2 text-gray-600 pt-10 px-4">Add {
+                                activeTab === 'tab1' ? 'Charges' 
+                                : activeTab === 'tab2' ? 'Charge Category' 
+                                : activeTab === 'tab3' ? 'Doctor Opd Charge' 
+                                : activeTab === 'tab4' ? 'Doctor Emergency Charge'
+                                : activeTab === 'tab5' ? 'Charge Type' 
+                                : ''
+                            }</div>
+                            <div className="flex justify-between py-1 px-4">
                                 <Button
                                     paddingY="2"
                                     btnIcon="close"
@@ -644,63 +654,93 @@ const HospitalCharge = ({
                             </div>
 
                             {activeTab === 'tab1' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={chargeTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
+                                <FormContext.Provider value={{
+                                    title: "Charges",
+                                    ref: formRef,
+                                    initialFields: chargeTab,
+                                    enableAddRow: true,
+                                    onLoading: (data) => setBtnSpinner(data),
+                                    onSuccess: () => handleRefetch(),
+                                    onCloseSlider: () => setActiveContent("yellow"),
+                                    onAlert: (data) => {
+                                        setAlertMessage(data.msg)
+                                        setAlertType(data.type)
+                                    }
+                                }}>
+                                    <Form />
+                                </FormContext.Provider>
                             )}
 
                             {activeTab === 'tab2' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={chargeCategoryTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
+                                <FormContext.Provider value={{
+                                    title: "Charge Category",
+                                    ref: formRef,
+                                    initialFields: chargeCategoryTab,
+                                    enableAddRow: true,
+                                    onLoading: (data) => setBtnSpinner(data),
+                                    onSuccess: () => handleRefetch(),
+                                    onCloseSlider: () => setActiveContent("yellow"),
+                                    onAlert: (data) => {
+                                        setAlertMessage(data.msg)
+                                        setAlertType(data.type)
+                                    }
+                                }}>
+                                    <Form />
+                                </FormContext.Provider>
                             )}
 
                             {activeTab === 'tab3' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={physicianChargeOPD}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
+                                <FormContext.Provider value={{
+                                    title: "Doctor OPD Charge",
+                                    ref: formRef,
+                                    initialFields: physicianChargeOPD,
+                                    enableAddRow: true,
+                                    onLoading: (data) => setBtnSpinner(data),
+                                    onSuccess: () => handleRefetch(),
+                                    onCloseSlider: () => setActiveContent("yellow"),
+                                    onAlert: (data) => {
+                                        setAlertMessage(data.msg)
+                                        setAlertType(data.type)
+                                    }
+                                }}>
+                                    <Form />
+                                </FormContext.Provider>
                             )}
 
                             {activeTab === 'tab4' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={physicianChargeER}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
+                                <FormContext.Provider value={{
+                                    title: "Doctor Emergency Charge",
+                                    ref: formRef,
+                                    initialFields: physicianChargeER,
+                                    enableAddRow: true,
+                                    onLoading: (data) => setBtnSpinner(data),
+                                    onSuccess: () => handleRefetch(),
+                                    onCloseSlider: () => setActiveContent("yellow"),
+                                    onAlert: (data) => {
+                                        setAlertMessage(data.msg)
+                                        setAlertType(data.type)
+                                    }
+                                }}>
+                                    <Form />
+                                </FormContext.Provider>
                             )}
 
                             {activeTab === 'tab5' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={chargeType}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
+                                <FormContext.Provider value={{
+                                    title: "Charge Type",
+                                    ref: formRef,
+                                    initialFields: chargeType,
+                                    enableAddRow: true,
+                                    onLoading: (data) => setBtnSpinner(data),
+                                    onSuccess: () => handleRefetch(),
+                                    onCloseSlider: () => setActiveContent("yellow"),
+                                    onAlert: (data) => {
+                                        setAlertMessage(data.msg)
+                                        setAlertType(data.type)
+                                    }
+                                }}>
+                                    <Form />
+                                </FormContext.Provider>
                             )}
                         </div>
                     </div>

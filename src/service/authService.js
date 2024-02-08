@@ -30,21 +30,6 @@ export const authApi = createApi({
             }
         }),
 
-        getUserModules: builder.query({
-            query: (args) => {
-                const { moduleId } = args
-                const session = Cookies.get('session')
-                return {
-                    url: '/grants',
-                    method: 'GET',
-                    params: {
-                        moduleId: moduleId,
-                        selectedDB: session 
-                    }
-                }
-            }
-        }),
-
         getUserById: builder.query({
             query: (args) => {
                 const { user_id } = args
@@ -59,9 +44,6 @@ export const authApi = createApi({
                     }
                 }
             },
-            providesTags: (result, error, args) => [
-                { type: 'UserDetails', id: 'LIST' }
-            ]
         }),
 
         grantUserModule: builder.mutation({
@@ -73,6 +55,38 @@ export const authApi = createApi({
                     body: {
                         data: dataArray,
                         selectedDB: session
+                    }
+                }
+            }
+            
+        }),
+
+        getGrantModule: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { user_id, auth_id } = args
+                return {
+                    url: '/grant-module',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session,
+                        user_id: user_id,
+                        auth_id: auth_id
+                    }
+                }
+            }
+        }),
+
+        getUserModules: builder.query({
+            query: (args) => {
+                const { moduleId } = args
+                const session = Cookies.get('session')
+                return {
+                    url: '/grants',
+                    method: 'GET',
+                    params: {
+                        moduleId: moduleId,
+                        selectedDB: session 
                     }
                 }
             }
@@ -92,6 +106,7 @@ export const {
     useGetUserByIdQuery, 
     useLogoutMutation, 
     useGetUserModulesQuery ,
+    useGetGrantModuleQuery,
     useGrantUserModuleMutation
 } = authApi
 // export const { authApi }

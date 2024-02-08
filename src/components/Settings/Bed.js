@@ -17,6 +17,7 @@ import {
     useGetBedGroupListQuery
 } from '../../service/settingService'
 import Alert from "../Alert"
+import { FormContext } from "@/utils/context"
 
 const Bed = ({slug}) => {
     const fieldRef = useRef(null)
@@ -31,6 +32,7 @@ const Bed = ({slug}) => {
     const [btnSpinner, setBtnSpinner] = useState(false)
     const [tableHeader, setTableHeader] = useState([])
     const [floorId, setFloorId] = useState(0)
+    const [contentHeight, setContentHeight] = useState(0)
     
     const [alertType, setAlertType] = useState("")
     const [alertMessage, setAlertMessage] = useState("")
@@ -58,6 +60,20 @@ const Bed = ({slug}) => {
     const header = bedData?.columns ?? []
     
     // console.log(bedLoading)
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
 
     useEffect(() => {
         // const newRows = new Set()
@@ -221,10 +237,6 @@ const Bed = ({slug}) => {
                                     )}
                                 </th>
                             ))}
-
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Action
-                            </th>
                         </tr>
                     </thead>
                     
@@ -249,25 +261,15 @@ const Bed = ({slug}) => {
                                                 `${tblBody?.bed_group.name} - ${tblBody?.bed_group?.bed_floor.floor}`
                                             ) : tblHeader === 'is_active' ? (
                                                 tblBody?.is_active ? (
-                                                    <span className="bg-green-400 p-1 rounded-md">Available</span>
+                                                    <span className="bg-green-700 p-1 rounded-md text-white text-xs">Available</span>
                                                 ) : (
-                                                    <span className="bg-red-400 p-1 rounded-md ">Alotted</span>
+                                                    <span className="bg-red-700 p-1 rounded-md text-white text-xs">Occupied</span>
                                                 )
                                             ) : (
                                                 tblBody[tblHeader]
                                             )}
                                         </td>
                                     ))}
-
-                                    <td className="px-6 py-2 whitespace-nowrap">    
-                                        {/* <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}> */}
-                                        <button title="Add Modules" type="button">
-                                            {/* <span>ADD</span> */}
-                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
-                                        </button>
-                                    </td>
                                 </tr>
                             ))
                         )}
@@ -429,200 +431,214 @@ const Bed = ({slug}) => {
     const renderContent = () => {
         return (
             <>
-                <div className="flex relative overflow-hidden h-screen">
-                    <div className="absolute inset-0 w-full">
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0`}>
-                            <div className="font-bold text-xl mb-2 uppercase text-gray-600">Bed Management</div>
-                            <div className="flex justify-between py-1">
-                                {activeTab !== 'tab1' && (
-                                    <Button
-                                        btnIcon="add"
-                                        onClick={() => setActiveContent("green")}
-                                    >
-                                    Add
-                                    </Button>
-                                )}
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="font-bold text-xl mb-2 text-gray-600">Bed Management</div>
+                    <div className="flex justify-between py-1">
+                        {activeTab !== 'tab1' && (
+                            <Button
+                                btnIcon="add"
+                                onClick={() => setActiveContent("green")}
+                            >
+                            Add
+                            </Button>
+                        )}
 
-                                <SearchExport>
-                                    <div className="flex items-center">
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={searchQuery}
-                                                // onChange={e => setSearchQuery(e.target.value)}
-                                                onChange={(e) => handleSearch(e)}
-                                                className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
-                                                placeholder="Search..."
-                                            />
-                                            <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                            </svg>
-                                        </div>
-
-                                        <Dropdown
-                                            align="right"
-                                            width="48"
-                                            trigger={
-                                                <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
-                                                    <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                                    </svg>
-                                                </button>
-                                            }>
-                                            <DropdownExport>
-                                                Export as PDF
-                                            </DropdownExport>
-                                            <DropdownExport>
-                                                Export as JSON
-                                            </DropdownExport>
-                                        </Dropdown>
-                                    </div>
-                                </SearchExport>
-                            </div>
-                            <div className="bg-white overflow-hidden border border-gray-300 rounded">
-                                <div className="flex justify-items-center">
-                                    <div className="rounded-tl-lg py-3 ml-3">
-                                        <button 
-                                            onClick={() => setActiveTab('tab2')}
-                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed List
-                                        </button>
-                                        <button 
-                                            onClick={() => setActiveTab('tab3')}
-                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab3' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed Type
-                                        </button>
-                                        <button 
-                                            onClick={() => setActiveTab('tab4')}
-                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab4' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed Group
-                                        </button>
-                                        <button 
-                                            onClick={() => setActiveTab('tab5')}
-                                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab5' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Floor
-                                        </button>
-                                    </div>
-                                </div>
-
-                                
-                                {bedLoading ? (
-                                    <div className="grid p-3 gap-y-2">
-                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                                        <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
-                                    </div>
-                                ) : (
-                                    <div className="tab-content">
-                                        {renderTableContentByTab(activeTab)}
-                                    </div>
-                                )}
-                            </div>
-                            
-                            <div className="flex flex-wrap py-1">
-                                <div className="flex items-center justify-center flex-grow">
-                                    <Pagination 
-                                        currentPage={pagination.current_page} 
-                                        totalPages={pagination.total_pages}
-                                        // onPageChange={newPage => setCurrentPage(newPage)}
-                                        onPageChange={(newPage) => handleNewPage(newPage)}
+                        <SearchExport>
+                            <div className="flex items-center">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        // onChange={e => setSearchQuery(e.target.value)}
+                                        onChange={(e) => handleSearch(e)}
+                                        className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
+                                        placeholder="Search..."
                                     />
+                                    <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                    </svg>
                                 </div>
 
-                                <ItemPerPage className="flex flex-grow">
-                                    <div className="flex items-center justify-end">
-                                        <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
-                                        <select
-                                            value={itemsPerPage}
-                                            onChange={(e) => handleItemsPerPageChange(e)}
-                                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
-                                            <option value="5">5</option>
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                        </select>
-                                    </div>
-                                </ItemPerPage>
+                                <Dropdown
+                                    align="right"
+                                    width="48"
+                                    trigger={
+                                        <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                            <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                            </svg>
+                                        </button>
+                                    }>
+                                    <DropdownExport>
+                                        Export as PDF
+                                    </DropdownExport>
+                                    <DropdownExport>
+                                        Export as JSON
+                                    </DropdownExport>
+                                </Dropdown>
+                            </div>
+                        </SearchExport>
+                    </div>
+                    <div className="bg-white overflow-hidden border border-gray-300 rounded">
+                        <div className="flex justify-items-center border-gray-300 border-b-[1px]">
+                            <div className="rounded-tl-lg py-3 ml-3">
+                                <button 
+                                    onClick={() => setActiveTab('tab2')}
+                                    className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed List
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('tab3')}
+                                    className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab3' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed Type
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('tab4')}
+                                    className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab4' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Bed Group
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('tab5')}
+                                    className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab5' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>Floor
+                                </button>
                             </div>
                         </div>
 
                         
-                        <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0`}>
-                            <div className="flex justify-between py-2">
-                                <Button
-                                    paddingY="2"
-                                    btnIcon="close"
-                                    onClick={() => setActiveContent("yellow")}
-                                >
-                                    Close
-                                </Button>
-
-                                <div className="flex gap-2">
-                                    <Button
-                                        bgColor="indigo"
-                                        btnIcon="add"
-                                        onClick={() => formRef.current.handleAddRow()}
-                                    >
-                                        Add Row
-                                    </Button>
-
-                                    <Button
-                                        bgColor={btnSpinner ? 'disable': 'emerald'}
-                                        btnIcon={btnSpinner ? 'disable': 'submit'}
-                                        btnLoading={btnSpinner}
-                                        onClick={() => handleSubmitButton(activeTab)}
-                                    >
-                                        {btnSpinner ? '' : 'Submit'}
-                                    </Button>
-                                </div>
+                        {bedLoading ? (
+                            <div className="grid p-3 gap-y-2">
+                                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
+                                <div className="w-full h-8 bg-gray-300 rounded animate-pulse"></div>
                             </div>
+                        ) : (
+                            <div className="tab-content">
+                                {renderTableContentByTab(activeTab)}
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="flex flex-wrap py-1">
+                        <div className="flex items-center justify-center flex-grow">
+                            <Pagination 
+                                currentPage={pagination.current_page} 
+                                totalPages={pagination.total_pages}
+                                // onPageChange={newPage => setCurrentPage(newPage)}
+                                onPageChange={(newPage) => handleNewPage(newPage)}
+                            />
+                        </div>
 
-                            {activeTab === 'tab2' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={bedListTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
-                            )}
+                        <ItemPerPage className="flex flex-grow">
+                            <div className="flex items-center justify-end">
+                                <span className="mr-2 mx-2 text-gray-700">Per Page:</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => handleItemsPerPageChange(e)}
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                        </ItemPerPage>
+                    </div>
+                </div>
 
-                            {activeTab === 'tab3' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={bedTypeTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
-                            )}
-                            
-                            {activeTab === 'tab4' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={bedGroupTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
-                            )}
+                
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="flex justify-between pt-2 px-4">
+                        <Button
+                            paddingY="2"
+                            btnIcon="close"
+                            onClick={() => setActiveContent("yellow")}
+                        >
+                            Close
+                        </Button>
 
-                            {activeTab === 'tab5' && (
-                                <Form 
-                                    ref={formRef} 
-                                    initialFields={bedFloorTab}
-                                    onSuccess={handleRefetch}
-                                    onLoading={(data) => setBtnSpinner(data)}
-                                    onSetAlertType={(data) => setAlertType(data)}
-                                    onCloseSlider={() => setActiveContent("yellow")}
-                                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                                />
-                            )}
+                        <div className="flex gap-2">
+                            <Button
+                                bgColor="indigo"
+                                btnIcon="add"
+                                onClick={() => formRef.current.handleAddRow()}
+                            >
+                                Add Row
+                            </Button>
 
-                            
+                            <Button
+                                bgColor={btnSpinner ? 'disable': 'emerald'}
+                                btnIcon={btnSpinner ? 'disable': 'submit'}
+                                btnLoading={btnSpinner}
+                                onClick={() => handleSubmitButton(activeTab)}
+                            >
+                                {btnSpinner ? '' : 'Submit'}
+                            </Button>
                         </div>
                     </div>
+
+                    {activeTab === 'tab2' && (
+                        <FormContext.Provider value={{
+                            title: "Bed List",
+                            ref: formRef,
+                            initialFields: bedListTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
+                    )}
+
+                    {activeTab === 'tab3' && (
+                        <FormContext.Provider value={{
+                            title: "Bed Type",
+                            ref: formRef,
+                            initialFields: bedTypeTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
+                    )}
+                    
+                    {activeTab === 'tab4' && (
+                        <FormContext.Provider value={{
+                            title: "Bed Group",
+                            ref: formRef,
+                            initialFields: bedGroupTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
+                    )}
+
+                    {activeTab === 'tab5' && (
+                        <FormContext.Provider value={{
+                            title: "Floor",
+                            ref: formRef,
+                            initialFields: bedFloorTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
+                    )}
                 </div>
             </>
         )
