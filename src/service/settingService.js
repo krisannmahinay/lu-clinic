@@ -443,6 +443,16 @@ export const settingApi = createApi({
                             selectedDB: session
                         }
 
+                    case 'createErPatient':
+                        // console.log(data)
+                        url = '/create-patient',
+                        body = {
+                            patientType: 'new_er',
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+
                     // case 'createInPatient':
                     //     url = '/create-in-patient',
                     //     body = {

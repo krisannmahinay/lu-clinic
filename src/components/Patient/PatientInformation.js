@@ -1,4 +1,4 @@
-import { useComponentContext } from "@/utils/context"
+import { useComponentContext, useModalContext } from "@/utils/context"
 import { useCallback, useEffect, useState } from "react"
 import Select from 'react-select'
 import AsyncSelect from 'react-select/async'
@@ -55,6 +55,10 @@ const dispositionArray = [
 
 const PatientInformation = () => {
     const componentContext = useComponentContext()
+    const modalContext = useModalContext()
+    const icdCode = componentContext?.state?.clickedValue?.icd_codes
+    const poptProcedure = componentContext?.state?.clickedValue?.popt_proc
+    const ooptProcedure = componentContext?.state?.clickedValue?.oopt_proc
     const userDetails = componentContext?.state?.userDetails
     const clerkData = componentContext?.state?.profileData?.clerk_data_info
     const physicianData = componentContext?.state?.profileData?.physician_data_info
@@ -118,9 +122,11 @@ const PatientInformation = () => {
         relation_to_patient: "",
         admission_diagnosis: "",
         discharge_diagnosis: "",
-        // principal_opt_proc: "",
-        // other_opt_proc: "",
-        // accident_injury_poison: "",
+        principal_opt_code: "",
+        principal_opt_desc: "",
+        other_opt_code: "",
+        other_opt_desc: "",
+        accident_injury_poison: "",
         // icdo10_code: "",
         // disposition: "",
     })
@@ -152,8 +158,8 @@ const PatientInformation = () => {
         const diffInDays = Math.ceil(diffInMilliseconds / (1000 * 60 * 60 * 24))
         return diffInDays
     }
-    
-    console.log(patientData)
+
+    console.log(formData)
 
     const handleOnChange = (data) => {
         const municipalityName = municipalityData?.find(option => option.code === profileData?.municipality).name
@@ -193,11 +199,32 @@ const PatientInformation = () => {
             case 'admission_diagnosis':
             case 'discharge_diagnosis':
             case 'data_furnished_by':
+            case 'accident_injury_poison':
                 setFormData((prev) => ({
                     ...prev,
                     [data.type]: data.value,
                     total_no_day: calculateTotalNoDay(prev.admission_date, prev.discharge_date)
                 }))
+                break
+
+            
+            case 'principal_opt_desc':
+                if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
+                    setFormData((prev) => ({
+                        ...prev,
+                        principal_opt_desc: data.value,
+                        // principal_opt_desc: poptProcedure?.description,
+                    }))
+                }
+                break
+
+            case 'other_opt_proc':
+                if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
+                    setFormData((prev) => ({
+                        ...prev,
+                        other_opt_desc: data.value,
+                    }))
+                }
                 break
                 
             case 'admission_date':
@@ -290,13 +317,14 @@ const PatientInformation = () => {
                     barangay: data.value
                 }))
                 break
+            
             default:
                 break
         }
     }
 
     useEffect(() => {
-        if(profileData) {
+        if(profileData && patientData && userDetails && clerkData) {
             setFormData({
                 // personal information
                 last_name: profileData.last_name || "",
@@ -352,11 +380,19 @@ const PatientInformation = () => {
                 relation_to_patient: patientData.relation_to_patient || "",
                 admission_diagnosis: patientData.admission_diagnosis || "",
                 discharge_diagnosis: patientData.discharge_diagnosis || "",
-                                
+                // principal_opt_code: poptProcedure?.code || "",
+                // principal_opt_desc:  poptProcedure?.description || "",
+                principal_opt_code: patientData.principal_opt_code || "",
+                principal_opt_desc:  patientData.principal_opt_desc || "",
+                other_opt_code: ooptProcedure?.code || "",
+                other_opt_desc: ooptProcedure?.description || "",
+                accident_injury_poison: patientData.accident_injury_poison || "",
+                icd10_code: icdCode?.code || "",
+                icd10_desc: icdCode?.description || ""
             })
         }
 
-    }, [profileData])
+    }, [profileData, patientData, userDetails, clerkData])
 
     return (
         <div>
@@ -1105,13 +1141,12 @@ const PatientInformation = () => {
                         <div className="w-3/5">
                             <input
                                 type="text"
-                                name="principal_opt_proc"
-                                value={formData.principal_opt_proc}
-                                onChange={(e) => handleOnChange({type:"principal_opt_proc", value: e.target.value})}
-                                onClick={() => componentContext?.onModalOpen({modalState: true, type: "popt_proc", modalType: "pr_operation_proc"})}
-                                // onBlur={handleBlur}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder="Type..."
+                                name="principal_opt_desc"
+                                value={poptProcedure?.description}
+                                onChange={(e) => handleOnChange({type:"principal_opt_desc", value: e.target.value})}
+                                onClick={() => componentContext?.onModalOpen({modalState: true, type: "popt_proc", modalType: "popt_proc"})}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
+                                placeholder="Click to search"
                             />
                         </div>
                     </div>
@@ -1122,12 +1157,11 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="other_opt_proc"
-                                value={formData.other_opt_proc}
+                                value={ooptProcedure?.description || patientData?.other_opt_desc}
                                 onChange={(e) => handleOnChange({type:"other_opt_proc", value: e.target.value})}
-                                onClick={() => componentContext?.onModalOpen({modalState: true, type: "oopt_proc", modalType: "ot_operation_proc"})}
-                                // onBlur={handleBlur}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder="Type..."
+                                onClick={() => componentContext?.onModalOpen({modalState: true, type: "oopt_proc", modalType: "oopt_proc"})}
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
+                                placeholder="Click to search"
                             />
                         </div>
                     </div>

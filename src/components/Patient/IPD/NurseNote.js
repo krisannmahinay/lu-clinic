@@ -1,22 +1,49 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-const nurseNoteForm = [
-    {tdName: 'date_time'},
-    {tdName: 'nurse_notes'}
-]
+const initialRow = {
+    date_time: '',
+    nurse_notes: [
+        {
+            remarks: '',
+            ivfluids: '',
+            vitals: ''
+        }
+    ]
+}
 
-const NurseNote = ({onModalState}) => {
-    const initialRow = nurseNoteForm.reduce((acc, item) => {
-        acc[item.tdName] = ''
-        return acc
-    }, {})
+const NurseNote = ({data, onModalState}) => {
+    // const initialRow = nurseNoteForm.reduce((acc, item) => {
+    //     acc[item.tdName] = ""
+    //     return acc
+    // }, {})
 
     const [hoveringOverTh, setHoveringOverTh] = useState(false)
     const [activeTab, setActiveTab] = useState('tab1')
+
+    const transformDataToRowFormat = (data) => {
+        // Transform the available data into the expected row format
+        // return data.nurse_notes.map(note => ({
+        //     nurse_notes: [
+        //         {
+        //             remarks: note.remarks || '',
+        //             ivfluids: note.ivfluids || '',
+        //             vitals: note.vitals || '',
+        //         }
+        //     ],
+        // }))
+    }
+
     const [rows, setRows] = useState([initialRow])
 
+    const nurseNoteData = [
+        ...data.nurse_notes.map(item => ({ type: 'remarks', description: 'Notes', content: item.remarks})),
+        ...data.ivfluids.map(item => ({ type: 'ivfluids', description: 'IVF', content: `${item.bottle_no} • ${item.type_of_iv} • ${item.volume} • ${item.rate_of_flow}`})),
+        ...data.vitals.map(item => ({ type: 'vitals', description: 'Vitals', content: `${item.temp} ℃ • ${item.bp} mmHg`}))
+    ]
+    
+
     const handleAddRow = () => {
-        setRows([...rows, { ...initialRow }])
+        setRows(rows => [...rows, {...initialRow}])
     }
 
     const handleDeleteRow = (index) => {
@@ -26,25 +53,43 @@ const NurseNote = ({onModalState}) => {
     const handleOnClick = () => {
         onModalState({modalState: true, type: "nsn", modalType: "nurses-notes"})
     }
-    
-    const renderTableCell = (tdName) => {
+
+    const hasData = data.nurse_notes.length > 0 || data.ivfluids.length > 0 || data.vitals.lenght > 0
+
+    const renderTableCell = (tdName, row) => {
+        console.log(nurseNoteData[0] !== null)
         switch(tdName) {
             case 'date_time':
                 return (
-                    <span className="bg-gray-300 rounded p-2">Jan-24-2024 : 15:35</span>
+                    <span className="bg-gray-300 rounded p-2 text-xs">{row[tdName] || new Date().toLocaleString()} </span>
                 )
             
             case 'nurse_notes':
                 return (
                     <div>
-                        <div onClick={handleOnClick} className="border-none h-32 w-full focus:border-gray-500 focus:outline-none hover:cursor-pointer">
-                            <p className="py-4 text-gray-400">Click to fill...</p>
-                            {/* <div  className="p-4 rounded bg-gray-200 cursor-pointer text-sm text-gray-500 hover:text-gray-800">
-                                <p><span className="text-green-700 font-bold">Orders:</span> Medications: Lorem ipsum IV Fluids: Lorem ipsum </p>
-                            </div>
-                            <div  className="p-4 rounded bg-gray-200 cursor-pointer text-sm text-gray-500 hover:text-gray-800">
-                                <p><span className="text-green-700 font-bold">Referral:</span> Medications: Lorem ipsum IV Fluids: Lorem ipsum </p>
-                            </div> */}
+                        <div onClick={handleOnClick} className="border-none space-y-2 w-full focus:border-gray-500 focus:outline-none hover:cursor-pointer">
+                            {/* {row.nurse_notes.length > 0 ? (
+                                row.nurse_notes.map((note, noteIndex) => (
+                                    <div key={noteIndex} className="p-4 rounded bg-gray-200 cursor-pointer text-sm text-gray-500 hover:text-gray-800">
+                                        <p><span className="text-green-700 font-bold" key={noteIndex[0]}>Remarks:</span> {note.remarks} </p>
+                                        <p><span className="text-green-700 font-bold" key={noteIndex[1]}>IVF:</span> {note.ivfluids} </p>
+                                        <p><span className="text-green-700 font-bold" key={noteIndex[2]}>Vital Sign:</span> {note.vitals} </p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="py-4 text-gray-400">Click to fill...</p>
+                            )} */}
+
+
+                            {/* {nurseNoteData.length > 0 ? (
+                                nurseNoteData.map((item, index) => (
+                                    <div key={index} className="p-4 rounded bg-gray-200 cursor-pointer text-sm text-gray-500 hover:text-gray-800">
+                                        <p><span className="text-green-700 font-bold">{item.description}:</span> {item.content}</p>
+                                    </div>
+                                ))
+                            ): (
+                                <p className="py-4 text-gray-400">Click to fill...</p>
+                            )} */}
                         </div>
                     </div>
                 )
@@ -77,21 +122,24 @@ const NurseNote = ({onModalState}) => {
                 <tbody>
                     {rows.map((row, rowIndex) => (
                         <tr key={rowIndex}>
-                            {nurseNoteForm.map((item) => (
-                                <td className={`text-left p-2 border-r border-b border-gray-300 ${item.tdName === 'date_time' ? 'w-48' : ''}`} key={item.tdName}>
-                                    {renderTableCell(item.tdName, row)}
-                                </td>
-                            ))}
+                            {console.log(row)}
+                            <td className="text-left px-4 border-r border-b border-gray-300 w-48">{renderTableCell('date_time', row)}</td>
+                            <td className="text-left p-2 border-r border-b border-gray-300">{renderTableCell('nurse_notes', row)}</td>
+                            {/* {nurseNoteForm.map((item) => (
+                                
+                            ))} */}
                             {rows?.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleDeleteRow(rowIndex)}
-                                    className="hover:bg-gray-200 rounded-md focus:outline-none text-[#cb4949] absolute p-2 -translate-x-10"
-                                >
-                                    <svg fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                    </svg>
-                                </button>
+                                <td className="w-10 hover:bg-gray-200">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteRow(rowIndex)}
+                                        className=" rounded-md focus:outline-none text-[#cb4949] p-2 min-h-full"
+                                    >
+                                        <svg fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </td>
                             )}
                         </tr>
                     ))}

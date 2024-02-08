@@ -51,6 +51,25 @@ export const patientApi = createApi({
             }
         }),
 
+        getErPatientList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, slug } = args
+                return {
+                    url: '/er-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        slug: slug,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getPatientList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -337,6 +356,7 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetErPatientListQuery,
     useGetMedicineFormListQuery,
     useGetMedicineFrequencyListQuery,
     useGetFilteredMedicineListQuery,
