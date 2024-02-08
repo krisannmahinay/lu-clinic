@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react"
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useContext } from "react"
 import SkeletonScreen from "./SkeletonScreen"
 import Select from 'react-select'
 import { useDispatch } from 'react-redux'
@@ -13,6 +13,9 @@ import {
     useGetModuleListQuery 
 } from '@/service/settingService'
 import Soap from "./Patient/OPD/Soap"
+
+import { useFormContext, useTableContext } from '@/utils/context'
+
 
 const soapData = [
     {
@@ -141,6 +144,7 @@ const Table = forwardRef(({
     dynamicTable,
     fontSize,
 }, ref) => {
+    const context = useTableContext()
     const imgRef = useRef(null)
     const dispatch = useDispatch()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -169,15 +173,17 @@ const Table = forwardRef(({
         bed_group: ""
     })
 
+    // console.log(context)
+
     useEffect(() => {
-        if(tableData?.length > 0) {
-            setFormData(tableData)
-        }
+        // if(tableData?.length > 0) {
+        //     setFormData(tableData)
+        // }
 
         if(lastCheckedUserId !== null) {
-            onEdit(lastCheckedUserId)
+            context?.onEdit(lastCheckedUserId)
         }
-    }, [tableData, lastCheckedUserId])
+    }, [lastCheckedUserId])
 
     let adjustFontSize
 
@@ -349,10 +355,16 @@ const Table = forwardRef(({
         switch(type) {
             case 'tickedCheckbox':
                 e.stopPropagation()
+                if(context?.state?.type === 'inpatient' || context?.state?.type === 'outpatient') {
+                    context?.onCheckPatient({
+                        checked: e.target.checked,
+                        data: data
+                    })
+                }
                 break
 
             case 'clickedRow':
-                onClick(e)
+                context?.onClick(type, e)
                 break
             default:
                 break
@@ -367,16 +379,18 @@ const Table = forwardRef(({
                     : checked.filter((sid) => sid !== ids)
                 
                 setChecked(newChecked)
-                onChecked(newChecked)
+                context?.onChecked(newChecked)
 
-                if(e.target.checked) { setLastCheckedUserId(userId) }
+                if(e.target.checked) { 
+                    setLastCheckedUserId(userId)
+                }
                 break
             
             case 'tblSelectAll':
                 if (e.target.checked) {
-                    const allIds = tableData?.map((pd) => pd.id) // assuming each patientData has a unique id
+                    const allIds = context?.tableData?.map((pd) => pd.id) // assuming each patientData has a unique id
                     setChecked(allIds)
-                    onChecked(allIds)
+                    context?.onChecked(allIds)
                 } else {
                     setChecked([])
                 }
@@ -582,12 +596,12 @@ const Table = forwardRef(({
                                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     <input
                                         type="checkbox"
-                                        checked={checked.length === tableData.length && tableData.length !== 0}
+                                        checked={checked?.length === context?.tableData?.length && context?.tableData?.length !== 0}
                                         onChange={(e) => handleOnchange('tblSelectAll', e)}
                                     />
                                 </th>
 
-                                {tableHeader.map((tblHeader, tblHeaderIndex) => (
+                                {context?.tableHeader?.map((tblHeader, tblHeaderIndex) => (
                                     <th key={tblHeaderIndex} className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {tblHeader === 'id' ? (
                                             'patient_id'
@@ -607,27 +621,27 @@ const Table = forwardRef(({
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {tableData.length === 0 ? (
+                            {context?.tableData?.length === 0 ? (
                                 <tr>
-                                    <td colSpan={tableHeader.length + 1} className="px-6 py-2 text-center">
+                                    <td colSpan={context?.tableHeader?.length + 1} className="px-6 py-2 text-center">
                                         No records found.
                                     </td>
                                 </tr>
                             ) : (
-                                tableData.map((tblBody, tblBodyIndex) => (
+                                context?.tableData?.map((tblBody, tblBodyIndex) => (
                                     // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
                                     <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
                                         <td className="px-6 py-2 whitespace-nowrap text-sm">
                                             <input
                                                 type="checkbox"
-                                                checked={checked.includes(tblBody.id)}
+                                                checked={checked?.includes(tblBody.id)}
                                                 onChange={(e) => handleOnchange('tblSelectRow', e, tblBody.id, tblBody.user_id)}
-                                                onClick={(e) => handleOnclick('tickedCheckbox', e)}
+                                                onClick={(e) => handleOnclick('tickedCheckbox', e, tblBody)}
                                             />
                                         </td>
 
 
-                                        {tableHeader.map((tblHeader) => (
+                                        {context?.tableHeader?.map((tblHeader) => (
                                             <td key={tblHeader} className="px-6 py-2 whitespace-nowrap text-sm">
                                                 {tblHeader === 'admitting_physician' ? (
                                                     `Dr. ${tblBody?.physician_data_info?.first_name} ${tblBody?.physician_data_info?.last_name}`
@@ -764,4 +778,4 @@ const Table = forwardRef(({
     )
 })
 
-export default Table
+export default React.memo(Table)

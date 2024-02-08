@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Head from 'next/head'
 import AppLayout from '@/components/Layouts/AppLayout'
 import Cookies from 'js-cookie'
@@ -7,11 +7,24 @@ import {
     useGetPermissionListQuery, 
     useGetModuleListQuery } 
 from '@/service/settingService'
+
+import { 
+    useGetErPatientListQuery,
+    useGetPhysicianListQuery,
+    useGetActiveBedListQuery,
+} from '@/service/patientService'
+
 import withAuth from './withAuth'
 import Button from '@/components/Button'
 import Dropdown from '@/components/Dropdown'
 import SearchExport from '@/components/SearchExport'
 import Table from '@/components/Table'
+import { FormContext, TableContext } from '@/utils/context'
+import SkeletonScreen from '@/components/SkeletonScreen'
+import Pagination from '@/components/Pagination'
+import ItemPerPage from '@/components/ItemPerPage'
+import { generateErForms } from '@/utils/forms'
+import Form from '@/components/Form'
 
 const erdata = [
     {
@@ -26,7 +39,12 @@ const erdata = [
     }
 ]
 
+const erForm = [
+
+]
+
 const EmergencyRoom = () => {
+    const formRef = useRef(null)
     const menuGroup = "dashboard"
     const moduleId = "emergency-room"
     const authToken = Cookies.get('token')
@@ -38,27 +56,73 @@ const EmergencyRoom = () => {
     const [isOptionEditDisabled, setIsOptionEditDisabled] = useState(true)
     const [contentType, setContentType] = useState("")
     const [profileData, setProfileData] = useState({})
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [totalPages, setTotalPages] = useState(1)
     const [checkIds, setCheckIds] = useState(0)
-
+    const [erForms, setErForms] = useState([])
+    const [btnSpinner, setBtnSpinner] = useState(false)
 
     const { 
         isLoading: moduleListLoading, 
         refetch: refetchModules, 
         isError, isSuccess 
-    } = useGetModuleListQuery({},{
-        enabled: !!authToken
+    } = useGetModuleListQuery()
+
+    const { 
+        data: patientList, 
+        isLoading: patientListLoading, 
+        refetch: refetchPatientData,
+    } = useGetErPatientListQuery({
+        slug: 'emergency-room',
+        items: itemsPerPage,
+        page: currentPage,
+        keywords: searchQuery,
+    }, {
+        enabled: !!searchQuery && !!itemsPerPage
     })
 
+    const { 
+        data: physicianList 
+    } = useGetPhysicianListQuery()
+
+    const { 
+        data: activeBedList 
+    } = useGetActiveBedListQuery()
+
+    const { patientData, pagination, header } = useMemo(() => {
+        const data = patientList?.data ?? []
+        const paginationInfo = patientList?.pagination ?? []
+        const headers = patientList?.columns ?? []
+
+        return {
+            patientData:data,
+            pagination:paginationInfo,
+            header: headers
+        }
+    },[patientList]) 
+
+    console.log(header)
+
     const formatTitlePages = (str) => {
-        return str
-            .split('-')
-            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(' ')
+        return str.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
     }
 
     useEffect(() => {
         if(moduleId) {
             setPageTitle(formatTitlePages(moduleId))
+        }
+
+        if(physicianList && activeBedList) {
+            const ipd = generateErForms(physicianList, activeBedList)
+            setErForms(ipd)
+        }
+
+        let spinnerTimer
+        if(btnSpinner) {
+            spinnerTimer = setTimeout(() => {
+                setBtnSpinner(false)
+            }, 500)
         }
 
         const calculateHeight = () => {
@@ -70,16 +134,17 @@ const EmergencyRoom = () => {
         // Recalculate height on window resize
         window.addEventListener('resize', calculateHeight)
         return () => {
+            if(spinnerTimer) { clearTimeout(spinnerTimer) } 
             window.removeEventListener('resize', calculateHeight)
         }
-    }, [])
+    }, [btnSpinner, physicianList, activeBedList])
 
-    const handleOnchecked = (data) => {
+    const handleOnChecked = (data) => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
     }
 
-    const handleOnchange = (type, e) => {
+    const handleOnChange = (type, e) => {
         switch(type) {
             case 'itemsPerPage':
                 setItemsPerPage(e.target.value)
@@ -93,7 +158,23 @@ const EmergencyRoom = () => {
         }
     }
 
-    const handleOnclick = (type, data) => {
+    const handleOnEdit = (data) => {
+        setCheckIds(data)
+    }
+
+    const handleCheckPatient = (data) => {
+        if(data.checked) {
+            setProfileData(data.data)
+        } else {
+            setProfileData([])
+        }
+    }
+
+    const handleRefetch = () => {
+        setItemsPerPage(prev => prev + 1)
+    }
+
+    const handleOnClick = (type, data) => {
         switch(type) {
             case 'addRowBtn':
                 formRef.current.handleAddRow()
@@ -126,10 +207,12 @@ const EmergencyRoom = () => {
     }
 
     const renderContent = () => {
-        return (
-            <>
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
-                <div className="font-medium text-xl mb-2 text-gray-600">Emergency Room</div>
+        return moduleListLoading ? (
+            <SkeletonScreen loadingType="table"/>
+        ) : (
+            <div>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="font-medium text-xl mb-2 text-gray-600">Emergency Room</div>
                     <div className="flex justify-between py-1">
                         <div className="flex space-x-1">
                             <Button
@@ -140,7 +223,7 @@ const EmergencyRoom = () => {
                                     setContentType("addEr")
                                 }}
                             >
-                                New User
+                                Add
                             </Button>
 
                             <Dropdown
@@ -162,7 +245,7 @@ const EmergencyRoom = () => {
                                         Options
                                     </button>
                                 }>
-                                <button onClick={() => handleOnclick('editUserBtn')} 
+                                <button onClick={() => handleOnClick('editUserBtn')} 
                                     className={`${isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`}
                                     disabled={isOptionEditDisabled}>
                                     Edit
@@ -180,7 +263,7 @@ const EmergencyRoom = () => {
                                         type="text"
                                         value={searchQuery}
                                         // onChange={e => setSearchQuery(e.target.value)}
-                                        onChange={(e) => handleOnchange('search',e)}
+                                        onChange={(e) => handleOnChange('search',e)}
                                         className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
                                         placeholder="Search..."
                                     />
@@ -212,27 +295,95 @@ const EmergencyRoom = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        <Table
-                            tableData={erdata}
-                            tableHeader={Object.keys(erdata[0])}
-                            onChecked={(data) => handleOnchecked(data)}
-                            onClick={(data) => handleOnclick('clickedRows', data)}
-                            onEdit={(id) => setCheckIds(id)}
-                        />
+                        <TableContext.Provider value={{
+                            tableData: patientData,
+                            tableHeader: header,
+                            onChecked: handleOnChecked,
+                            onClick: handleOnClick,
+                            onEdit: handleOnEdit,
+                            onCheckPatient: handleCheckPatient
+                            // onChecked: (data) => handleOnChecked(data),
+                            // onClick: (data) => handleOnClick('clickedRows', data),
+                            // onEdit: (id) => setCheckIds(id)
+                        }}>
+                            <Table />
+                        </TableContext.Provider>
                     </div>
 
-                    
+                    <div className="flex flex-wrap py-1">
+                        <div className="flex items-center justify-center flex-grow">
+                            <Pagination 
+                                currentPage={pagination.current_page} 
+                                totalPages={pagination.total_pages}
+                                // onPageChange={newPage => setCurrentPage(newPage)}
+                                onPageChange={(newPage) => handleOnChange({type:"newPage", value:newPage})}
+                            />
+                        </div>
+
+                        <ItemPerPage className="flex flex-grow">
+                            <div className="flex items-center justify-end">
+                                <span className="mr-2 mx-2 text-gray-500 uppercase font-medium text-xs">Per Page:</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => handleItemsPerPageChange(e)}
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                        </ItemPerPage>
+                    </div>
                 </div>
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     {contentType === 'addEr' && (
-                        <Button
-                            paddingY="1"
-                            btnIcon="close"
-                            // onClick={() => setActiveContent("yellow")}
-                            onClick={() => handleOnclick('closeDrawer')}
-                        >
-                            Close
-                        </Button>
+                        <>
+                            <div className="font-bold text-lg mb-2 uppercase text-gray-600 pt-10 px-4">Add Patient</div>
+                            <div className="flex justify-between py-2 px-4">
+                                <Button
+                                    paddingY="1"
+                                    btnIcon="close"
+                                    // onClick={() => setActiveContent("yellow")}
+                                    onClick={() => handleOnClick('closeDrawer')}
+                                >
+                                    Close
+                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        bgColor="indigo"
+                                        btnIcon="add"
+                                        onClick={() => formRef.current.handleAddRow()}
+                                    >
+                                        Add Row
+                                    </Button>
+
+                                    <Button
+                                        bgColor={btnSpinner ? 'disable': 'emerald'}
+                                        btnIcon={btnSpinner ? 'disable': 'submit'}
+                                        btnLoading={btnSpinner}
+                                        onClick={() => handleSubmitButton(slug)}
+                                    >
+                                        {btnSpinner ? '' : 'Submit'}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <FormContext.Provider value={{
+                                ref: formRef,
+                                initialFields: erForms,
+                                enableAddRow: true,
+                                onSuccess: handleRefetch,
+                                onLoading: (data) => setBtnSpinner(data),
+                                onSetAlertType: (data) => setAlertType(data),
+                                onCloseSlider: () => setActiveContent("yellow"),
+                                onAlert: (data) => {
+                                    setAlertMessage(data.msg)
+                                    setAlertType(data.type)
+                                }
+                            }}>
+                                <Form />
+                            </FormContext.Provider>
+                        </>
                     )}
 
                     {contentType === 'viewUser' && (
@@ -240,7 +391,7 @@ const EmergencyRoom = () => {
                             <Button
                                 paddingY="1"
                                 btnIcon="close"
-                                onClick={() => handleOnclick('closeDrawer')}
+                                onClick={() => handleOnClick('closeDrawer')}
                             >
                                 Close
                             </Button>
@@ -252,7 +403,7 @@ const EmergencyRoom = () => {
                         </div>
                     )}
                 </div>
-            </>
+            </div>
         )
     }
 
@@ -266,10 +417,8 @@ const EmergencyRoom = () => {
                 <title>{pageTitle}</title>
             </Head>
 
-            <div className="container mx-auto">
-                <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                    {renderContent()}
-                </div>
+            <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
+                {renderContent()}
             </div>
         </AppLayout>
     )

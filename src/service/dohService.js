@@ -61,12 +61,13 @@ export const dohApi = createApi({
         submitAnnualReport: builder.mutation({
             query: (args) => {
                 const session = Cookies.get('session')
-                const { url, slug } = args
+                const { url, slug, reportingYear } = args
                 return {
                     url: url,
                     method: 'GET',
                     params: {
                         slug: slug,
+                        reportingYear: reportingYear,
                         selectedDB: session
                     }
                 }

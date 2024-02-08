@@ -36,6 +36,7 @@ import SkeletonScreen from '@/components/SkeletonScreen'
 import { DropdownExport } from "@/components/DropdownLink"
 import UserProfile from '@/components/UserProfile'
 import { userRegistration } from '@/utils/forms'
+import { FormContext, TableContext } from '@/utils/context'
 
 
 const Setting = () => {
@@ -61,6 +62,7 @@ const Setting = () => {
     const [contentType, setContentType] = useState("")
     const [profileData, setProfileData] = useState({})
     const [checkIds, setCheckIds] = useState(0)
+    const [pageTitle, setPageTitle] = useState("")
 
     const [contentHeight, setContentHeight] = useState(0)
     
@@ -119,15 +121,22 @@ const Setting = () => {
     const pagination = userList?.pagination ?? []
     // const permissionData = permission?.permission ?? []
     const moduleData = moduleList?.moduleList ?? []
-    const userInfo = userDetails?.data[0] ?? []
+    // const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
-    
-    // console.log(moduleList)
+    const hiddenUserIds = ['IMO-9999999999', 'QSO-2402082YXW']
+    const filteredUserData = userData.filter(user => !hiddenUserIds.includes(user.user_id))
 
     const isRowNew = (createdAt) => {
         const rowDate = new Date(createdAt)
         const now = new Date()
         return (now - rowDate) / 1000 <= 5
+    }
+
+    const formatTitlePages = (str) => {
+        return str
+            .split('-')
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ')
     }
 
     useEffect(() => {
@@ -174,6 +183,10 @@ const Setting = () => {
             }, 1000)
         }
 
+        if(moduleId) {
+            setPageTitle(formatTitlePages(moduleId))
+        }
+
         return () => {
             if(spinnerTimer) {
                 clearTimeout(spinnerTimer)
@@ -181,7 +194,7 @@ const Setting = () => {
             // clearTimeout(highlightTimeout)
         }
 
-    }, [userSuccess, btnSpinner])
+    }, [userSuccess, btnSpinner, moduleId])
 
     const handleNewPage = (newPage) => {
         setCurrentPage(newPage)
@@ -195,7 +208,7 @@ const Setting = () => {
         setItemsPerPage(prev => prev + 1)
     }
 
-    const handleOnchecked = (data) => {
+    const handleOnChecked = (data) => {
         setIsOptionEditDisabled(data.length > 1)
         setIsOptionDisabled(data.length === 0)
     }
@@ -265,7 +278,7 @@ const Setting = () => {
     const renderContent = () => {
         return (
             <>
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     <div className="flex justify-between py-1">
                         <div className="flex space-x-1">
                             <Button
@@ -347,13 +360,15 @@ const Setting = () => {
                     </div>
 
                     <div className="border border-gray-300 rounded">
-                        <Table
-                            tableData={userData}
-                            tableHeader={header}
-                            onChecked={(data) => handleOnchecked(data)}
-                            onClick={(data) => handleOnclick('clickedRows', data)}
-                            onEdit={(id) => setCheckIds(id)}
-                        />
+                        <TableContext.Provider value={{
+                            tableData: filteredUserData,
+                            tableHeader: header,
+                            onChecked: (data) => handleOnChecked(data),
+                            onClick: (data) => handleOnclick('clickedRows', data),
+                            onEdit: (id) => setCheckIds(id)
+                        }}>
+                            <Table />
+                        </TableContext.Provider>
                     </div>
         
                     <div className="flex flex-wrap py-1">
@@ -382,10 +397,10 @@ const Setting = () => {
                     </div>
                 </div>
                 
-                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 pr-[6rem] pl-[6rem] pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
                     {contentType === 'addUser' && (
                         <div>
-                            <div className="flex justify-between py-2">
+                            <div className="flex justify-between py-2 px-4">
                                 <Button
                                     paddingY="1"
                                     btnIcon="close"
@@ -415,7 +430,24 @@ const Setting = () => {
                                 </div>
                             </div>
 
-                            <Form 
+                            <FormContext.Provider value={{
+                                state: {
+                                    userDetails: userDetails
+                                },
+                                ref: formRef,
+                                initialFields: userRegistration,
+                                enableAutoSave: false,
+                                enableAddRow:true,
+                                onSuccess: handleRefetch,
+                                onCloseSlider: () => setActiveContent("yellow"),
+                                onLoading: (data) => setBtnSpinner(data),
+                                onSetAlertType: (data) => setAlertType(data),
+                                onSetAlertMessage: (data) => setAlertMessage(data)
+                            }}>
+                                <Form />
+                            </FormContext.Provider>
+
+                            {/* <Form 
                                 ref={formRef} 
                                 initialFields={userRegistration}
                                 enableAutoSave={false}
@@ -424,7 +456,7 @@ const Setting = () => {
                                 onLoading={(data) => setBtnSpinner(data)}
                                 onSetAlertType={(data) => setAlertType(data)}
                                 onSetAlertMessage={(data) => setAlertMessage(data)}
-                            />
+                            /> */}
                         </div>
                     )}
 
@@ -473,53 +505,43 @@ const Setting = () => {
         <AppLayout
             isLoading={moduleListLoading}
             moduleId={moduleId}
-            menuGroup={menuGroup}
-            header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Inventory
-                </h2>
-            }>
+            menuGroup={menuGroup}>
             <Head>
-                <title>Laravel - Setting</title>
+                <title>{pageTitle}</title>
             </Head>
 
             <div className="relative overflow-x-hidden" style={{ height: `${contentHeight}px` }}>
-                {alertMessage &&
-                    <Alert 
-                        alertType={alertType}
-                        isOpen={alertType !== ""}
-                        onClose={() => handleOnclose('closeAlert')}
-                        message={alertMessage} 
-                    /> 
-                }
+                    {alertMessage &&
+                        <Alert 
+                            alertType={alertType}
+                            isOpen={alertType !== ""}
+                            onClose={() => handleOnclose('closeAlert')}
+                            message={alertMessage} 
+                        /> 
+                    }
 
-                <Modal 
-                    // title={title}
-                    openId={modalId}
-                    slug={moduleId} 
-                    isOpen={isModalOpen} 
-                    initialFields={userRegistration}
-                    addUserBtn={true}
-                    onClose={() => handleOnclose('closeModal')}
-                    onSuccess={handleRefetch}
-                    onSetAlertType={(data) => setAlertType(data)}
-                    onSetAlertMessage={(data) => setAlertMessage(data)}
-                    // permission={permission} 
-                    // selectedRowId={selectedRows}
-                />
-                
-                {(userInfo.roles === "x" || userInfo.roles === "admin" ||  userInfo.roles === "superadmin") && (
-                    renderContent()
-                )} 
+                    <Modal 
+                        // title={title}
+                        openId={modalId}
+                        slug={moduleId} 
+                        isOpen={isModalOpen} 
+                        initialFields={userRegistration}
+                        addUserBtn={true}
+                        onClose={() => handleOnclose('closeModal')}
+                        onSuccess={handleRefetch}
+                        onSetAlertType={(data) => setAlertType(data)}
+                        onSetAlertMessage={(data) => setAlertMessage(data)}
+                        // permission={permission} 
+                        // selectedRowId={selectedRows}
+                    />
+                    {['x', 'superadmin'].includes(userDetails?.roles) && (
+                        renderContent()
+                    )}
 
-                {(userInfo.roles === "nurse" || userInfo.roles === "doctor") && (
-                    <>
-                        <ProfileInformation information={userInfo}/>
-                    </>
-                )} 
-
-                
-            </div>
+                    {['admin', 'user', 'nurse', 'doctor'].includes(userDetails?.roles) && (
+                        <ProfileInformation information={userDetails}/>
+                    )}
+                </div>
 
 
         </AppLayout>

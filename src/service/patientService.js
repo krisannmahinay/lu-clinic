@@ -18,15 +18,52 @@ export const patientApi = createApi({
     tagTypes: ['UpdateOPDtoLatest', 'ActiveBedList'],
     endpoints: (builder) => ({
         autoSaveData: builder.mutation({
-            query: dataArray => {
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { data, patient_id, actionType } = args
                 // const data = dataArray.map(item => item.fields)
                 // console.log(dataArray)
-                const session = Cookies.get('session')
                 return {
-                    url: '/auto-save',
-                    method: 'POST',
+                    url: `/auto-save/${patient_id}`,
+                    method: 'PUT',
                     body: {
-                        // data: data,
+                        data: data,
+                        actionType: actionType,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getNurseNoteList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { patient_id } = args
+                return {
+                    url: '/get-nurse-note',
+                    method: 'GET',
+                    params: {
+                        slug: 'nurse-note',
+                        selectedDB: session,
+                        patient_id: patient_id
+                    }
+                }
+            }
+        }),
+
+        getErPatientList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, slug } = args
+                return {
+                    url: '/er-list',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        slug: slug,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
                         selectedDB: session
                     }
                 }
@@ -105,6 +142,68 @@ export const patientApi = createApi({
             }
         }),
 
+        getImgResultList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, patient_id, slug } = args
+                return {
+                    url: '/get-imaging-result',
+                    method: 'GET',
+                    params: {
+                        slug: slug,
+                        patient_id: patient_id,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getLabResultList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, patient_id, slug } = args
+                return {
+                    url: '/get-lab-result',
+                    method: 'GET',
+                    params: {
+                        slug: slug,
+                        patient_id: patient_id,
+                        sort: 'created_at',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getRadiologyList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-radiology',
+                    method: 'GET',
+                    params: {
+                        slug: 'radiology',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getRadiologyCategoryList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-radiology-category',
+                    method: 'GET',
+                    params: {
+                        slug: 'radiology-category',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getPathologyList: builder.query({
             query: () => {
                 const session = Cookies.get('session')
@@ -136,12 +235,88 @@ export const patientApi = createApi({
         getMedicineList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
-                const { keywords } = args
+                const { keywords, patient_id } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        // patient_id: patient_id,
+                        slug: 'medicine',
+                        selectedDB: session
+                    }
+                }
+            } 
+        }),
+
+        getFilteredMedicineList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, tabs } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-filter',
+                        tabs: tabs,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getMedicineFormList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-form',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getMedicineFrequencyList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page } = args
+                return {
+                    url: '/get-medicine',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'medicine-frequency',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
+        getMedicationList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, patient_id } = args
                 return {
                     url: '/get-medication',
                     method: 'GET',
                     params: {
-                        slug: 'medicine',
+                        patient_id: patient_id,
+                        slug: 'medication',
                         q: keywords,
                         selectedDB: session
                     }
@@ -181,14 +356,24 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetErPatientListQuery,
+    useGetMedicineFormListQuery,
+    useGetMedicineFrequencyListQuery,
+    useGetFilteredMedicineListQuery,
+    useGetNurseNoteListQuery,
     useAutoSaveDataMutation, 
     useGetPatientListQuery,
     useGetOutPatientListQuery,
     useGetPhysicianListQuery,
     useGetPhysicianChargeQuery,
+    useGetRadiologyListQuery,
+    useGetRadiologyCategoryListQuery,
     useGetPathologyListQuery,
     useGetPathologyCategoryListQuery,
-    useGetMedicineListQuery,
+    useGetMedicationListQuery,
     useGetIcd10ListQuery,
-    useGetActiveBedListQuery
+    useGetActiveBedListQuery,
+    useGetImgResultListQuery,
+    useGetLabResultListQuery,
+    useGetMedicineListQuery
 } = patientApi

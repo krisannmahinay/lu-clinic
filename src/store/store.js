@@ -12,6 +12,7 @@ import { countryApi } from '../service/countryService'
 import { patientApi } from '../service/patientService'
 import { hospitalChargeApi } from '../service/chargeService'
 import { dohApi } from '../service/dohService'
+import { searchApi } from '../service/searchService'
 import thunk from 'redux-thunk';
 
 const persistConfig = {
@@ -26,6 +27,7 @@ export const makeStore = () => {
   const store = configureStore({
     reducer: {
         // auth: persisAuthReducer,
+        [searchApi.reducerPath]: searchApi.reducer,
         [dohApi.reducerPath]: dohApi.reducer,
         [hospitalChargeApi.reducerPath]: hospitalChargeApi.reducer,
         [patientApi.reducerPath]: patientApi.reducer,
@@ -39,6 +41,7 @@ export const makeStore = () => {
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({serializableCheck: false}).concat(
       thunk,
+      searchApi.middleware,
       dohApi.middleware,
       hospitalChargeApi.middleware,
       patientApi.middleware,

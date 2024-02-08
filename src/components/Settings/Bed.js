@@ -17,6 +17,7 @@ import {
     useGetBedGroupListQuery
 } from '../../service/settingService'
 import Alert from "../Alert"
+import { FormContext } from "@/utils/context"
 
 const Bed = ({slug}) => {
     const fieldRef = useRef(null)
@@ -236,10 +237,6 @@ const Bed = ({slug}) => {
                                     )}
                                 </th>
                             ))}
-
-                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Action
-                            </th>
                         </tr>
                     </thead>
                     
@@ -264,25 +261,15 @@ const Bed = ({slug}) => {
                                                 `${tblBody?.bed_group.name} - ${tblBody?.bed_group?.bed_floor.floor}`
                                             ) : tblHeader === 'is_active' ? (
                                                 tblBody?.is_active ? (
-                                                    <span className="bg-green-400 p-1 rounded-md">Available</span>
+                                                    <span className="bg-green-700 p-1 rounded-md text-white text-xs">Available</span>
                                                 ) : (
-                                                    <span className="bg-red-400 p-1 rounded-md ">Alotted</span>
+                                                    <span className="bg-red-700 p-1 rounded-md text-white text-xs">Occupied</span>
                                                 )
                                             ) : (
                                                 tblBody[tblHeader]
                                             )}
                                         </td>
                                     ))}
-
-                                    <td className="px-6 py-2 whitespace-nowrap">    
-                                        {/* <button title="Add Modules" type="button" onClick={() => openModal(tblBody.user_id)}> */}
-                                        <button title="Add Modules" type="button">
-                                            {/* <span>ADD</span> */}
-                                            <svg fill="none" stroke="currentColor" className="h-4 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
-                                        </button>
-                                    </td>
                                 </tr>
                             ))
                         )}
@@ -445,7 +432,7 @@ const Bed = ({slug}) => {
         return (
             <>
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
-                    <div className="font-bold text-xl mb-2 uppercase text-gray-600">Bed Management</div>
+                    <div className="font-bold text-xl mb-2 text-gray-600">Bed Management</div>
                     <div className="flex justify-between py-1">
                         {activeTab !== 'tab1' && (
                             <Button
@@ -493,7 +480,7 @@ const Bed = ({slug}) => {
                         </SearchExport>
                     </div>
                     <div className="bg-white overflow-hidden border border-gray-300 rounded">
-                        <div className="flex justify-items-center">
+                        <div className="flex justify-items-center border-gray-300 border-b-[1px]">
                             <div className="rounded-tl-lg py-3 ml-3">
                                 <button 
                                     onClick={() => setActiveTab('tab2')}
@@ -556,7 +543,7 @@ const Bed = ({slug}) => {
 
                 
                 <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'green' ? 'translate-y-0' : 'translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
-                    <div className="flex justify-between py-2">
+                    <div className="flex justify-between pt-2 px-4">
                         <Button
                             paddingY="2"
                             btnIcon="close"
@@ -586,58 +573,72 @@ const Bed = ({slug}) => {
                     </div>
 
                     {activeTab === 'tab2' && (
-                        <Form 
-                            ref={formRef} 
-                            initialFields={bedListTab}
-                            enableAutoSave={false}
-                            onSuccess={handleRefetch}
-                            onLoading={(data) => setBtnSpinner(data)}
-                            onSetAlertType={(data) => setAlertType(data)}
-                            onCloseSlider={() => setActiveContent("yellow")}
-                            onSetAlertMessage={(data) => setAlertMessage(data)}
-                        />
+                        <FormContext.Provider value={{
+                            title: "Bed List",
+                            ref: formRef,
+                            initialFields: bedListTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
                     )}
 
                     {activeTab === 'tab3' && (
-                        <Form 
-                            ref={formRef} 
-                            initialFields={bedTypeTab}
-                            enableAutoSave={false}
-                            onSuccess={handleRefetch}
-                            onLoading={(data) => setBtnSpinner(data)}
-                            onSetAlertType={(data) => setAlertType(data)}
-                            onCloseSlider={() => setActiveContent("yellow")}
-                            onSetAlertMessage={(data) => setAlertMessage(data)}
-                        />
+                        <FormContext.Provider value={{
+                            title: "Bed Type",
+                            ref: formRef,
+                            initialFields: bedTypeTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
                     )}
                     
                     {activeTab === 'tab4' && (
-                        <Form 
-                            ref={formRef} 
-                            initialFields={bedGroupTab}
-                            enableAutoSave={false}
-                            onSuccess={handleRefetch}
-                            onLoading={(data) => setBtnSpinner(data)}
-                            onSetAlertType={(data) => setAlertType(data)}
-                            onCloseSlider={() => setActiveContent("yellow")}
-                            onSetAlertMessage={(data) => setAlertMessage(data)}
-                        />
+                        <FormContext.Provider value={{
+                            title: "Bed Group",
+                            ref: formRef,
+                            initialFields: bedGroupTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
                     )}
 
                     {activeTab === 'tab5' && (
-                        <Form 
-                            ref={formRef} 
-                            initialFields={bedFloorTab}
-                            enableAutoSave={false}
-                            onSuccess={handleRefetch}
-                            onLoading={(data) => setBtnSpinner(data)}
-                            onSetAlertType={(data) => setAlertType(data)}
-                            onCloseSlider={() => setActiveContent("yellow")}
-                            onSetAlertMessage={(data) => setAlertMessage(data)}
-                        />
+                        <FormContext.Provider value={{
+                            title: "Floor",
+                            ref: formRef,
+                            initialFields: bedFloorTab,
+                            enableAddRow: true,
+                            onLoading: (data) => setBtnSpinner(data),
+                            onCloseSlider: () => setActiveContent("yellow"),
+                            onAlert: (data) => {
+                                setAlertMessage(data.msg)
+                                setAlertType(data.type)
+                            }
+                        }}>
+                            <Form />
+                        </FormContext.Provider>
                     )}
-
-                    
                 </div>
             </>
         )

@@ -12,7 +12,7 @@ const Tabs = ({tabsConfig, onActiveTab}) => {
     return (
         <div className="bg-white mx-auto sm:w-full">
             <div className="border border-gray-300 rounded">
-                <div className="flex justify-items-center">
+                <div className="flex justify-items-center border-gray-300 sticky top-0 bg-white border-b-[1px] z-50">
                     <div className="rounded-tl-lg py-3 ml-3">
                         {tabsConfig.map(tab => (
                             <button
@@ -26,7 +26,7 @@ const Tabs = ({tabsConfig, onActiveTab}) => {
                     </div>
                 </div>
 
-                <div className="tab-content px-3">
+                <div className="tab-content">
                         {tabsConfig.map(tab => {
                             if(activeTab === tab.id) {
                                 return <div key={tab.id}>{tab.content()}</div>

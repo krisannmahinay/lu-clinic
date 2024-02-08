@@ -206,16 +206,117 @@ export const settingApi = createApi({
             }
         }),
 
-        createBulk: builder.mutation({
+        updateBulk: builder.mutation({
             query: (args) => {
-                const { actionType, data } = args
+                const { actionType, data, id } = args
                 const session = Cookies.get('session')
                 let url, body
                 switch(actionType) {
+                    case 'updateMedicines':
+                    case 'updateMedication':
+                        url = `/update-patient-medication/${id}`,
+                        body = {
+                            actionType: actionType,
+                            data: data,
+                            selectedDB: session
+                        }
+                        break
+
+                    default:
+                        break
+                }
+                return {
+                    url: url,
+                    method: 'PUT',
+                    body: body
+                }
+            }
+        }),
+
+        createBulk: builder.mutation({
+            query: (args) => {
+                const { actionType, data, patientId, physicianId } = args
+                const session = Cookies.get('session')
+                let url, body
+                switch(actionType) {
+                    case 'createMedicine':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    
+                    case 'createMedicineForm':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    
+                    case 'createMedicineFrequency':
+                        url = '/create-pharmcy-medicine',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createNurseNote':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseIVF':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseMedication':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+                        break
+                    case 'createNurseVitalS':
+                        url = '/create-nurse-note',
+                        body = {
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            patientId: data[0].patientId,
+                            selectedDB: session
+                        }
+                        break
+
+                    case 'createPrescription':
+                        url = '/create-prescription',
+                        body = {
+                            data: data,
+                            patient_id: patientId,
+                            physician_id: physicianId,
+                            selectedDB: session,
+                            actionType: actionType,
+                        }
+                        break
                     case 'createDoctorRequest':
                         url = '/create-doctor-request',
                         body = {
                             actionType: actionType,
+                            // labCategory: "",
                             data: data,
                             selectedDB: session
                         }
@@ -331,16 +432,36 @@ export const settingApi = createApi({
                             selectedDB: session
                         }
                         break
-
+                    
                     case 'createInPatient':
+                        // console.log(data)
                         url = '/create-in-patient',
                         body = {
-                            patientType: 'new',
+                            patientType: 'new_ipd',
                             actionType: actionType,
                             data: data.map(item => item.fields),
                             selectedDB: session
                         }
-                        break
+
+                    case 'createErPatient':
+                        // console.log(data)
+                        url = '/create-patient',
+                        body = {
+                            patientType: 'new_er',
+                            actionType: actionType,
+                            data: data.map(item => item.fields),
+                            selectedDB: session
+                        }
+
+                    // case 'createInPatient':
+                    //     url = '/create-in-patient',
+                    //     body = {
+                    //         patientType: 'new',
+                    //         actionType: actionType,
+                    //         data: data.map(item => item.fields),
+                    //         selectedDB: session
+                    //     }
+                    //     break
 
                     default:
                         break
@@ -372,6 +493,7 @@ export const {
     useGetModuleListQuery,
     useCreateUserBatchMutation,
     useCreateBulkMutation,
+    useUpdateBulkMutation,
     useGetBedListQuery,
     useGetBedFloorListQuery,
     useGetBedTypeListQuery,

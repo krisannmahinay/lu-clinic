@@ -7,27 +7,28 @@ import {
 } from "@/service/dohService"
 
 const accordionItem = [
-    { id:1, slug: 'dohInfoClassification', title: "Info Classification" }, 
-    { id:2, slug: 'dohInfoQualityMgmt', title: "Info Quality Management" },
-    { id:3, slug: 'dohInfoBedCapacity', title: "Bed Capacity" },
-    { id:4, slug: 'dohHospOptSummaryPatient', title: "Hospital Operations Summary of Patients"},
-    { id:5, slug: 'dohHospOptDishargesSpecialty', title: "Hospital Operations Discharges Specialty" },
-    { id:6, slug: 'dohHospOptDishargesMorbidity', title: "Hospital Operations Discharges Morbidity" },
-    { id:7, slug: 'dohHospOptDishargesNumberDeliveries', title: "Hospital Operations Discharges Number Deliveries" },
-    { id:8, slug: 'dohHospOptDishargesOpv', title: "Hospital Operations Discharges OPV" },
-    { id:9, slug: 'dohHospOptDishargesOpd', title: "Hospital Operations Discharges OPD" },
-    { id:10, slug: 'dohHospOptDishargesEr', title: "Hospital Operations Discharges ER" },
-    { id:11, slug: 'dohHospOptDishargesEv', title: "Hospital Operations Discharges Testing" },
-    { id:12, slug: 'dohHospOptDishargesTesting', title: "Hospital Operations Discharges EV" },
-    { id:13, slug: 'dohHospOperationDeath', title: "Hospital Operations Deaths" },
-    { id:14, slug: 'dohHospOperationMortalityDeath', title: "Hospital Operations Mortality Deaths" },
-    { id:15, slug: 'dohHospOperationHai', title: "Hospital Operations HAI " },
-    { id:16, slug: 'dohHospOperationMajorOpt', title: "Hospital Operations Major" },
-    { id:17, slug: 'dohHospOperationMinorOpt', title: "Hospital Operations Major" },
-    { id:18, slug: 'dohStaffingPatern', title: "Staffing Patern" },
-    { id:19, slug: 'dohExpenses', title: "Expenses"},
-    { id:20, slug: 'dohRevenues', title: "Revenues"},
-    { id:21, slug: 'dohSubmittedReport', title: "Submitted Reports"},
+    // { id:1, slug: 'dohAuthenticationTest', title: "Authentication"}, 
+    { id:2, slug: 'dohInfoClassification', title: "Info Classification" }, 
+    { id:3, slug: 'dohInfoQualityMgmt', title: "Info Quality Management" },
+    { id:4, slug: 'dohInfoBedCapacity', title: "Bed Capacity" },
+    { id:5, slug: 'dohHospOptSummaryPatient', title: "Hospital Operations Summary of Patients"},
+    { id:6, slug: 'dohHospOptDishargesSpecialty', title: "Hospital Operations Discharges Specialty" },
+    { id:7, slug: 'dohHospOptDishargesMorbidity', title: "Hospital Operations Discharges Morbidity" },
+    { id:8, slug: 'dohHospOptDishargesNumberDeliveries', title: "Hospital Operations Discharges Number Deliveries" },
+    { id:9, slug: 'dohHospOptDishargesOpv', title: "Hospital Operations Discharges OPV" },
+    { id:10, slug: 'dohHospOptDishargesOpd', title: "Hospital Operations Discharges OPD" },
+    { id:11, slug: 'dohHospOptDishargesEr', title: "Hospital Operations Discharges ER" },
+    { id:12, slug: 'dohHospOptDishargesEv', title: "Hospital Operations Discharges Testing" },
+    { id:13, slug: 'dohHospOptDishargesTesting', title: "Hospital Operations Discharges EV" },
+    { id:14, slug: 'dohHospOperationDeath', title: "Hospital Operations Deaths" },
+    { id:15, slug: 'dohHospOperationMortalityDeath', title: "Hospital Operations Mortality Deaths" },
+    { id:16, slug: 'dohHospOperationHai', title: "Hospital Operations HAI " },
+    { id:17, slug: 'dohHospOperationMajorOpt', title: "Hospital Operations Major" },
+    { id:18, slug: 'dohHospOperationMinorOpt', title: "Hospital Operations Major" },
+    { id:19, slug: 'dohStaffingPatern', title: "Staffing Patern" },
+    { id:20, slug: 'dohExpenses', title: "Expenses"},
+    { id:21, slug: 'dohRevenues', title: "Revenues"},
+    { id:22, slug: 'dohSubmittedReport', title: "Submitted Reports"},
 ]
 
 const DOHReport = ({onAccordionClicked, dohData, header}) => {
@@ -36,7 +37,9 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
     const [accordionLoading, setAccordionLoading] = useState({})
     const initialOpenIds = accordionItem.map(item => item.id)
     const [accordionIdOpen, setAccordionIdOpen] = useState(initialOpenIds)
+    const [reportingYear, setReportingYear] = useState(0)
     const [apiStatus, setApiStatus] = useState({
+        // dohAuthenticationTestStatus: 'pending',
         dohInfoClassificationStatus: 'pending',
         dohInfoQualityMgmtStatus: 'pending',
         dohInfoBedCapacityStatus: 'pending',
@@ -63,39 +66,38 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
 
     const [submitAnnualReport] = useSubmitAnnualReportMutation()
 
+    const checkAndStopSpinner = () => {
+        const anyPending = Object.values(apiStatus).some(status => status !== 'done')
+        setBtnSpinner(anyPending)
+        // const allDone = Object.values(apiStatus).every(status => status === 'done')
+        // if(allDone) {
+        //     setBtnSpinner(false)
+        // } else {
+        //     accordionItem.forEach(item => {
+        //         if (apiStatus[item.slug + 'Status'] === 'done') {
+        //             setBtnSpinner(false)
+        //         }
+        //     })
+        // }
+    }
+
     useEffect(() => {
-        let spinnerTimer
-
-        if(btnSpinner) {
-            const allDone = Object.values(apiStatus).every(status => status === 'done')
-            
-            // if(allDone) {
-            //     spinnerTimer = setTimeout(() => {
-            //         setBtnSpinner(false)
-            //     }, setSpinnerDuration())
-            // } else {
-            //     accordionItem.forEach(item => {
-            //         if (apiStatus[item.slug + 'Status'] === 'done') {
-            //             setBtnSpinner(false)
-            //         }
-            //     })
-            // }
-            if(allDone) {
-                setBtnSpinner(false)
-            } else {
-                accordionItem.forEach(item => {
-                    if (apiStatus[item.slug + 'Status'] === 'done') {
-                        setBtnSpinner(false)
-                    }
-                })
-            }
-        }
-
-        return () => {
-            if(spinnerTimer) {
-                clearTimeout(spinnerTimer)
-            }
-        }
+        if (!btnSpinner) return
+        
+        checkAndStopSpinner()
+        // const apiStatusSubscription = apiStatus?.subscribe(() => checkAndStopSpinner())
+        // return () => apiStatusSubscription.unsubscribe()
+        
+        // let spinnerTimer
+        // const statusWithLongestTime = Math.max(
+        //     ...Object.values(apiStatus).map(status => status === 'pending' ? apiStatus[status] : 0)
+        // )
+        // spinnerTimer = setTimeout(checkAndStopSpinner, statusWithLongestTime)
+        // return () => {
+        //     if(spinnerTimer) {
+        //         clearTimeout(spinnerTimer)
+        //     }
+        // }
     }, [btnSpinner, apiStatus, accordionItem])
 
     const toggleAccordion = (id, slug) => {
@@ -120,6 +122,7 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
     // console.log(btnSpinner)
 
     const apiDohEndpoints = [
+        // { name: 'dohAuthenticationTest', endpoint: '/doh-auth' },
         { name: 'dohInfoClassification', endpoint: '/submit-ic' },
         { name: 'dohInfoQualityMgmt', endpoint: '/submit-iqm' },
         { name: 'dohInfoBedCapacity', endpoint: '/submit-ibc' },
@@ -160,6 +163,7 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
     const handleButtonSubmit = async () => {
         setBtnSpinner(true)
         await handleApiRequestInSequence()
+        setBtnSpinner(false)
     }
 
     const handleApiRequestInSequence = async () => {
@@ -171,14 +175,14 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
     const handleApiRequest = async (apiName, apiEndpoint) => {
         const data = await handleSubmit(apiName, apiEndpoint)
         const res = data?.data.map(el => el.original)
-        // console.log(res[0]?.data)
+        // console.log(res)
         if(res[0]?.data.response_code == 104) {
             setApiStatus(prev => ({...prev, [apiName + 'Status']: 'done'}))
         }
     }
 
     const handleSubmit = async (slug, url) => {
-        const data = await submitAnnualReport({slug:slug, url:url})
+        const data = await submitAnnualReport({slug:slug, url:url, reportingYear: reportingYear})
         return data
     }
 
@@ -234,7 +238,7 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
     )
 
     const renderContent = () => (
-        <div>
+        <div className="p-10 pt-[5rem]">
             <div className="space-y-2">
                 <div className="font-bold text-xl mb-2 uppercase text-gray-600">DOH Annual Health Facility Statistical Report</div>
                 <div className="flex space-x-2">
@@ -246,6 +250,17 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
                     >
                     Generate
                     </Button>
+
+                    <select 
+                        className="border border-gray-300 rounded px-4 py-1 mr-4 focus:outline-none text-sm" onChange={(e) => setReportingYear(e.target.value)}>
+                        <option>Select year</option>
+                        <option value="2018">2018</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                    </select>
                     
                     <Button
                         bgColor={btnSpinner ? 'disable': 'blue'}
@@ -265,25 +280,19 @@ const DOHReport = ({onAccordionClicked, dohData, header}) => {
                         >
                             <div className="flex justify-between">
                             {item.title}
-
-                            {apiStatus[item.slug + 'Status'] === 'done' ? (
-                                <svg fill="currentColor" className='w-7 h-7 text-green-500' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clipRule="evenodd" fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" />
-                                </svg>
-                            ) : (
+                            {btnSpinner ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" className='w-7 h-7 animate-spin text-gray-700' viewBox="0 0 100 100" fill="none">
                                     <circle cx="50" cy="50" r="32" stroke-width="8" stroke="currentColor" stroke-dasharray="50.26548245743669 50.26548245743669" fill="none" stroke-linecap="round"/>
                                 </svg>
+                            ) : (
+                                apiStatus[item.slug + 'Status'] === 'done' && (
+                                    <svg fill="currentColor" className='w-7 h-7 text-green-500' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path clipRule="evenodd" fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" />
+                                    </svg>
+                                )
                             )}
-
                             </div>
                         </button>
-
-                        {/* {accordionIdOpen.includes(item.id) && (
-                            item.id === 1 ? (
-                                <h1>test 1</h1>
-                            ) : ""
-                        )} */}
                     </div>
                 ))}
                 
