@@ -5,9 +5,9 @@ import ProfilePicture from "./ProfilePicture"
 const ProfileInformation = ({information}) => {
     const [isContactOpen, setContactOpen] = useState(false)
 
-    // console.log(information)
+    console.log(information)
     return (
-        <div className="bg-gray-100 h-screen">
+        <div className="bg-gray-100 p-8 pt-[5rem]">
             <div className="flex gap-6">
                 <div className="flex-none w-2/5 p-6 bg-white shadow-lg rounded-lg">
                     <div className="flex items-center justify-between">
@@ -15,8 +15,8 @@ const ProfileInformation = ({information}) => {
                             <ProfilePicture width={100} height={100} font={40} userDetails={information}/>
                             {/* <img className="h-16 w-16 rounded-full object-cover border-2 border-blue-500" src="path_to_user_image.jpg" alt="User" /> */}
                             <div className="ml-4">
-                                <h3 className="text-xl font-semibold text-gray-700">{information.identity?.first_name }</h3>
-                                <p className="text-sm text-gray-500">Job Title</p>
+                                <h3 className="text-xl font-semibold text-gray-700">{information.personal_information?.first_name} {information.personal_information?.last_name}</h3>
+                                {/* <p className="text-sm text-gray-500">Job Title</p> */}
                             </div>
                         </div>
                         {/* <div>

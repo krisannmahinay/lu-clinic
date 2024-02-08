@@ -123,7 +123,7 @@ const Setting = () => {
     const moduleData = moduleList?.moduleList ?? []
     // const userInfo = userDetails?.data[0] ?? []
     const header = userList?.columns ?? []
-    const hiddenUserIds = ['IMO-9999999999']
+    const hiddenUserIds = ['IMO-9999999999', 'QSO-2402082YXW']
     const filteredUserData = userData.filter(user => !hiddenUserIds.includes(user.user_id))
 
     const isRowNew = (createdAt) => {
@@ -534,15 +534,13 @@ const Setting = () => {
                         // permission={permission} 
                         // selectedRowId={selectedRows}
                     />
-                    {['x', 'admin', 'superadmin'].includes(userDetails?.roles) && (
+                    {['x', 'superadmin'].includes(userDetails?.roles) && (
                         renderContent()
                     )}
 
-                    {(userDetails?.roles === "nurse" || userDetails?.roles === "doctor") && (
-                        <>
-                            <ProfileInformation information={userInfo}/>
-                        </>
-                    )} 
+                    {['admin', 'user', 'nurse', 'doctor'].includes(userDetails?.roles) && (
+                        <ProfileInformation information={userDetails}/>
+                    )}
                 </div>
 
 
