@@ -11,7 +11,7 @@ const withPWA = require('next-pwa')({
 })
 
 const nextConfig = {
-    reactStrictMode: true,
+    reactStrictMode: false,
     env: {
         // NEXT_SOCKET_IO: 'http://127.0.0.1:6001',
         NEXT_ENV: 'development',
