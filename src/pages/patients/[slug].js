@@ -733,7 +733,8 @@ const SubModule = () => {
                         userDetails: userDetails
                     },
                     onChange:(data) => handleOnChange(data),
-                    onAutoSave: (data) => handleAutoSave(data)
+                    onAutoSave: (data) => handleAutoSave(data),
+                    onModalOpen: (data) => handleModalState(data)
                 }}>
                     <PatientInformation />
                 </ComponentContext.Provider>
