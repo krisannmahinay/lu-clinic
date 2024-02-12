@@ -18,14 +18,12 @@ import {
     useGetUserByIdQuery
 } from "@/service/authService"
 import { authApi } from "@/service/authService"
-import Timer from "./Timer"
 import { ComponentContext, FormContext, useModalContext } from "@/utils/context"
 import { debounce } from "lodash"
 import { useSearchQuery } from "@/service/searchService"
 import { searchApi } from "@/service/searchService"
 import Prescription from "./Patient/OPD/Prescription"
 import Medication from "./Patient/IPD/Medication"
-import VitalSign from "./Patient/VitalSign"
 
 const genderOPD = [
     {value: "male", label: "Male", },

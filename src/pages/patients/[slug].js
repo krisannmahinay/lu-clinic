@@ -63,7 +63,6 @@ import MedicalHistory from '@/components/Patient/IPD/MedicalHistory'
 import DoctorOrder from '@/components/Patient/IPD/DoctorOrder'
 import NurseNote from '@/components/Patient/IPD/NurseNote'
 import HealthMonitor from '@/components/HealthMonitor'
-import VitalSign from '@/components/Patient/OPD/VitalSign'
 import MedicationSheet from '@/components/Patient/IPD/MedicationSheet'
 import AutoSaveSpinner from '@/components/AutoSaveSpinner'
 

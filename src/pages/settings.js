@@ -7,8 +7,6 @@ import {
     useGetModuleListQuery
 } from '@/service/settingService'
 
-import loadinSpinner from '../../public/assets/svg/image2vector.svg'
-
 import { 
     useGetUserDetailsQuery,
     useGetUserByIdQuery,
