@@ -48,7 +48,6 @@ import Alert from '@/components/Alert'
 import Soap from '@/components/Patient/OPD/Soap'
 import LabResult from '@/components/Patient/OPD/LabResult'
 import ImagingResult from '@/components/Patient/OPD/ImagingResult'
-import PatientInformation2 from '@/components/Patient/OPD/PatientInformation'
 import PatientInformation from '@/components/Patient/PatientInformation'
 import Prescription from '@/components/Patient/OPD/Prescription'
 // import Prescription from '@/components/Prescription'
@@ -719,11 +718,6 @@ const SubModule = () => {
             id: 'tab1',
             label: 'Patient Information and Consent',
             content: () => (
-                // <PatientInformation2
-                //     patientDataMaster={profileData}
-                //     icd10Data={icd10List}
-                //     onModalState={handleModalState}
-                // />
                 <ComponentContext.Provider value={{
                     state: {
                         provinceData: provinceData,
