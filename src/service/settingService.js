@@ -442,6 +442,7 @@ export const settingApi = createApi({
                             data: data.map(item => item.fields),
                             selectedDB: session
                         }
+                        break
 
                     case 'createErPatient':
                         // console.log(data)
@@ -452,7 +453,7 @@ export const settingApi = createApi({
                             data: data.map(item => item.fields),
                             selectedDB: session
                         }
-
+                        break
                     // case 'createInPatient':
                     //     url = '/create-in-patient',
                     //     body = {
