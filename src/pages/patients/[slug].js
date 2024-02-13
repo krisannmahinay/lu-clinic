@@ -531,6 +531,7 @@ const SubModule = () => {
                 break
 
             case 'clickedRow':
+			console.log(data)
                 setProfileData(data)
                 setActiveContent("green")
                 setContentType("tableRow")
