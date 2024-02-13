@@ -429,6 +429,7 @@ const Setting = () => {
                             </div>
 
                             <FormContext.Provider value={{
+                                title: "Add User",
                                 state: {
                                     userDetails: userDetails
                                 },
@@ -444,17 +445,6 @@ const Setting = () => {
                             }}>
                                 <Form />
                             </FormContext.Provider>
-
-                            {/* <Form 
-                                ref={formRef} 
-                                initialFields={userRegistration}
-                                enableAutoSave={false}
-                                onSuccess={handleRefetch}
-                                onCloseSlider={() => setActiveContent("yellow")}
-                                onLoading={(data) => setBtnSpinner(data)}
-                                onSetAlertType={(data) => setAlertType(data)}
-                                onSetAlertMessage={(data) => setAlertMessage(data)}
-                            /> */}
                         </div>
                     )}
 

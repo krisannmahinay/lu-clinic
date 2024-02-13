@@ -1,17 +1,32 @@
 
-export const userRegistration = [
-    {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
-    {name: 'password', type: 'password', label: 'Password', placeholder: 'Enter password'},
-    {
-        name: 'roles',
-        type: 'dropdown',
-        label: 'Roles',
-        options: [
-            {value: 'admin', label: 'Admin'},
-            {value: 'user', label: 'User'},
-        ]
-    }
-]
+export const userRegistration = (designationList) => {
+    const designationOptions = designationList?.map(position => ({
+        value: position.id,
+        label: position.pos_desc,
+    }))
+
+    return [
+        {name: 'first_name', type: 'text', label: 'First Name', placeholder: 'Enter First Name'},
+        {name: 'last_name', type: 'text', label: 'Last Name', placeholder: 'Enter Last Name'},
+        {name: 'email', type: 'email', label: 'Email', placeholder: 'Enter email'},
+        {name: 'password', type: 'password', label: 'Password', placeholder: 'Enter password'},
+        {
+            name: 'roles',
+            type: 'dropdown',
+            label: 'Roles',
+            options: [
+                {value: 'admin', label: 'Admin'},
+                {value: 'user', label: 'User'},
+            ]
+        },
+        {
+            name: 'designation',
+            type: 'dropdown',
+            label: 'Designation',
+            options: designationOptions
+        },
+    ]
+}
 
 export const generateOpdForms = (physicianList) => {
     const phyisicianOptions = physicianList?.map(ph => ({
