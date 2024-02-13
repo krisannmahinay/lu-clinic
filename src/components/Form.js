@@ -316,12 +316,6 @@ const Form = forwardRef(({
      const renderForm = (row, rowIndex) => {
         return context?.initialFields?.map((field, index) => (
             <div key={field.name}>
-                {field.name === "last_name" && (
-                    <div>
-                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Person Details</h3>
-                        <hr className="drop-shadow-md pb-5"/>
-                    </div>
-                )}
 
                 {field.name === "admission_date" && (
                     <div>
@@ -592,7 +586,8 @@ const Form = forwardRef(({
                                 options={field.options?.map(option => ({ 
                                     value: option.value,    
                                     label: option.label,
-                                    isDisabled: option.isDisabled
+                                    isDisabled: option.isDisabled,
+                                    isUser: option.isUser,
                                 }))}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 isSearchable={true}
