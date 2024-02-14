@@ -985,7 +985,7 @@ const PatientInformation = () => {
                                         key={service}
                                         type="checkbox"
                                         name="soc_serv_classification"
-                                        checked={service === socServiceTickBox || service === patientData.soc_serv_classification}
+                                        checked={service === socServiceTickBox || service === patientData?.soc_serv_classification}
                                         onChange={(e) => handleOnChange({type:"soc_serv_classification", event: e.target.checked, value:service})}
                                         onBlur={handleBlur}
                                         className="w-5 h-5"
@@ -1050,7 +1050,7 @@ const PatientInformation = () => {
                                         key={service}
                                         type="checkbox"
                                         name="phic"
-                                        checked={service === phicTickBox || service === patientData.soc_serv_classification}
+                                        checked={service === phicTickBox || service === patientData?.soc_serv_classification}
                                         onChange={(e) => handleOnChange({type:"phic", event: e.target.checked, value:service})}
                                         className="w-5 h-5"
                                         onBlur={handleBlur}
