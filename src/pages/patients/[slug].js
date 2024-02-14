@@ -43,6 +43,10 @@ import {
     useGetUserDetailsQuery 
 } from '@/service/authService'
 
+import { 
+    useGeneratePdfQuery
+} from "@/service/pdfService"
+
 import Tabs from '@/components/Tabs'
 import Alert from '@/components/Alert'
 import Soap from '@/components/Patient/OPD/Soap'
@@ -122,14 +126,12 @@ const SubModule = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [activeContent, setActiveContent] = useState("yellow")
     const [btnSpinner, setBtnSpinner] = useState(false)
-    const [updateForm, setUpdateForm] = useState({})
     const [contentType, setContentType] = useState("")
     const [selectedInformation, setSelectedInformation] = useState({})
     const [searchMedicine, setSearchMedicine] = useState("")
     const [refetchRTK, setRefetchRTK] = useState(false)
-    const [checked, setChecked] = useState([])
     const [profileData, setProfileData] = useState({})
-    const [opdProfileData, setOpdProfileData] = useState({})
+    const [selectedPrint, setSelectedPrint] = useState("")
 
     const [checkIds, setCheckIds] = useState(0)
     const [isOptionDisabled, setIsOptionDisabled] = useState(true)
@@ -137,7 +139,6 @@ const SubModule = () => {
     const [fab, setFab] = useState(false)
     const [isDrDrawerOpen, setIsDrDrawerOpen] = useState(false)
     const [testsData, setTestsData] = useState({})
-    const [openCategory, setOpenCategory] = useState(null)
     const [drRequestForms, setDrRequestForms] = useState([])
     const [autoSaveLoader, setAutoSaveLoader] = useState(false)
 
@@ -154,9 +155,6 @@ const SubModule = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [opdForms, setOpdForms] = useState([])
     const [ipdForms, setIpdForms] = useState([])
-    const [checkedItem, setCheckedItem] = useState([])
-    const [drRequestBtnEbled, setDrRequestBtnEnabled] = useState(false)
-    const [floatAccessBtn, setFloatAccessBtn] = useState(false)
 
     const [provinceCode, setProvinceCode] = useState(null)
     const [municipalCode, setMunicipalCode] = useState(null)
@@ -320,6 +318,10 @@ const SubModule = () => {
         slug: 'imaging', 
         patient_id: profileData?.patient_id 
     })
+
+    const { data: pdfBlob } = useGeneratePdfQuery({
+        pdfCategory: selectedPrint
+    }, {enabled: !!selectedPrint})
     
     const { 
         data: labResultList,
@@ -328,6 +330,8 @@ const SubModule = () => {
         slug: 'laboratory', 
         patient_id: profileData?.patient_id 
     })
+
+    console.log(selectedPrint)
 
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
@@ -505,6 +509,18 @@ const SubModule = () => {
         switch(data.type) {
             case 'printPhilhealthCf1':
                 formRef.current.handleGeneratePDF('print-phealth-cf1')
+                break
+
+            case 'printPhilhealthCf2':
+                formRef.current.handleGeneratePDF('print-phealth-cf2')
+                break
+
+            case 'printPhilhealthCf3':
+                formRef.current.handleGeneratePDF('print-phealth-cf3')
+                break
+
+            case 'printPhilhealthCf4':
+                formRef.current.handleGeneratePDF('print-phealth-cf4')
                 break
 
             case 'printPrescription':
@@ -852,6 +868,15 @@ const SubModule = () => {
         }
     ]
 
+    const pdfConfig = [
+        { category: 'print-phealth-cf1', title: 'PHILHEALTH CF1', type: 'printPhilhealthCf1' },
+        { category: 'print-phealth-cf2', title: 'PHILHEALTH CF2', type: 'printPhilhealthCf2' },
+        { category: 'print-phealth-cf3', title: 'PHILHEALTH CF3', type: 'printPhilhealthCf3' },
+        { category: 'print-phealth-cf4', title: 'PHILHEALTH CF4', type: 'printPhilhealthCf4' },
+    ]
+
+    // console.log(pdfBlob)
+
     const renderContent = (slug) => {
         switch(slug) {
             case 'in-patient':
@@ -885,21 +910,28 @@ const SubModule = () => {
                                                 Options
                                             </button>
                                         }>
+                                            
+                                        {pdfConfig.map(({ category, title, type }) => (
+                                            <PdfContext.Provider value={{
+                                                state: {
+                                                    title: title,
+                                                    isOptionEditDisabled: isOptionEditDisabled
+                                                },
+                                                data: {
+                                                    profileData: profileData,
+                                                    pdfBlob: pdfBlob,
+                                                    category: category
+                                                },
+                                                ref: formRef,
+                                                onClick: (data) => {
+                                                    setSelectedPrint(data.value)
+                                                    handleOnClick({type: type})
+                                                },
+                                            }}>
+                                                <PdfGenerator />
+                                            </PdfContext.Provider>
+                                        ))}
 
-                                        <PdfContext.Provider value={{
-                                            state: {
-                                                pdfCategory: 'print-phealth-cf1',
-                                                title: 'PHILHEALTH CF1',
-                                                isOptionEditDisabled: isOptionEditDisabled
-                                            },
-                                            data: {
-                                                profileData: profileData
-                                            },
-                                            ref: formRef,
-                                            onClick: () => handleOnClick({type: 'printPhilhealthCf1'}),
-                                        }}>
-                                            <PdfGenerator />
-                                        </PdfContext.Provider>
                                     </Dropdown>
                                 </div>
                                 

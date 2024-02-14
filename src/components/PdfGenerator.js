@@ -1,21 +1,28 @@
-import { forwardRef, useImperativeHandle } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { useGeneratePdfQuery } from "@/service/pdfService"
 import { usePdfContext } from "@/utils/context"
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 
 const PdfGenerator = forwardRef(({ }, ref) => {
+    const [category, setCategory] = useState("")
     const context = usePdfContext()
-    const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
-        pdfCategory: context?.state.pdfCategory
-    }, {enabled: !!context?.state.pdfCategory})
+    // const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
+    //     pdfCategory: context?.state.pdfCategory
+    // }, {enabled: !!context?.state.pdfCategory})
     // const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
     //     pdfCategory: context?.state.pdfCategory
     // }, {enabled: !!context?.state.pdfCategory})
 
+    // useEffect(() => {
+    //     if(context?.state.pdfCategory) {
+    //         setCategory()
+    //     }
+    // }, [context?.state.pdfCategory])
+
     useImperativeHandle(context?.ref, () => ({
         handleGeneratePDF: (actionType) => handleGeneratePDF(actionType)
-    }));
+    }))
 
     const blobToArrayBuffer = async (blob) => {
         return new Promise((resolve, reject) => {
@@ -26,10 +33,10 @@ const PdfGenerator = forwardRef(({ }, ref) => {
         })
     }
 
-    console.log(context?.data.medication)
+    // console.log(context?.data?.pdfBlob)
 
     const handleGeneratePDF = async (actionType) => {
-        const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
+        const pdfArrayBuffer = await blobToArrayBuffer(context?.data?.pdfBlob)
         const pdfDoc = await PDFDocument.load(pdfArrayBuffer)
         const courierFont = await pdfDoc.embedFont(StandardFonts.Courier)
         
@@ -70,6 +77,16 @@ const PdfGenerator = forwardRef(({ }, ref) => {
                     // y: height - 250,
                     y: height - 485,
                     size: 13,
+                    font: courierFont
+                })
+                break
+
+            case 'print-philhealth-cf2':
+                firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
+                    x: 40,
+                    // y: height - 250,
+                    y: height - 485,
+                    size: 12,
                     font: courierFont
                 })
                 break
@@ -148,7 +165,7 @@ const PdfGenerator = forwardRef(({ }, ref) => {
     }
 
     return (
-        <button onClick={() => context?.onClick()} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
+        <button onClick={() => context?.onClick({value: context?.data.category})} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
             {context?.state.title}
         </button>    
     )
