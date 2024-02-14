@@ -364,7 +364,7 @@ const Table = forwardRef(({
                 break
 
             case 'clickedRow':
-                context?.onClick(type, e)
+                context?.onClick({type: type, value: data})
                 break
             default:
                 break
@@ -630,7 +630,7 @@ const Table = forwardRef(({
                             ) : (
                                 context?.tableData?.map((tblBody, tblBodyIndex) => (
                                     // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                    <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', tblBody)}>
+                                    <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', _, tblBody)}>
                                         <td className="px-6 py-2 whitespace-nowrap text-sm">
                                             <input
                                                 type="checkbox"

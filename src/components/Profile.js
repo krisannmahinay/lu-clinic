@@ -79,8 +79,8 @@ const Profile = () => {
                         </div>   
                         <div className="flex items-center px-3">
                             <span className="text-white font-medium text-xs flex justify-center items-center bg-green-700 p-1 rounded-md relative">{
-                                `${componentContext?.state?.type_visit === 'new_ipd' || componentContext?.state.type_visit === 'new_opd' ? 'NEW' 
-                                : componentContext?.state?.type_visit === 'revisit_ipd' || componentContext?.state.type_visit === 'revisit_opd' ? 'REVISIT' 
+                                `${componentContext?.state?.type_visit === 'new_ipd' || componentContext?.state?.type_visit === 'new_opd' ? 'NEW' 
+                                : componentContext?.state?.type_visit === 'revisit_ipd' || componentContext?.state?.type_visit === 'revisit_opd' ? 'REVISIT' 
                                 : componentContext?.state?.type_visit === 'former_opd' ? 'FORMER OPD' : ''}`
                             }</span> 
                         </div>   

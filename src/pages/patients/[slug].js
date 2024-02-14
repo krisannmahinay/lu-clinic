@@ -501,8 +501,8 @@ const SubModule = () => {
         }
     }
 
-    const handleOnClick = (type, data) => {
-        switch(type) {
+    const handleOnClick = (data) => {
+        switch(data.type) {
             case 'printPhilhealthCf1':
                 formRef.current.handleGeneratePDF('print-phealth-cf1')
                 break
@@ -531,8 +531,7 @@ const SubModule = () => {
                 break
 
             case 'clickedRow':
-			console.log(data)
-                setProfileData(data)
+                setProfileData(data.value)
                 setActiveContent("green")
                 setContentType("tableRow")
                 break
@@ -897,7 +896,7 @@ const SubModule = () => {
                                                 profileData: profileData
                                             },
                                             ref: formRef,
-                                            onClick: () => handleOnClick('printPhilhealthCf1'),
+                                            onClick: () => handleOnClick({type: 'printPhilhealthCf1'}),
                                         }}>
                                             <PdfGenerator />
                                         </PdfContext.Provider>
@@ -950,10 +949,10 @@ const SubModule = () => {
                                     },
                                     tableData: patientData,
                                     tableHeader: header,
-                                    onChecked: handleOnChecked,
-                                    onClick: handleOnClick,
-                                    onEdit: handleOnEdit,
-                                    onCheckPatient: handleCheckPatient
+                                    onChecked: (data) => handleOnChecked(data),
+                                    onClick: (data) => handleOnClick(data),
+                                    onEdit: (data) => handleOnEdit(data),
+                                    onCheckPatient: (data) => handleCheckPatient(data)
                                 }}>
                                     <Table />
                                 </TableContext.Provider>
@@ -1115,7 +1114,7 @@ const SubModule = () => {
                                                 medication: medicationList
                                             },
                                             ref: formRef,
-                                            onClick: () => handleOnClick('printPrescription'),
+                                            onClick: () => handleOnClick({type: 'printPrescription'}),
                                         }}>
                                             <PdfGenerator />
                                         </PdfContext.Provider>
@@ -1174,10 +1173,10 @@ const SubModule = () => {
                                         tableData: patientData,
                                         isLoading: patientListLoading,
                                         enableAddRow: true,
-                                        onChecked: handleOnChecked,
-                                        onClick: handleOnClick,
-                                        onEdit: handleOnEdit,
-                                        onCheckPatient: handleCheckPatient
+                                        onChecked:(data) => handleOnChecked(data),
+                                        onClick: (data) => handleOnClick(data),
+                                        onEdit: (data) => handleOnEdit(data),
+                                        onCheckPatient: (data) => handleCheckPatient(data)
                                     }}>
                                         <Table />
                                 </TableContext.Provider>
@@ -1382,8 +1381,6 @@ const SubModule = () => {
                         alertMessage: alertMessage,
                         onAddMedicine: (data) => handleAddMedicine(data.data, data.field),
                         onClickOpenMed: (data) => handleSelectMedicine(data), 
-                        onClickCloseMed: (data) => handleOnClick(data.type), 
-                        onClickCloseMed: (data) => handleOnClick(data.type), 
                         onChange: () => handleOnChange,
                         onCheck: (data) => handleCheckBox(data),
                         onClose: (data) => handleOnClose(data),
