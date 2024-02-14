@@ -230,8 +230,6 @@ const PatientInformation = () => {
         return diffInDays
     }
 
-    console.log(formData)
-
     const handleOnChange = (data) => {
         const municipalityName = municipalityData?.find(option => option.code === profileData?.municipality)?.name
         const barangayName = barangayData?.find(option => option.code === profileData?.barangay)?.name
