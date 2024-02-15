@@ -56,7 +56,7 @@ const dispositionArray = [
 const PatientInformation = () => {
     const componentContext = useComponentContext()
     const modalContext = useModalContext()
-    const icdCode = componentContext?.state?.clickedValue?.icd_codes
+    const icdCode = componentContext?.state?.clickedValue?.icd10_code
     const poptProcedure = componentContext?.state?.clickedValue?.popt_proc
     const ooptProcedure = componentContext?.state?.clickedValue?.oopt_proc
     const userDetails = componentContext?.state?.userDetails
@@ -190,13 +190,13 @@ const PatientInformation = () => {
                 discharge_diagnosis: patientData.discharge_diagnosis || "",
                 // principal_opt_code: poptProcedure?.code || "",
                 // principal_opt_desc:  poptProcedure?.description || "",
-                principal_opt_code: patientData.principal_opt_code || "",
-                principal_opt_desc:  patientData.principal_opt_desc || "",
+                principal_opt_code: poptProcedure?.code || "",
+                principal_opt_desc:  poptProcedure?.description || "",
                 other_opt_code: ooptProcedure?.code || "",
                 other_opt_desc: ooptProcedure?.description || "",
                 accident_injury_poison: patientData.accident_injury_poison || "",
                 icd10_code: icdCode?.code || "",
-                icd10_desc: icdCode?.description || ""
+                icd10_desc: icdCode?.description || "",
             })
         }
 
@@ -277,23 +277,37 @@ const PatientInformation = () => {
                 break
 
             
-            case 'principal_opt_desc':
-                if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
-                    setFormData((prev) => ({
-                        ...prev,
-                        principal_opt_desc: data.value,
-                        // principal_opt_desc: poptProcedure?.description,
-                    }))
-                }
+            case 'icd10_code':
+                setFormData((prev) => ({
+                    ...prev,
+                    icd10_code: data.code,
+                    icd10_desc: data.description,
+                }))
+                // if(componentContext?.state?.clickedValue?.popt_proc?.type === 'icd10_code') {
+                    
+                // }
                 break
 
-            case 'other_opt_proc':
-                if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
-                    setFormData((prev) => ({
-                        ...prev,
-                        other_opt_desc: data.value,
-                    }))
-                }
+            case 'principal_opt_code':
+                setFormData((prev) => ({
+                    ...prev,
+                    principal_opt_code: data.code,
+                    principal_opt_desc: data.description,
+                }))
+                // if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
+                    
+                // }
+                break
+
+            case 'other_opt_code':
+                setFormData((prev) => ({
+                    ...prev,
+                    other_opt_code: data.code,
+                    other_opt_desc: data.description,
+                }))
+                // if(componentContext?.state?.clickedValue?.popt_proc?.type === 'popt_proc') {
+                    
+                // }
                 break
                 
             case 'admission_date':
@@ -1139,9 +1153,9 @@ const PatientInformation = () => {
                         <div className="w-3/5">
                             <input
                                 type="text"
-                                name="principal_opt_desc"
-                                value={poptProcedure?.description}
-                                onChange={(e) => handleOnChange({type:"principal_opt_desc", value: e.target.value})}
+                                name="principal_opt_code"
+                                value={poptProcedure?.description || formData?.principal_opt_desc}
+                                onChange={(e) => handleOnChange({type:"principal_opt_code", desc:poptProcedure.description, code: poptProcedure?.code})}
                                 onClick={() => componentContext?.onModalOpen({modalState: true, type: "popt_proc", modalType: "popt_proc"})}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
                                 placeholder="Click to search"
@@ -1154,9 +1168,9 @@ const PatientInformation = () => {
                         <div className="w-3/5">
                             <input
                                 type="text"
-                                name="other_opt_proc"
+                                name="other_opt_code"
                                 value={ooptProcedure?.description || patientData?.other_opt_desc}
-                                onChange={(e) => handleOnChange({type:"other_opt_proc", value: e.target.value})}
+                                onChange={(e) => handleOnChange({type:"other_opt_code", desc: ooptProcedure?.description, code: ooptProcedure?.code})}
                                 onClick={() => componentContext?.onModalOpen({modalState: true, type: "oopt_proc", modalType: "oopt_proc"})}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
                                 placeholder="Click to search"
@@ -1170,7 +1184,7 @@ const PatientInformation = () => {
                             <textarea
                                 type="text"
                                 name="accident_injury_poison"
-                                value={formData.accident_injury_poison}
+                                value={formData.accident_injury_poison || ""}
                                 onChange={(e) => handleOnChange({type:"accident_injury_poison", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
@@ -1185,11 +1199,11 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="icd10_code"
-                                value={formData.icd10_code}
-                                onChange={(e) => handleOnChange({type:"icd10_code", value: e.target.value})}
-                                // onBlur={handleBlur}
+                                value={icdCode?.description || formData.icd10_desc}
+                                onChange={(e) => handleOnChange({type:"icd10_code", desc: icdCode?.description, code: icdCode?.code})}
+                                onClick={() => componentContext?.onModalOpen({modalState: true, type: "icd10_code", modalType: "icd10_code"})}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder="Type..."
+                                placeholder="Click to search"
                             />
                         </div>
                     </div>
