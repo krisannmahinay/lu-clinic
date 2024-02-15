@@ -57,18 +57,8 @@ const dispositionArray = [
 ]
 
 const Form = forwardRef(({
-        onClickFAB,
         initialFields = [], 
         loginBtn,
-        onFormChange,
-        onSuccess, 
-        onCloseSlider,
-        onSetAlertMessage,
-        onSetAlertType,
-        onLoading,
-        enableAutoSave,
-        enableAddRow,
-        onEditForm,
         onClick,
         style
     }, ref) => {
@@ -86,8 +76,6 @@ const Form = forwardRef(({
     const [alertOpen, setAlertOpen] = useState(false)
     const [alertMessage, setAlertMessage] = useState([])
     const [resetFormTimer, setResetFormTimer] = useState(false)
-
-    const [physicianChargeId, setPhysicianChargeId] = useState(0)
     
     const [createBulk, { 
         isLoading: createBulkLoading, 
@@ -105,45 +93,13 @@ const Form = forwardRef(({
         handleAddRow
     }))
 
-    const handleGetValueField = (field, contextData) => {
-        const value = context?.initialFields?.find((f) => f.name === field.name)?.value ||
-        field.name in contextData?.user_data_info
-            ? context?.data?.user_data_info?.[field.name]
-            // : field.name === 'last_name' ? contextData?.last_name
-            : field.name === 'admission_date' ? contextData?.admission_date
-            : field.name === 'discharge_date' ? contextData?.discharge_date
-            : field.name === 'total_no_day' ? contextData?.total_no_day
-            : field.name === 'admitting_physician' ? `Dr. ${contextData?.physician_data_info?.first_name} ${contextData?.physician_data_info?.last_name}`
-            : field.name === 'province' ? contextData?.user_data_info?.province || processFormData?.find((f) => f.name === field.name)?.value
-            : '' 
-        console.log(contextData?.last_name)
-        return value
-    }
-    
-    const formFields = useMemo(
-        () => {
-            const fields = context?.data ? generateInfoForms(context?.data, context?.provinceData, context?.municipalityData, context?.barangayData) : []
-            return fields.map((field) => ({
-                ...field,
-                value: handleGetValueField(field, context?.data)
-            }))
-        }, [context?.data, context?.provinceData, context?.municipalityData, context?.barangayData, context?.initialFields]
-    ) 
-
     useEffect(() => {
-        const initialFields = formFields.length > 0
-            ? formFields.map((field) => {
-                return field
-            })
-            : context?.initialFields?.reduce((acc, field) => ({
-                ...acc, [field.name]: ''  
-            }), {})
-
-        
         setFormData([{
             id: '_' + Date.now() + Math.random(), 
             patientId: modalContext?.state?.profileData.patient_id || '',
-            fields: initialFields
+            fields: context?.initialFields.reduce((acc, field) => ({ 
+                ...acc, [field.name]: '' 
+            }), {})
         }])
 
         let timer
@@ -160,32 +116,7 @@ const Form = forwardRef(({
                 clearTimeout(timer)
             }
         }
-    }, [formFields, resetFormTimer, context?.data])
-
-    const processFormData = useMemo(() => {
-        const updatedFields = formData.flatMap((row) =>
-            row.fields && Array.isArray(row.fields)
-                ? row.fields.map(({ name, value }) => ({ name, value }))
-                : [] 
-        )
-        
-        return updatedFields
-    },[formData])
-
-    
-    // console.log(formData)
-
-    // const memoizedSelectValue = useMemo(() => {
-    //     return (field, row) => {
-    //         if(field.options) {
-    //             return field.options.find(option =>
-    //                 option.value === processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]
-    //             )
-    //         }
-    //     }
-    // }, [processFormData])
-
-    // const handleSelectValue = memoizedSelectValue
+    }, [resetFormTimer, context?.data])
 
     const calculatedAge = (birthdate) => {
         const birthDate = new Date(birthdate)
@@ -316,7 +247,6 @@ const Form = forwardRef(({
      const renderForm = (row, rowIndex) => {
         return context?.initialFields?.map((field, index) => (
             <div key={field.name}>
-
                 {field.name === "admission_date" && (
                     <div>
                         <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Patient Information</h3>
@@ -358,7 +288,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 onClick={field.category === 'with_modal' ? () => handleOnClick({action:'clickedModal', field:field, modalState: true}) : undefined}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -382,7 +312,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className=" bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
                                 placeholder={field.placeholder}
@@ -406,7 +336,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className=" border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
                                 placeholder={field.placeholder}
@@ -429,7 +359,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
                                 placeholder={field.placeholder}
@@ -452,7 +382,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
                                 placeholder={field.placeholder}
@@ -475,7 +405,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none"
                                 placeholder={field.placeholder}
@@ -567,7 +497,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
                                 placeholder={field.placeholder}
@@ -596,7 +526,7 @@ const Form = forwardRef(({
                                 classNamePrefix=""
                                 styles={styleDropdown}
                                 value={field.options?.find(option => 
-                                    option.value === processFormData?.find((f) => f.name === field.name)?.value
+                                    option.value === row.fields[field.name]
                                 )}
                                 getOptionLabel={(option) => (
                                     <div className="">
@@ -623,7 +553,7 @@ const Form = forwardRef(({
                                 type={field.type}
                                 id={field.name}
                                 name={field.name}
-                                value={processFormData?.find((f) => f.name === field.name)?.value || row.fields[field.name]}
+                                value={row.fields[field.name]}
                                 onChange={(e) => handleInputChange(e, rowIndex, field.name)}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
                                 placeholder={field.placeholder}
@@ -637,20 +567,6 @@ const Form = forwardRef(({
  
      return (
          <>
-         
-         {/* <div className={`fixed inset-0 p-4 h-dvh w-full bg-black opacity-50 transition-opacity ${modalOpen ? 'visible' : 'hidden'}`}></div>
-         <Modal
-            isOpen={modalOpen} 
-         /> */}
-         {/* {alertMessage &&
-             <Alert 
-                 alertType={alertType}
-                 isOpen={alertType !== ""}
-                 onClose={handleAlertClose}
-                 message={alertMessage} 
-             /> 
-         } */}
-         
              <div className="tab-content px-4">
                  <form onSubmit={handleSubmit}>
                  {/* <form> */}
@@ -659,9 +575,9 @@ const Form = forwardRef(({
                             <div className={`${context.enableAddRow ? 'bg-white border border-gray-300 rounded py-5' : ''}`}>
                                 <div key={row.id} className="flex gap-4">
                                     <div className="md:flex md:flex-col  w-full gap-4">
-                                        {context.title !== undefined ? (
+                                        {context?.state !== null ? (
                                             <div>
-                                                <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-3">{context.title}</h3>
+                                                <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-3">{context?.state?.title}</h3>
                                                 <hr className="drop-shadow-md pb-5"/>
                                             </div>
                                         ) : ""}

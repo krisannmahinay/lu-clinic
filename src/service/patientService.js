@@ -23,6 +23,7 @@ export const patientApi = createApi({
                 const { data, patient_id, actionType } = args
                 // const data = dataArray.map(item => item.fields)
                 // console.log(dataArray)
+                console.log(data)
                 return {
                     url: `/auto-save/${patient_id}`,
                     method: 'PUT',

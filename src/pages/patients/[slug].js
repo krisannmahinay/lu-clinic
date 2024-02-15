@@ -374,12 +374,6 @@ const SubModule = () => {
             setTestsData(pathologyData)
         }
 
-        // if(Array.isArray(imgResultList) && imgResultList.length > 0) {
-        //     const headers = Object.keys(imgResultList[0])
-        //     setTableHeader(headers)
-        // }
-        // console.log(physicianList)
-
         if(physicianList) {
             const opd = generateOpdForms(physicianList)
             setOpdForms(opd)
@@ -660,8 +654,8 @@ const SubModule = () => {
             setModalType(data.modalType)
         } else if(data.type === 'oopt_proc') {
             setModalType(data.modalType)
-        } else if(data.type === 'icd_code') {
-
+        } else if(data.type === 'icd10_code') {
+            setModalType(data.modalType)
         }
     }
 
@@ -708,25 +702,32 @@ const SubModule = () => {
                 }
             })
     }
-
+    
     const handleClickFromSearch = (data) => {
         const { type, value } = data
         const clickedFromSearch = type === 'popt_proc' || type === 'oopt_proc' ? {
-                code: value.proc_code,
-                description: value.proc_desc,
-                type
-            } : type === 'icd_codes' ? {
-                code: value.icd10_code,
-                description: value.icd10_desc,
-                type
+                code: value.proc_code, description: value.proc_desc, type
+            } : type === 'icd10_code' ? {
+                code: value.icd10_code, description: value.icd10_desc, type
             } : null
 
-        // console.log(clickedValue)
         setClickedValue((prev) => ({
             ...prev,
             [type]: clickedFromSearch
         }))
-        setIsModalOpen(data.modalState)
+
+        let dataClicked = []
+        if(clickedFromSearch !== null) {
+            dataClicked = [{
+                code: clickedFromSearch.code,
+                description: clickedFromSearch.description,
+                type
+            }]
+        }
+        
+        handleAutoSave({value: dataClicked[0]})
+        setIsModalOpen(false)
+        setModalType("")
     }
 
     const tabsConfig = [{
@@ -1049,6 +1050,9 @@ const SubModule = () => {
                                     </div>
 
                                     <FormContext.Provider value={{
+                                        state: {
+                                            title: 'In Patient Form'
+                                        },
                                         ref: formRef,
                                         initialFields: ipdForms,
                                         enableAddRow: true,
@@ -1068,19 +1072,6 @@ const SubModule = () => {
 
                             {contentType === 'tableRow' && (
                                 <>
-                                    {/* <div className="flex justify-end">
-                                        <Button
-                                            paddingY="2"
-                                            btnIcon="close"
-                                            onClick={() => {
-                                                setActiveContent("yellow")
-                                                setRefetchRTK(false)
-                                            }}
-                                            >
-                                            Close
-                                        </Button>
-                                    </div> */}
-
                                     <ComponentContext.Provider value={{
                                             state: profileData,
                                             onClick:() => {
@@ -1203,8 +1194,6 @@ const SubModule = () => {
                                         },
                                         tableHeader: header,
                                         tableData: patientData,
-                                        isLoading: patientListLoading,
-                                        enableAddRow: true,
                                         onChecked:(data) => handleOnChecked(data),
                                         onClick: (data) => handleOnClick(data),
                                         onEdit: (data) => handleOnEdit(data),
@@ -1277,6 +1266,9 @@ const SubModule = () => {
                                     </div>
 
                                     <FormContext.Provider value={{
+                                            state: {
+                                                title: 'Out Patient Form'
+                                            },
                                             ref: formRef,
                                             initialFields: opdForms,
                                             enableAutoSave: false,
@@ -1296,20 +1288,6 @@ const SubModule = () => {
                             )}
                             {contentType === 'tableRow' && (
                                 <>
-                                    <div className="flex items-center py-2">
-                                        {/* <Button
-                                            paddingY="2"
-                                            btnIcon="close"
-                                            onClick={() => {
-                                                setActiveContent("yellow")
-                                                setRefetchRTK(false)
-                                            }}
-                                            >
-                                            Close
-                                        </Button> */}
-
-                                        
-
                                     <ComponentContext.Provider value={{
                                         state: profileData,
                                         onClick:() => {
@@ -1319,9 +1297,6 @@ const SubModule = () => {
                                     }}>
                                         <Profile />
                                     </ComponentContext.Provider>
-                                        
-                                    </div>
-
 
                                     <Tabs
                                         tabsConfig={tabsConfig}

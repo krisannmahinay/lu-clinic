@@ -227,7 +227,7 @@ const Modal = ({
             <div className="relative p-4 w-full max-w-2xl">
                 <div className=" bg-white rounded-lg shadow">
                     <div className="flex items-center justify-between p-2 md:p-2 border-b rounded-t">
-                        {['icd_codes', 'popt_proc', 'oopt_proc'].includes(context?.state?.modalType) && (
+                        {['icd10_code', 'popt_proc', 'oopt_proc'].includes(context?.state?.modalType) && (
                             <div className="relative">
                                 <input
                                     type="text"
@@ -295,7 +295,7 @@ const Modal = ({
                             </div>
                         ) : (
                             searchResults.length > 0 ? (
-                                ['icd_codes', 'popt_proc', 'oopt_proc'].includes(context?.state.modalType) && (
+                                ['icd10_code', 'popt_proc', 'oopt_proc'].includes(context?.state.modalType) && (
                                     searchResults.map((item, index) => (
                                         <div className="divide-dashed divide-y-2 divide-gray-300">
                                             <div 
@@ -304,7 +304,7 @@ const Modal = ({
                                                 onClick={() => context?.onClickFromSearch({modalState:false, value:item, type: context?.state.modalType, clicked: true })}
                                             >
                                                 <p dangerouslySetInnerHTML={{ 
-                                                    __html: context?.state.modalType === 'icd_codes' ? `${item.icd10_code} &bull; ${item.icd10_desc}` 
+                                                    __html: context?.state.modalType === 'icd10_code' ? `${item.icd10_code} &bull; ${item.icd10_desc}` 
                                                             : context?.state.modalType === 'popt_proc' ? `${item.proc_code} &bull; ${item.proc_desc}`
                                                             : context?.state.modalType === 'oopt_proc' ? `${item.proc_code} &bull; ${item.proc_desc}`
                                                             : ''
@@ -314,34 +314,6 @@ const Modal = ({
                                         </div>
                                     ))
                                 )
-                                // context?.state.modalType === 'icd-codes' && (
-                                //     searchResults.map((item, index) => (
-                                //         <div className="divide-dashed divide-y-2 divide-gray-300">
-                                //             <div 
-                                //                 key={item.id} 
-                                //                 className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
-                                //                 // onClick={() => moveItemToLeft(item.id)}
-                                //             >
-                                //                 <p dangerouslySetInnerHTML={{ __html: `${item.icd10_code} &bull; ${item.icd10_desc} `}}></p>
-                                //             </div>
-                                //             <div></div>
-                                //         </div>
-                                //     ))
-                                // ),
-                                // context?.state.modalType === 'opt-procedure' && (
-                                //     searchResults.map((item, index) => (
-                                //         <div className="divide-dashed divide-y-2 divide-gray-300">
-                                //             <div 
-                                //                 key={item.id} 
-                                //                 className="p-3 rounded bg-gray-50 cursor-pointer text-sm text-gray-500 hover:text-gray-800"
-                                //                 // onClick={() => moveItemToLeft(item.id)}
-                                //             >
-                                //                 <p dangerouslySetInnerHTML={{ __html: `${item.proc_code} &bull; ${item.proc_desc} `}}></p>
-                                //             </div>
-                                //             <div></div>
-                                //         </div>
-                                //     ))
-                                // )
                             ) : (
                                 context?.state?.modalType === 'physician-order' ? (
                                     <FormContext.Provider value={{
