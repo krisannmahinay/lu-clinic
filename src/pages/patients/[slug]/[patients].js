@@ -10,7 +10,6 @@ import SearchItemPage from '@/components/SearchItemPage'
 import HealthMonitor from '@/components/HealthMonitor'
 import ReactImageZoom from 'react-image-zoom'
 import ImagingResult from '@/components/ImagingResult'
-import Prescription from '@/components/Prescription'
 import { useGetICDDataQuery } from '@/service/icdService'
 import Soap from '@/components/Patient/OPD/Soap'
 import PatientInformation from '@/components/Patient/OPD/PatientInformation'
@@ -486,7 +485,6 @@ const SubModule = () => {
                                     )}
                                     {activeTab === 'tab5' && (
                                         <div>
-                                            <Prescription />
                                         </div>
                                     )}
                                     
