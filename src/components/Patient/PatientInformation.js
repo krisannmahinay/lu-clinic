@@ -473,7 +473,7 @@ const PatientInformation = () => {
                                 classNamePrefix="react-select"
                                 styles={styleDropdown} 
                                 value={genderOption?.find(option => 
-                                    option.value === formData.gender
+                                    option.value === formData.gender || profileData?.gender
                                 )}
                             />
                         </div>
@@ -505,7 +505,7 @@ const PatientInformation = () => {
                                 classNamePrefix="react-select"
                                 styles={styleDropdown} 
                                 value={civilStatusOption?.find(option => 
-                                    option.value === formData.civil_status
+                                    option.value === formData.civil_status || profileData?.gender
                                 )}
                             />
                         </div>
@@ -551,7 +551,7 @@ const PatientInformation = () => {
                                 placeholder="Select province"
                                 classNamePrefix="react-select"
                                 styles={styleDropdown} 
-                                value={provinceData?.filter(option => option.code === formData.province).map(option => ({ 
+                                value={provinceData?.filter(option => option.code === formData.province || profileData?.province).map(option => ({ 
                                         value: option.code, 
                                         label: option.name 
                                 }))[0]}
@@ -571,7 +571,7 @@ const PatientInformation = () => {
                                 placeholder="Select municipality"
                                 classNamePrefix="react-select"
                                 styles={styleDropdown} 
-                                value={municipalityData?.filter(option => option.code === formData.municipality).map(option => ({ 
+                                value={municipalityData?.filter(option => option.code === formData.municipality || profileData?.municipality).map(option => ({ 
                                     value: option.code, 
                                     label: option.name 
                                 }))[0]}
@@ -590,7 +590,7 @@ const PatientInformation = () => {
                                 placeholder="Select barangay"
                                 classNamePrefix="react-select"
                                 styles={styleDropdown} 
-                                value={barangayData?.filter(option => option.code === formData.barangay).map(option => ({ 
+                                value={barangayData?.filter(option => option.code === formData.barangay || profileData?.barangay).map(option => ({ 
                                     value: option.code, 
                                     label: option.name 
                                 }))[0]}
@@ -845,7 +845,7 @@ const PatientInformation = () => {
                                 <input
                                     type="text"
                                     name="spouse_address"
-                                    value={formData.spouse_address}
+                                    value={formData.spouse_address || profileData?.spouse_address}
                                     onChange={(e) => handleOnChange({type:"spouse_address", value: e.target.value})}
                                     onBlur={handleBlur}
                                     className={`${addressTickBox.spouseAddressTick ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-100'} border border-gray-300  text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 flex-grow pl-10`}
@@ -870,7 +870,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="spouse_contact"
-                                value={formData.spouse_contact}
+                                value={formData.spouse_contact || profileData?.spouse_contact}
                                 onChange={(e) => handleOnChange({type:"spouse_contact", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -892,7 +892,7 @@ const PatientInformation = () => {
                             <input
                                 type="datetime-local"
                                 name="admission_date"
-                                value={formData.admission_date}
+                                value={formData.admission_date || profileData?.admission_date}
                                 onChange={(e) => handleOnChange({type:"admission_date", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -906,7 +906,7 @@ const PatientInformation = () => {
                             <input
                                 type="datetime-local"
                                 name="discharge_date"
-                                value={formData.discharge_date}
+                                value={formData.discharge_date || profileData?.discharge_date}
                                 onChange={(e) => handleOnChange({type:"discharge_date", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -921,7 +921,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="total_no_day"
-                                value={formData.total_no_day}
+                                value={formData.total_no_day || profileData?.total_no_day}
                                 onChange={(e) => handleOnChange({type:"total_no_day", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -936,7 +936,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="admitting_physician"
-                                value={formData.admitting_physician}
+                                value={formData.admitting_physician || profileData?.admitting_physician}
                                 onChange={(e) => handleOnChange({type:"admitting_physician", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -951,7 +951,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="admitting_clerk"
-                                value={formData.admitting_clerk}
+                                value={formData.admitting_clerk || profileData?.admitting_clerk}
                                 onChange={(e) => handleOnChange({type:"admitting_clerk", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -966,7 +966,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="type_visit"
-                                value={formData.type_visit}
+                                value={formData.type_visit || profileData?.type_visit}
                                 onChange={(e) => handleOnChange({type:"type_visit", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -981,7 +981,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="referred_by"
-                                value={formData.referred_by}
+                                value={formData.referred_by || profileData?.referred_by}
                                 onChange={(e) => handleOnChange({type:"referred_by", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -1111,7 +1111,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="relation_to_patient"
-                                value={formData.relation_to_patient}
+                                value={formData.relation_to_patient || patientData?.relation_to_patient}
                                 onChange={(e) => handleOnChange({type:"relation_to_patient", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -1126,7 +1126,7 @@ const PatientInformation = () => {
                             <textarea
                                 type="text"
                                 name="admission_diagnosis"
-                                value={formData.admission_diagnosis}
+                                value={formData.admission_diagnosis || patientData?.admission_diagnosis}
                                 onChange={(e) => handleOnChange({type:"admission_diagnosis", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
@@ -1141,7 +1141,7 @@ const PatientInformation = () => {
                             <textarea
                                 type="text"
                                 name="discharge_diagnosis"
-                                value={formData.discharge_diagnosis}
+                                value={formData.discharge_diagnosis || patientData?.discharge_diagnosis}
                                 onChange={(e) => handleOnChange({type:"discharge_diagnosis", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
@@ -1210,7 +1210,7 @@ const PatientInformation = () => {
                             <textarea
                                 type="text"
                                 name="accident_injury_poison"
-                                value={formData.accident_injury_poison || ""}
+                                value={formData.accident_injury_poison || patientData?.accident_injury_poison}
                                 onChange={(e) => handleOnChange({type:"accident_injury_poison", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
