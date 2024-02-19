@@ -4,12 +4,12 @@ import { usePdfContext } from "@/utils/context"
 import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 
-const PdfGenerator = forwardRef(({ }, ref) => {
-    const [category, setCategory] = useState("")
+const PdfGenerator = forwardRef(({ category }, ref) => {
+    // console.log(pdfCategory)
     const context = usePdfContext()
-    // const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
-    //     pdfCategory: context?.state.pdfCategory
-    // }, {enabled: !!context?.state.pdfCategory})
+    const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
+        pdfCategory: category
+    }, {enabled: !!category})
     // const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
     //     pdfCategory: context?.state.pdfCategory
     // }, {enabled: !!context?.state.pdfCategory})
@@ -33,10 +33,14 @@ const PdfGenerator = forwardRef(({ }, ref) => {
         })
     }
 
+    const handleOnClick = (data) => {
+        console.log(data)
+    }
+
     // console.log(context?.data?.pdfBlob)
 
     const handleGeneratePDF = async (actionType) => {
-        const pdfArrayBuffer = await blobToArrayBuffer(context?.data?.pdfBlob)
+        const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
         const pdfDoc = await PDFDocument.load(pdfArrayBuffer)
         const courierFont = await pdfDoc.embedFont(StandardFonts.Courier)
         
@@ -165,7 +169,8 @@ const PdfGenerator = forwardRef(({ }, ref) => {
     }
 
     return (
-        <button onClick={() => context?.onClick({value: context?.data.category})} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
+        <button onClick={() => handleGeneratePDF(context?.data.category)} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
+        {/* <button onClick={() => context?.onClick({value: context?.data.category})} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}> */}
             {context?.state.title}
         </button>    
     )
