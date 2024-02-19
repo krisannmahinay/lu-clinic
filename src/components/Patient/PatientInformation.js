@@ -135,7 +135,7 @@ const PatientInformation = () => {
         if(profileData && patientData && userDetails && clerkData) {
             setFormData({
                 // personal information
-                last_name: profileData.last_name || "",
+                last_name: profileData.last_name,
                 first_name: profileData.first_name || "",
                 middle_name: profileData.middle_name || "",
                 gender: profileData.gender || "",
@@ -423,7 +423,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="last_name"
-                                value={formData.last_name}
+                                value={formData.last_name || profileData?.last_name}
                                 onChange={(e) => handleOnChange({type:"last_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -438,7 +438,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="first_name"
-                                value={formData.first_name}
+                                value={formData.first_name || profileData?.first_name}
                                 onChange={(e) => handleOnChange({type:"first_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -452,7 +452,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="middle_name"
-                                value={formData.middle_name}
+                                value={formData.middle_name || profileData?.middle_name}
                                 onChange={(e) => handleOnChange({type:"middle_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -484,7 +484,7 @@ const PatientInformation = () => {
                             <input
                                 type="date"
                                 name="middle_name"
-                                value={formData.birth_date}
+                                value={formData.birth_date || profileData?.birth_date}
                                 onChange={(e) => handleOnChange({type:"birth_date", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -516,7 +516,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="contact_no"
-                                value={formData.contact_no}
+                                value={formData.contact_no || profileData?.contact_no}
                                 onChange={(e) => handleOnChange({type:"contact_no", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -530,7 +530,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="age"
-                                value={formData.age}
+                                value={formData.age || profileData?.age}
                                 onChange={(e) => handleOnChange({type:"age", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
@@ -603,7 +603,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="street"
-                                value={formData.street}
+                                value={formData.street || profileData?.street}
                                 onChange={(e) => handleOnChange({type:"street", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -618,7 +618,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="no_blk_lot"
-                                value={formData.no_blk_lot}
+                                value={formData.no_blk_lot || profileData?.no_blk_lot}
                                 onChange={(e) => handleOnChange({type:"no_blk_lot", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -632,7 +632,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="nationality"
-                                value={formData.nationality}
+                                value={formData.nationality || profileData?.nationality}
                                 onChange={(e) => handleOnChange({type:"nationality", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -646,7 +646,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="religion"
-                                value={formData.religion}
+                                value={formData.religion || profileData?.religion}
                                 onChange={(e) => handleOnChange({type:"religion", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -660,7 +660,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="occupation"
-                                value={formData.occupation}
+                                value={formData.occupation || profileData?.occupation}
                                 onChange={(e) => handleOnChange({type:"occupation", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -674,7 +674,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="employer_name"
-                                value={formData.employer_name}
+                                value={formData.employer_name || profileData?.employer_name}
                                 onChange={(e) => handleOnChange({type:"employer_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -688,7 +688,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="employer_address"
-                                value={formData.employer_address}
+                                value={formData.employer_address || profileData?.employer_address}
                                 onChange={(e) => handleOnChange({type:"employer_address", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -702,7 +702,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="employer_contact"
-                                value={formData.employer_contact}
+                                value={formData.employer_contact || profileData?.employer_contact}
                                 onChange={(e) => handleOnChange({type:"employer_contact", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -717,7 +717,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="father_name"
-                                value={formData.father_name}
+                                value={formData.father_name || profileData?.father_name}
                                 onChange={(e) => handleOnChange({type:"father_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -733,7 +733,7 @@ const PatientInformation = () => {
                                 <input
                                     type="text"
                                     name="father_address"
-                                    value={formData.father_address}
+                                    value={formData.father_address || profileData?.father_address}
                                     onChange={(e) => handleOnChange({type:"father_address", value: e.target.value})}
                                     onBlur={handleBlur}
                                     className={`${addressTickBox.fatherAddressTick ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-100'} border border-gray-300  text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 flex-grow pl-10`}
@@ -758,7 +758,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="father_contact"
-                                value={formData.father_contact}
+                                value={formData.father_contact || profileData?.father_contact}
                                 onChange={(e) => handleOnChange({type:"father_contact", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -773,7 +773,7 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="mother_name"
-                                value={formData.mother_name}
+                                value={formData.mother_name || profileData?.mother_name}
                                 onChange={(e) => handleOnChange({type:"mother_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -789,7 +789,7 @@ const PatientInformation = () => {
                                 <input
                                     type="text"
                                     name="mother_address"
-                                    value={formData.mother_address}
+                                    value={formData.mother_address || profileData?.mother_address}
                                     onChange={(e) => handleOnChange({type:"mother_address", value: e.target.value})}
                                     onBlur={handleBlur}
                                     className={`${addressTickBox.motherAddressTick ? 'cursor-not-allowed bg-gray-200' : 'bg-gray-100'} border border-gray-300  text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 flex-grow pl-10`}
@@ -814,7 +814,7 @@ const PatientInformation = () => {
                             <input
                                 type="number"
                                 name="mother_contact"
-                                value={formData.mother_contact}
+                                value={formData.mother_contact || profileData?.mother_contact}
                                 onChange={(e) => handleOnChange({type:"mother_contact", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
@@ -826,10 +826,10 @@ const PatientInformation = () => {
                     <div className="flex flex-row items-center">
                         <div className="text-right basis-1/4 mr-4"><label className=" text-gray-500 font-medium text-sm capitalize">Spouse Name</label></div>
                         <div className="w-3/5">
-                            <input
+                            <input  
                                 type="text"
                                 name="spouse_name"
-                                value={formData.spouse_name}
+                                value={formData.spouse_name || profileData?.spouse_name}
                                 onChange={(e) => handleOnChange({type:"spouse_name", value: e.target.value})}
                                 onBlur={handleBlur}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
