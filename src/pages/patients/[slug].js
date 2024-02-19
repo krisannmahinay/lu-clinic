@@ -688,7 +688,7 @@ const SubModule = () => {
     }
 
     const handleAutoSave = (data) => {
-        autoSaveData({data:data.value, actionType:'updatePatientDetails', patient_id:profileData?.patient_id})
+        autoSaveData({data:data.value, actionType: data.type, patient_id:profileData?.patient_id})
             .unwrap()
             .then(response => {
                 if(response.status === "success") {
