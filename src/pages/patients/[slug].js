@@ -319,9 +319,9 @@ const SubModule = () => {
         patient_id: profileData?.patient_id 
     })
 
-    const { data: pdfBlob } = useGeneratePdfQuery({
-        pdfCategory: selectedPrint
-    }, {enabled: !!selectedPrint})
+    // const { data: pdfBlob } = useGeneratePdfQuery({
+    //     pdfCategory: selectedPrint
+    // }, {enabled: !!selectedPrint})
     
     const { 
         data: labResultList,
@@ -740,7 +740,8 @@ const SubModule = () => {
                         profileData: profileData,
                         municipalityData: municipalityData,
                         barangayData: barangayData,
-                        userDetails: userDetails
+                        userDetails: userDetails,
+                        clickedValue: clickedValue
                     },
                     onChange:(data) => handleOnChange(data),
                     onAutoSave: (data) => handleAutoSave(data),
@@ -920,16 +921,15 @@ const SubModule = () => {
                                                 },
                                                 data: {
                                                     profileData: profileData,
-                                                    pdfBlob: pdfBlob,
-                                                    category: category
+                                                    // pdfBlob: pdfBlob,
+                                                    // category: category
                                                 },
                                                 ref: formRef,
                                                 onClick: (data) => {
-                                                    setSelectedPrint(data.value)
-                                                    handleOnClick({type: type})
+                                                    setSelectedPrint(data)
                                                 },
                                             }}>
-                                                <PdfGenerator />
+                                                <PdfGenerator category={category} />
                                             </PdfContext.Provider>
                                         ))}
 
