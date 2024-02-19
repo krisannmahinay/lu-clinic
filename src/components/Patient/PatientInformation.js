@@ -201,6 +201,8 @@ const PatientInformation = () => {
         }
 
     }, [profileData, patientData, userDetails, clerkData])
+
+    console.log(patientData)
     
     const [autoSaveData] = useAutoSaveDataMutation()
     
@@ -1154,11 +1156,23 @@ const PatientInformation = () => {
                             <input
                                 type="text"
                                 name="principal_opt_code"
-                                value={poptProcedure?.description || formData?.principal_opt_desc}
-                                onChange={(e) => handleOnChange({type:"principal_opt_code", desc:poptProcedure.description, code: poptProcedure?.code})}
+                                value={poptProcedure?.description || patientData?.principal_opt_desc}
                                 onClick={() => componentContext?.onModalOpen({modalState: true, type: "popt_proc", modalType: "popt_proc"})}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
                                 placeholder="Click to search"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4"><label className=" text-gray-500 font-medium text-sm capitalize">RUV CODE</label></div>
+                        <div className="w-3/5">
+                            <input
+                                type="text"
+                                name="principal_opt_code"
+                                value={poptProcedure?.code || patientData?.principal_opt_code}
+                                className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
+                                disabled
                             />
                         </div>
                     </div>
@@ -1170,10 +1184,22 @@ const PatientInformation = () => {
                                 type="text"
                                 name="other_opt_code"
                                 value={ooptProcedure?.description || patientData?.other_opt_desc}
-                                onChange={(e) => handleOnChange({type:"other_opt_code", desc: ooptProcedure?.description, code: ooptProcedure?.code})}
+                                // onChange={(e) => handleOnChange({type:"other_opt_code", desc: ooptProcedure?.description, code: ooptProcedure?.code})}
                                 onClick={() => componentContext?.onModalOpen({modalState: true, type: "oopt_proc", modalType: "oopt_proc"})}
                                 className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 cursor-pointer"
                                 placeholder="Click to search"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row items-center">
+                        <div className="text-right basis-1/4 mr-4"><label className=" text-gray-500 font-medium text-sm capitalize">RUV CODE</label></div>
+                        <div className="w-3/5">
+                            <input
+                                type="text"
+                                value={ooptProcedure?.code || patientData?.other_opt_code}
+                                className="bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
+                                disabled
                             />
                         </div>
                     </div>
@@ -1194,7 +1220,7 @@ const PatientInformation = () => {
                     </div>
 
                     <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4"><label className=" text-gray-500 font-medium text-sm capitalize">ICD/RUV CODE</label></div>
+                        <div className="text-right basis-1/4 mr-4"><label className=" text-gray-500 font-medium text-sm capitalize">ICD CODE</label></div>
                         <div className="w-3/5">
                             <input
                                 type="text"
