@@ -37,7 +37,7 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         console.log(data)
     }
 
-    // console.log(context?.data?.pdfBlob)
+    console.log(context?.data.profileData)
 
     const handleGeneratePDF = async (actionType) => {
         const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
@@ -85,12 +85,32 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 })
                 break
 
-            case 'print-philhealth-cf2':
+            case 'print-phealth-cf2':
                 firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
+                    x: 140,
+                    // y: height - 250,
+                    y: height - 280,
+                    size: 12,
+                    font: courierFont
+                })
+                break
+
+            case 'print-phealth-cf3':
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name}, ${context?.data.profileData.user_data_info?.first_name} ${context?.data.profileData.user_data_info?.middle_name}`, {
                     x: 40,
                     // y: height - 250,
-                    y: height - 485,
+                    y: height - 217,
                     size: 12,
+                    font: courierFont
+                })
+                break
+
+            case 'print-phealth-cf4':
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name}, ${context?.data.profileData.user_data_info?.first_name} ${context?.data.profileData.user_data_info?.middle_name}`, {
+                    x: 80,
+                    // y: height - 250,
+                    y: height - 245,
+                    size: 10,
                     font: courierFont
                 })
                 break
@@ -169,7 +189,7 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
     }
 
     return (
-        <button onClick={() => handleGeneratePDF(context?.data.category)} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
+        <button onClick={() => handleGeneratePDF(category)} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
         {/* <button onClick={() => context?.onClick({value: context?.data.category})} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}> */}
             {context?.state.title}
         </button>    

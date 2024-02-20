@@ -15,6 +15,13 @@ export const psgcApi = createApi({
             })
         }),
 
+        getCityData: builder.query({
+            query: ({provinceCode}) => ({
+                url: `/provinces/${provinceCode}/cities`,
+                method: 'GET'
+            })
+        }),
+
         getMunicipalityData: builder.query({
             query: ({provinceCode}) => ({
                 url: `/provinces/${provinceCode}/municipalities`,
@@ -23,12 +30,12 @@ export const psgcApi = createApi({
         }),
 
         getBarangayData: builder.query({
-            query: ({municipalCode}) => ({
-                url: `/municipalities/${municipalCode}/barangays`,
+            query: ({ apiLink, municipalCode}) => ({
+                url: `/${apiLink}/${municipalCode}/barangays`,
                 method: 'GET'
             })
         }),
     })
 })
 
-export const { useGetProvinceDataQuery, useGetMunicipalityDataQuery, useGetBarangayDataQuery } = psgcApi
+export const { useGetProvinceDataQuery, useGetCityDataQuery, useGetMunicipalityDataQuery, useGetBarangayDataQuery } = psgcApi

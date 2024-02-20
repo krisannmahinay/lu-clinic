@@ -34,6 +34,7 @@ import {
     useUpdateBulkMutation
 } from '@/service/settingService'
 import { 
+    useGetCityDataQuery, 
     useGetProvinceDataQuery, 
     useGetMunicipalityDataQuery, 
     useGetBarangayDataQuery 
@@ -159,6 +160,7 @@ const SubModule = () => {
     const [provinceCode, setProvinceCode] = useState(null)
     const [municipalCode, setMunicipalCode] = useState(null)
     const [clickedValue, setClickedValue] = useState(null)
+    const [apiLink, setApiLink] = useState(null)
     
     const currentDate = new Date()
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -236,13 +238,19 @@ const SubModule = () => {
 
     const { data: userDetails, refetch: refetchUserDetails } = useGetUserDetailsQuery()
     const { data: provinceData } = useGetProvinceDataQuery()
-    const { data: municipalityData } = useGetMunicipalityDataQuery({
+    const { data: cityData, refetch: refetchCityData } = useGetCityDataQuery({
         provinceCode: provinceCode || profileData?.user_data_info?.province
     }, {
         enabled: !!provinceCode || !!profileData?.user_data_info?.province
     })
-    const { data: barangayData } = useGetBarangayDataQuery({
-        municipalCode: municipalCode || profileData?.user_data_info?.municipality
+    const { data: municipalityData, refetch: refetchMunicipalData } = useGetMunicipalityDataQuery({
+        provinceCode: provinceCode || profileData?.user_data_info?.province
+    }, {
+        enabled: !!provinceCode || !!profileData?.user_data_info?.province
+    })
+    const { data: barangayData, refetch: refetchBarangayData } = useGetBarangayDataQuery({
+        municipalCode: municipalCode || profileData?.user_data_info?.municipality,
+        apiLink: apiLink
     }, {
         enabled: !!municipalCode || !!profileData?.user_data_info?.municipality
     })
@@ -436,7 +444,13 @@ const SubModule = () => {
                 setProvinceCode(data.value)
                 break
 
+            case 'city_of':
+                setApiLink(data.category)
+                setMunicipalCode(data.value)
+                break
+
             case 'municipality':
+                setApiLink(data.category)
                 setMunicipalCode(data.value)
                 break
 
@@ -694,6 +708,9 @@ const SubModule = () => {
                 if(response.status === "success") {
                     setAutoSaveLoader(true)
                     refetchPatientData()
+                    refetchCityData()
+                    refetchMunicipalData()
+                    refetchBarangayData()
                 }
             })
             .catch(error => {
@@ -737,6 +754,7 @@ const SubModule = () => {
                 <ComponentContext.Provider value={{
                     state: {
                         provinceData: provinceData,
+                        cityData: cityData,
                         profileData: profileData,
                         municipalityData: municipalityData,
                         barangayData: barangayData,
@@ -801,6 +819,7 @@ const SubModule = () => {
                 <ComponentContext.Provider value={{
                     state: {
                         provinceData: provinceData,
+                        cityData: cityData,
                         profileData: profileData,
                         municipalityData: municipalityData,
                         barangayData: barangayData,
