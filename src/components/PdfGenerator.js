@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { useGeneratePdfQuery } from "@/service/pdfService"
 import { usePdfContext } from "@/utils/context"
-import { PDFDocument, StandardFonts } from 'pdf-lib'
+import { PDFDocument, StandardFonts, fontkit } from 'pdf-lib'
 
 
 const PdfGenerator = forwardRef(({ category }, ref) => {
@@ -86,13 +86,34 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 break
 
             case 'print-phealth-cf2':
-                firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name}         ${context?.data.profileData.user_data_info?.first_name}                   ${context?.data.profileData.user_data_info?.last_name}`,  {
                     x: 140,
                     // y: height - 250,
                     y: height - 280,
                     size: 12,
                     font: courierFont
                 })
+
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 37, y: height - 418, size: 12 })
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 36,  y: height - 418, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 35, y: height - 418, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 34, y: height - 418, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 33, y: height - 418, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 32,  y: height - 418, size: 12})
+
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 37, y: height - 448, size: 12 })
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 36,  y: height - 448, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 35, y: height - 448, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 34, y: height - 448, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 33, y: height - 448, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 32,  y: height - 448, size: 12})
+
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 37, y: height - 463, size: 12 })
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 36,  y: height - 463, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 35, y: height - 463, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 34, y: height - 463, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 33, y: height - 463, size: 12})
+                firstPage.drawText(`${context?.data.profileData.disposition === 'absconded' ? 'H' : ''}`,  { x: 32,  y: height - 463, size: 12})
                 break
 
             case 'print-phealth-cf3':
@@ -106,13 +127,35 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 break
 
             case 'print-phealth-cf4':
-                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name}, ${context?.data.profileData.user_data_info?.first_name} ${context?.data.profileData.user_data_info?.middle_name}`, {
-                    x: 80,
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.last_name},         ${context?.data.profileData.user_data_info?.first_name}        ${context?.data.profileData.user_data_info?.middle_name}`, {
+                    x: 50,
                     // y: height - 250,
                     y: height - 245,
                     size: 10,
                     font: courierFont
                 })
+
+                firstPage.drawText(`${context?.data.profileData.admission_diagnosis}`, {
+                    x: 50,
+                    // y: height - 250,
+                    y: height - 315,
+                    size: 8,
+                    font: courierFont
+                })
+
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 451, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 452,  y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 453, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 454, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 455, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'male' ? 'H' : ''}`,  { x: 456,  y: height - 283, size: 12})
+
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 483, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 484,  y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 485, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 486, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 487, y: height - 283, size: 12})
+                firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 488,  y: height - 283, size: 12})
                 break
             
             case 'print-prescription':
