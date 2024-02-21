@@ -118,7 +118,7 @@ const DoctorRequest = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => context?.onClose('backToList')}
+                                        onClick={() => context?.onClose({type: 'backToList'})}
                                         className="p-2 bg-blue-500 text-white rounded hover:bg-blue-700"
                                     >&larr; Back
                                     </button>
@@ -164,7 +164,7 @@ const DoctorRequest = () => {
                     </svg>Doctor's Request
                 </h5>
                 <button 
-                    onClick={() => context?.onClose('closeMenu')}
+                    onClick={() => context?.onClose({type: 'closeMenu'})}
                     className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
                     <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>

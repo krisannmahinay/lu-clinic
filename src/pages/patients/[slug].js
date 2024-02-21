@@ -11,6 +11,7 @@ import SearchExport from '@/components/SearchExport'
 import Dropdown from '@/components/Dropdown'
 import Button from '@/components/Button'
 import ItemPerPage from '@/components/ItemPerPage'
+import { AppLayoutContext } from '@/components/Layouts/AppLayout'
 import { PDFDocument, StandardFonts, fontkit } from 'pdf-lib'
 import { DropdownExport, DropdownRowMenu } from '@/components/DropdownLink'
 import { 
@@ -116,6 +117,7 @@ const useRenderCount = () => {
 
 const SubModule = () => {
     // useRenderCount()
+    const appLayoutContext = useContext(AppLayoutContext)
     const componentContext = useComponentContext()
     const formRef = useRef(null)
     const router = useRouter()
@@ -195,6 +197,8 @@ const SubModule = () => {
             ]
         })
     }
+
+    console.log(appLayoutContext)
 
     const handleAddData = () => {
         let newLabels = [...chartData.labels];
@@ -481,6 +485,8 @@ const SubModule = () => {
         }
     }
 
+    
+    console.log(slug)
     const handleSelectMedicine = (data) => {
         // console.log(data)
         setSelectedMedicine(data)
@@ -488,20 +494,26 @@ const SubModule = () => {
     }
 
     const handleOnClose = (data) => {
-        if(data === 'backToList') {
+        if(data.type === 'backToList') {
             setAddedMedicine([])
             setSelectedMedicine(null)
             setIsShowMedForm(false)
             setAlertMessage("")
-        } else if(data === 'closeMenu') {
+        } else if(data.type === 'closeMenu') {
             setIsDrDrawerOpen(false)
-        } else if(data === 'closeDrawer') {
+        } else if(data.type === 'closeIpd') {
             setActiveContent("yellow")
             setProfileData({})
-            // provinceData
-            // municipalityData
-            // barangayData
+            if(slug !== data.slug) {
+                // setActiveContent("yellow")
+                // setProfileData({})
+            }
         }
+        //  else if(data.slug !== 'out-patient') {
+        //     setActiveContent("yellow")
+        //     setProfileData({})
+        //     setIsDrDrawerOpen(false)
+        // }
     }
 
     const handleCheckPatient = (data) => {
@@ -1021,7 +1033,7 @@ const SubModule = () => {
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
-                                            onClick={() => handleOnClose('closeDrawer')}
+                                            onClick={() => handleOnClose({type: 'closeIpd',slug:slug})}
                                         >
                                             Close
                                         </Button>
