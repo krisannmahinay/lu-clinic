@@ -5,23 +5,18 @@ import { PDFDocument, StandardFonts, fontkit } from 'pdf-lib'
 
 
 const PdfGenerator = forwardRef(({ category }, ref) => {
-    // console.log(pdfCategory)
+    const [pdfLink, setPdfLink] = useState(null)
     const context = usePdfContext()
     const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
-        pdfCategory: category
-    }, {enabled: !!category})
-    // const { data: pdfBlob, isLoading, isError, error, isSuccess } = useGeneratePdfQuery({
-    //     pdfCategory: context?.state.pdfCategory
-    // }, {enabled: !!context?.state.pdfCategory})
+        pdfCategory: pdfLink
+    }, {enabled: !!pdfLink})
 
-    // useEffect(() => {
-    //     if(context?.state.pdfCategory) {
-    //         setCategory()
-    //     }
-    // }, [context?.state.pdfCategory])
+    useEffect(() => {
+        setPdfLink(category)
+    }, [category])
 
     useImperativeHandle(context?.ref, () => ({
-        handleGeneratePDF: (actionType) => handleGeneratePDF(actionType)
+        handleGeneratePDF: (data) => handleGeneratePDF(data)
     }))
 
     const blobToArrayBuffer = async (blob) => {
@@ -33,13 +28,8 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         })
     }
 
-    const handleOnClick = (data) => {
-        console.log(data)
-    }
-
-    console.log(context?.data.profileData)
-
-    const handleGeneratePDF = async (actionType) => {
+    const handleGeneratePDF = async (data) => {
+        // setPdfLink(data.type)
         const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
         const pdfDoc = await PDFDocument.load(pdfArrayBuffer)
         const courierFont = await pdfDoc.embedFont(StandardFonts.Courier)
@@ -48,7 +38,7 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         const firstPage = page[0]
         const secondPage = page[1]
         const { height } = firstPage.getSize()
-        switch(actionType) {
+        switch(data.type) {
             case 'print-phealth-cf1':
                 firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
                     x: 40,
@@ -232,8 +222,10 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
     }
 
     return (
-        <button onClick={() => handleGeneratePDF(category)} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
-        {/* <button onClick={() => context?.onClick({value: context?.data.category})} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}> */}
+        <button onClick={() => {
+            setPdfLink(category)
+            handleGeneratePDF({type: category})
+        }} className={`${context?.state.isOptionEditDisabled ? 'cursor-not-allowed' : 'cursor-pointer'} w-full text-left block px-4 py-1 font-medium text-xs leading-5 text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out`} disabled={context?.state.isOptionEditDisabled}>
             {context?.state.title}
         </button>    
     )
