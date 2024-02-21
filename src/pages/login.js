@@ -25,7 +25,7 @@ import {
 import Button from '@/components/Button'
 
 const options = [
-    { label: 'Lu Clinic', value: 'db_lu' },
+    { label: 'Lu Clinic', value: 'defaultdb' },
     { label: 'Vital Clinic', value: 'db_vital' }
 ]
 
