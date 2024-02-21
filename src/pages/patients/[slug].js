@@ -11,6 +11,7 @@ import SearchExport from '@/components/SearchExport'
 import Dropdown from '@/components/Dropdown'
 import Button from '@/components/Button'
 import ItemPerPage from '@/components/ItemPerPage'
+import { PDFDocument, StandardFonts, fontkit } from 'pdf-lib'
 import { DropdownExport, DropdownRowMenu } from '@/components/DropdownLink'
 import { 
     useGetPatientListQuery,
@@ -69,6 +70,7 @@ import NurseNote from '@/components/Patient/IPD/NurseNote'
 import HealthMonitor from '@/components/HealthMonitor'
 import MedicationSheet from '@/components/Patient/IPD/MedicationSheet'
 import AutoSaveSpinner from '@/components/AutoSaveSpinner'
+import ClinicalRecord from '@/components/Patient/IPD/ClinicalRecord'
 
 
 const dummyData = [
@@ -161,6 +163,9 @@ const SubModule = () => {
     const [municipalCode, setMunicipalCode] = useState(null)
     const [clickedValue, setClickedValue] = useState(null)
     const [apiLink, setApiLink] = useState(null)
+    const [pdfLink, setPdfLink] = useState(null)
+    const [pdfDocument, setPdfDocument] = useState(null)
+    const [pdfFont, setPdfFont] = useState(null)
     
     const currentDate = new Date()
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -326,10 +331,6 @@ const SubModule = () => {
         slug: 'imaging', 
         patient_id: profileData?.patient_id 
     })
-
-    // const { data: pdfBlob } = useGeneratePdfQuery({
-    //     pdfCategory: selectedPrint
-    // }, {enabled: !!selectedPrint})
     
     const { 
         data: labResultList,
@@ -338,8 +339,6 @@ const SubModule = () => {
         slug: 'laboratory', 
         patient_id: profileData?.patient_id 
     })
-
-    console.log(selectedPrint)
 
     const { data: pathologyList } = useGetPathologyListQuery()
     const { data: pathologyCategoryList } = useGetPathologyCategoryListQuery()
@@ -513,24 +512,9 @@ const SubModule = () => {
         }
     }
 
+    // console.log(pdfLink)
     const handleOnClick = (data) => {
         switch(data.type) {
-            case 'printPhilhealthCf1':
-                formRef.current.handleGeneratePDF('print-phealth-cf1')
-                break
-
-            case 'printPhilhealthCf2':
-                formRef.current.handleGeneratePDF('print-phealth-cf2')
-                break
-
-            case 'printPhilhealthCf3':
-                formRef.current.handleGeneratePDF('print-phealth-cf3')
-                break
-
-            case 'printPhilhealthCf4':
-                formRef.current.handleGeneratePDF('print-phealth-cf4')
-                break
-
             case 'printPrescription':
                 formRef.current.handleGeneratePDF('print-prescription')
                 break
@@ -837,7 +821,8 @@ const SubModule = () => {
             id: 'tab2',
             label: 'Medical History',
             content: () => 
-                <MedicalHistory />
+                <ClinicalRecord />
+                // <MedicalHistory />
         }, {
             id: 'tab3',
             label: 'Laboratory Results',
@@ -896,8 +881,6 @@ const SubModule = () => {
         { category: 'print-phealth-cf4', title: 'PHILHEALTH CF4', type: 'printPhilhealthCf4' },
     ]
 
-    // console.log(pdfBlob)
-
     const renderContent = (slug) => {
         switch(slug) {
             case 'in-patient':
@@ -933,25 +916,20 @@ const SubModule = () => {
                                         }>
                                             
                                         {pdfConfig.map(({ category, title, type }) => (
-                                            <PdfContext.Provider value={{
+                                            <PdfContext.Provider key={category} value={{
                                                 state: {
                                                     title: title,
                                                     isOptionEditDisabled: isOptionEditDisabled
                                                 },
                                                 data: {
                                                     profileData: profileData,
-                                                    // pdfBlob: pdfBlob,
-                                                    // category: category
+                                                    category: category
                                                 },
                                                 ref: formRef,
-                                                onClick: (data) => {
-                                                    setSelectedPrint(data)
-                                                },
                                             }}>
                                                 <PdfGenerator category={category} />
                                             </PdfContext.Provider>
                                         ))}
-
                                     </Dropdown>
                                 </div>
                                 

@@ -24,6 +24,7 @@ export const pdfApi = createApi({
     endpoints: (builder) => ({
         generatePdf: builder.query({
             query: (args) => {
+                const session = Cookies.get('session')
                 return {
                     url: '/generatePDF',
                     method: 'GET',
