@@ -6,7 +6,6 @@ const Profile = () => {
     const componentContext = useComponentContext()
     const [imagePreviewUrl, setImagePreviewUrl] = useState("")
 
-    console.log(componentContext)
     const birthDate = componentContext?.state?.user_data_info?.birth_date
     const formattedBirthDate = new Date(birthDate).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})
 
@@ -24,8 +23,6 @@ const Profile = () => {
           reader.readAsDataURL(file)
         }
     }
-
-    console.log(imagePreviewUrl)
 
     return (
         <div className="pt-8 flex justify-between">
