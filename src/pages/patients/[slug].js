@@ -15,6 +15,7 @@ import { AppLayoutContext } from '@/components/Layouts/AppLayout'
 import { PDFDocument, StandardFonts, fontkit } from 'pdf-lib'
 import { DropdownExport, DropdownRowMenu } from '@/components/DropdownLink'
 import { 
+    useGetDetailByIdQuery,
     useGetPatientListQuery,
     useGetPhysicianListQuery,
     useGetRadiologyListQuery,
@@ -43,7 +44,8 @@ import {
 } from '@/service/psgcService'
 
 import { 
-    useGetUserDetailsQuery 
+    useGetUserDetailsQuery,
+    useGetUserByIdQuery
 } from '@/service/authService'
 
 import { 
@@ -120,11 +122,11 @@ const SubModule = () => {
     const appLayoutContext = useContext(AppLayoutContext)
     const componentContext = useComponentContext()
     const formRef = useRef(null)
+    const tblRef = useRef(null)
     const router = useRouter()
     const { slug } = router.query
     const menuGroup = "patients"
     const [activeTab, setActiveTab] = useState('tab1')
-    const [tableHeader, setTableHeader] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
     const [totalPages, setTotalPages] = useState(1)
@@ -160,6 +162,8 @@ const SubModule = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [opdForms, setOpdForms] = useState([])
     const [ipdForms, setIpdForms] = useState([])
+
+    const [activeSlug, setActiveSlug] = useState(null)
 
     const [provinceCode, setProvinceCode] = useState(null)
     const [municipalCode, setMunicipalCode] = useState(null)
@@ -246,6 +250,11 @@ const SubModule = () => {
     const [autoSaveData] = useAutoSaveDataMutation()
 
     const { data: userDetails, refetch: refetchUserDetails } = useGetUserDetailsQuery()
+    const { data: userDetailById, refetch: refetchUserDetailById } = useGetDetailByIdQuery({
+        user_id: profileData?.patient_id
+    }, {
+        enabled: !!profileData?.patient_id
+    })
     const { data: provinceData } = useGetProvinceDataQuery()
     const { data: cityData, refetch: refetchCityData } = useGetCityDataQuery({
         provinceCode: provinceCode || profileData?.user_data_info?.province
@@ -375,7 +384,11 @@ const SubModule = () => {
             .join(' ')
     }
 
-    useEffect(() => {
+    useEffect(() => {   
+        if(activeTab) {
+            refetchPatientData()
+        }
+
         if(pathologyCategoryList && pathologyList) {
             const pathologyData = pathologyCategoryList?.reduce((acc, category) => {
                 acc[category.category_name] = pathologyList?.filter(test => test.patho_category_id === category.id)
@@ -434,7 +447,7 @@ const SubModule = () => {
             if(autoSaveSpinner) { clearTimeout(autoSaveSpinner) }
             window.removeEventListener('resize', calculateHeight)
         }
-    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList, autoSaveLoader, clickedValue])
+    }, [pathologyCategoryList, pathologyList, btnSpinner, physicianList, autoSaveLoader, clickedValue, activeTab])
 
     
     const handleItemsPerPageChange = (e) => {
@@ -486,12 +499,13 @@ const SubModule = () => {
     }
 
     
-    console.log(slug)
     const handleSelectMedicine = (data) => {
         // console.log(data)
         setSelectedMedicine(data)
         setIsShowMedForm(true)
     }
+
+    // console.log(JSON.parse(profileData.cr_heent))
 
     const handleOnClose = (data) => {
         if(data.type === 'backToList') {
@@ -504,15 +518,12 @@ const SubModule = () => {
         } else if(data.type === 'closeIpd') {
             setActiveContent("yellow")
             setProfileData({})
-            if(slug !== data.slug) {
-                // setActiveContent("yellow")
-                // setProfileData({})
-            }
+        } else if(data.type === 'isGreen') {
+            setActiveContent("yellow")
+            setProfileData({})
         }
-        //  else if(data.slug !== 'out-patient') {
-        //     setActiveContent("yellow")
-        //     setProfileData({})
-        //     setIsDrDrawerOpen(false)
+        // else if(data.slug !== slug){
+        //     console.log(activeContent)
         // }
     }
 
@@ -554,6 +565,11 @@ const SubModule = () => {
                 setProfileData(data.value)
                 setActiveContent("green")
                 setContentType("tableRow")
+                break
+            
+            case 'clickedTabs':
+                console.log(data.value)
+                refetchPatientData()
                 break
 
             default:
@@ -668,8 +684,9 @@ const SubModule = () => {
             setModalType(data.modalType)
         }
     }
-
+    
     const handleActiveTab = (id) => {
+        tblRef.current.handleOnClick({type: 'clickedRow', value: userDetailById})
         setActiveTab(id)
     }
 
@@ -703,10 +720,7 @@ const SubModule = () => {
             .then(response => {
                 if(response.status === "success") {
                     setAutoSaveLoader(true)
-                    refetchPatientData()
-                    refetchCityData()
-                    refetchMunicipalData()
-                    refetchBarangayData()
+                    refetchUserDetailById()
                 }
             })
             .catch(error => {
@@ -833,7 +847,14 @@ const SubModule = () => {
             id: 'tab2',
             label: 'Medical History',
             content: () => 
-                <ClinicalRecord />
+                <ComponentContext.Provider value={{
+                    state: {
+                        profileData: profileData
+                    },
+                    onAutoSave: (data) => handleAutoSave(data)
+                }}>
+                    <ClinicalRecord />
+                </ComponentContext.Provider>
                 // <MedicalHistory />
         }, {
             id: 'tab3',
@@ -991,6 +1012,7 @@ const SubModule = () => {
                                     },
                                     tableData: patientData,
                                     tableHeader: header,
+                                    ref: tblRef,
                                     onChecked: (data) => handleOnChecked(data),
                                     onClick: (data) => handleOnClick(data),
                                     onEdit: (data) => handleOnEdit(data),
@@ -1090,7 +1112,6 @@ const SubModule = () => {
                                         }}>
                                         <Profile />
                                     </ComponentContext.Provider>
-
 
                                     <Tabs
                                         tabsConfig={tabsConfigIpd}
@@ -1314,6 +1335,7 @@ const SubModule = () => {
                                 </>
                             )}
                         </div>
+                        
                     </div>
                 )
         default:

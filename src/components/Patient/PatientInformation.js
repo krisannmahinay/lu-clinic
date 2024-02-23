@@ -1014,10 +1014,10 @@ const PatientInformation = () => {
                     <div className="grid grid-cols-1">
                         <label className=" text-gray-500 font-medium text-sm capitalize">Social Service Classification: </label>
                         <div className="flex flex-row space-x-3 w-3/5">
-                            {['a', 'b', 'c1', 'c2', 'c3', 'd'].map(service => (
+                            {['a', 'b', 'c1', 'c2', 'c3', 'd'].map((service, index) => (
                                 <div className="flex items-center space-x-1">
                                     <input
-                                        key={service}
+                                        key={index}
                                         type="checkbox"
                                         name="soc_serv_classification"
                                         checked={service === socServiceTickBox || service === patientData?.soc_serv_classification}
@@ -1073,10 +1073,10 @@ const PatientInformation = () => {
                     <div className="grid grid-cols-1">
                         <label className=" text-gray-500 font-medium text-sm capitalize">PHIC: </label>
                         <div className="flex flex-row space-x-3 w-3/5">
-                            {['sss', 'sss_dependent', 'gsis', 'gsis_dependent'].map(service => (
+                            {['sss', 'sss_dependent', 'gsis', 'gsis_dependent'].map((service, index) => (
                                 <div className="flex items-center space-x-1">
                                     <input
-                                        key={service}
+                                        key={index}
                                         type="checkbox"
                                         name="phic"
                                         checked={service === phicTickBox || service === patientData?.soc_serv_classification}
@@ -1230,8 +1230,8 @@ const PatientInformation = () => {
                     <div className="grid grid-cols-1">
                         <label className=" text-gray-500 font-medium text-sm capitalize">Disposition: </label>
                         <div className="flex flex-col space-y-3 w-3/5">
-                            {dispositionArray.map(dispo => (
-                                <div key={dispo} className={`flex items-center space-x-1 ${dispo.parent ? "ml-10" : ""}`}>
+                            {dispositionArray.map((dispo, index) => (
+                                <div key={index} className={`flex items-center space-x-1 ${dispo.parent ? "ml-10" : ""}`}>
                                     {(dispo.name !== 'u48h' && dispo.name !== 'm48h') && (
                                         <>
                                             <input

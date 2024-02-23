@@ -71,6 +71,22 @@ export const patientApi = createApi({
             }
         }),
 
+        getDetailById: builder.query({
+            query: (args) => {
+                const { user_id } = args
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-detail-by-id',
+                    method: 'GET',
+                    params: {
+                        selectedDB: session,
+                        user_id: user_id,
+                        slug: 'detail-information',
+                    }
+                }
+            },
+        }),
+
         getPatientList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -357,6 +373,7 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetDetailByIdQuery,
     useGetErPatientListQuery,
     useGetMedicineFormListQuery,
     useGetMedicineFrequencyListQuery,
