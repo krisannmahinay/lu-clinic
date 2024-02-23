@@ -124,66 +124,66 @@ const PatientInformation = () => {
                 last_name: profileData.last_name,
                 first_name: profileData.first_name,
                 middle_name: profileData.middle_name,
-                gender: profileData.gender || "",
-                birth_date: profileData.birth_date || "",
-                birth_place: profileData.birth_place || "",
-                gender: profileData.gender || "",
-                civil_status: profileData.civil_status || "",
-                contact_no: profileData.contact_no || "",
-                age: profileData.age || "",
+                gender: profileData.gender,
+                birth_date: profileData.birth_date,
+                birth_place: profileData.birth_place,
+                gender: profileData.gender,
+                civil_status: profileData.civil_status,
+                contact_no: profileData.contact_no,
+                age: profileData.age,
                 province: profileData.province,
-                city_of: profileData.city_of || "",
-                municipality: profileData.municipality || "",
-                barangay: profileData.barangay || "",
-                street: profileData.street || "",
-                no_blk_lot: profileData.no_blk_lot || "",
-                nationality: profileData.nationality || "",
-                religion: profileData.religion || "",
-                father_name: profileData.father_name || "",
-                father_address: profileData.father_address || "",
-                father_contact: profileData.father_contact || "",
-                mother_name: profileData.mother_name || "",
-                mother_address: profileData.mother_address || "",
-                mother_contact: profileData.mother_contact || "",
-                spouse_name: profileData.spouse_name || "",
-                spouse_address: profileData.spouse_address || "",
-                spouse_contact: profileData.spouse_contact || "",
-                occupation: profileData.occupation || "",
-                employer_name: profileData.employer_name || "",
-                employer_address: profileData.employer_address || "",
-                employer_contact: profileData.employer_contact || "",
+                city_of: profileData.city_of,
+                municipality: profileData.municipality,
+                barangay: profileData.barangay,
+                street: profileData.street,
+                no_blk_lot: profileData.no_blk_lot,
+                nationality: profileData.nationality,
+                religion: profileData.religion,
+                father_name: profileData.father_name,
+                father_address: profileData.father_address,
+                father_contact: profileData.father_contact,
+                mother_name: profileData.mother_name,
+                mother_address: profileData.mother_address,
+                mother_contact: profileData.mother_contact,
+                spouse_name: profileData.spouse_name,
+                spouse_address: profileData.spouse_address,
+                spouse_contact: profileData.spouse_contact,
+                occupation: profileData.occupation,
+                employer_name: profileData.employer_name,
+                employer_address: profileData.employer_address,
+                employer_contact: profileData.employer_contact,
                 // patient information
-                admission_date: patientData.admission_date || "",
-                discharge_date: patientData.discharge_date || "",
-                total_no_day: patientData.total_no_day || "",
-                admitting_physician: `Dr. ${physicianData?.first_name} ${physicianData?.last_name}` || "",
-                admitting_clerk: clerkData?.first_name + clerkData?.last_name || "",
+                admission_date: patientData.admission_date,
+                discharge_date: patientData.discharge_date,
+                total_no_day: patientData.total_no_day,
+                admitting_physician: `Dr. ${physicianData?.first_name} ${physicianData?.last_name}`,
+                admitting_clerk: clerkData?.first_name + clerkData?.last_name,
                 type_visit: patientData.type_visit === 'new_ipd' ? 'NEW' 
                                 : profileData.type_visit === 'revisit_ipd' ? 'REVISIT'  
                                 : profileData.type_visit === 'new_opd' ?  'NEW'
                                 : profileData.type_visit === 'revisit_opd' ? 'REVISIT' 
                                 : profileData.type_visit === 'former_opd' ? 'FORMER OPD' 
                                 : '',
-                referred_by: patientData.referred_by || "",
-                soc_serv_classification: patientData.soc_serv_classification || "",
-                allergic_to: patientData.allergic_to || "",
-                hospitalization_plan: patientData.hospitalization_plan || "",
-                health_insurance_name: patientData.health_insurance_name || "",
-                phic: patientData.phic || "",
-                data_furnished_by: userDetails.personal_information?.first_name + userDetails.personal_information?.last_name || "",
-                address_of_informant: patientData.address_of_informant || "",
-                relation_to_patient: patientData.relation_to_patient || "",
-                admission_diagnosis: patientData.admission_diagnosis || "",
-                discharge_diagnosis: patientData.discharge_diagnosis || "",
+                referred_by: patientData.referred_by,
+                soc_serv_classification: patientData.soc_serv_classification,
+                allergic_to: patientData.allergic_to,
+                hospitalization_plan: patientData.hospitalization_plan,
+                health_insurance_name: patientData.health_insurance_name,
+                phic: patientData.phic,
+                data_furnished_by: userDetails.personal_information?.first_name + userDetails.personal_information?.last_name,
+                address_of_informant: patientData.address_of_informant,
+                relation_to_patient: patientData.relation_to_patient,
+                admission_diagnosis: patientData.admission_diagnosis,
+                discharge_diagnosis: patientData.discharge_diagnosis,
                 // principal_opt_code: poptProcedure?.code || "",
                 // principal_opt_desc:  poptProcedure?.description || "",
-                principal_opt_code: poptProcedure?.code || "",
-                principal_opt_desc:  poptProcedure?.description || "",
-                other_opt_code: ooptProcedure?.code || "",
-                other_opt_desc: ooptProcedure?.description || "",
-                accident_injury_poison: patientData.accident_injury_poison || "",
-                icd10_code: icdCode?.code || "",
-                icd10_desc: icdCode?.description || "",
+                principal_opt_code: poptProcedure?.code,
+                principal_opt_desc:  poptProcedure?.description,
+                other_opt_code: ooptProcedure?.code,
+                other_opt_desc: ooptProcedure?.description,
+                accident_injury_poison: patientData.accident_injury_poison,
+                icd10_code: icdCode?.code,
+                icd10_desc: icdCode?.description,
             })
         }
 
@@ -376,7 +376,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        father_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${cityName} ${municipalityName}, ${provinceName}`
+                        father_address: `${formData?.no_blk_lot ?? ''} ${formData?.street ?? ''} ${barangayName ?? ''}, ${cityName ?? ''} ${municipalityName ?? ''}, ${provinceName ?? ''}`
                     }))
                 } else {
                     setFormData((prev) => ({...prev, father_address: ''}))
@@ -388,7 +388,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        mother_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${cityName} ${municipalityName}, ${provinceName}`
+                        mother_address: `${formData?.no_blk_lot ?? ''} ${formData?.street ?? ''} ${barangayName ?? ''}, ${cityName ?? ''} ${municipalityName ?? ''}, ${provinceName ?? ''}`
                     }))
                 } else {
                     setFormData((prev) => ({...prev, mother_address: ''}))
@@ -400,7 +400,7 @@ const PatientInformation = () => {
                 if(data.value) {
                     setFormData((prev) => ({
                         ...prev,
-                        spouse_address: `${profileData?.no_blk_lot || ''} ${profileData?.street || ''} ${barangayName}, ${municipalityName}, ${provinceName}`
+                        spouse_address: `${formData?.no_blk_lot ?? ''} ${formData?.street ?? ''} ${barangayName ?? ''}, ${municipalityName ?? ''}, ${provinceName ?? ''}` 
                     }))
                 } else {
                     setFormData((prev) => ({...prev, spouse_address: ''}))
@@ -418,7 +418,9 @@ const PatientInformation = () => {
             case 'province':
                 setFormData((prev) => ({
                     ...prev,
-                    province: data.value
+                    province: data.value,
+                    city_of: "",
+                    municipality: ""
                 }))
                 componentContext?.onChange({type:'province', value:data.value})
                 setIsDisabled({
@@ -449,6 +451,7 @@ const PatientInformation = () => {
                 componentContext?.onChange({type:'municipality', value:data.value, category: 'municipalities'})
                 setIsDisabled({
                     selectedCity: true,
+                    selectedMunicipality: false,
                 })
                 break
             case 'barangay':
@@ -612,7 +615,7 @@ const PatientInformation = () => {
                             onBlur={handleBlur}
                             isSearchable={true}
                             isClearable={true}
-                            isDisabled={!!isDisabled.selectedCity}
+                            isDisabled={!!isDisabled.selectedCity || formData?.municipality !== ""}
                             placeholder="Select city of"
                             classNamePrefix="react-select"
                             styles={styleDropdown({isDisabled: !!isDisabled.selectedCity})} 
@@ -621,6 +624,7 @@ const PatientInformation = () => {
                                     label: option.name 
                             }))[0]}
                         />
+                        {console.log(formData?.municipality)}
                     </div>
 
                     <div className="grid grid-cols-1">
@@ -631,7 +635,7 @@ const PatientInformation = () => {
                             onBlur={handleBlur}
                             isSearchable={true}
                             isClearable={true}
-                            isDisabled={!!isDisabled.selectedMunicipality}
+                            isDisabled={!!isDisabled.selectedMunicipality || formData?.city_of !== ""}
                             placeholder="Select municipality"
                             classNamePrefix="react-select"
                             styles={styleDropdown({isDisabled: !!isDisabled.selectedMunicipality})} 

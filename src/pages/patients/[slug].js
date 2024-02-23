@@ -721,6 +721,9 @@ const SubModule = () => {
                 if(response.status === "success") {
                     setAutoSaveLoader(true)
                     refetchUserDetailById()
+                    refetchCityData()
+                    refetchMunicipalData()
+                    refetchBarangayData()
                 }
             })
             .catch(error => {
