@@ -174,6 +174,9 @@ const Table = forwardRef(({
     })
 
     // console.log(context)
+    useImperativeHandle(context?.ref, () => ({
+        handleOnClick: (data) => handleOnClick(data)
+    }))
 
     useEffect(() => {
         // if(tableData?.length > 0) {
@@ -351,20 +354,21 @@ const Table = forwardRef(({
             prev.filter((_, index) => index !== rowIndex))
     }
 
-    const handleOnclick = (type, e, data) => {
-        switch(type) {
+    const handleOnClick = (data) => {
+        switch(data.type) {
             case 'tickedCheckbox':
-                e.stopPropagation()
+                data.event.stopPropagation()
                 if(context?.state?.type === 'inpatient' || context?.state?.type === 'outpatient') {
                     context?.onCheckPatient({
-                        checked: e.target.checked,
-                        data: data
+                        checked: data.event.target.checked,
+                        data: data.value
                     })
                 }
                 break
 
             case 'clickedRow':
-                context?.onClick({type: type, value: data})
+                console.log(data)
+                context?.onClick({type: data.type, value: data.value})
                 break
             default:
                 break
@@ -630,13 +634,13 @@ const Table = forwardRef(({
                             ) : (
                                 context?.tableData?.map((tblBody, tblBodyIndex) => (
                                     // <tr key={tblBodyIndex} className={`${highlightedRows.has(tblBodyIndex)} ? 'bg-green-200' : ''`}>
-                                    <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnclick('clickedRow', _, tblBody)}>
+                                    <tr key={tblBody.id} className="hover:bg-gray-200 hover:cursor-pointer" onClick={() => handleOnClick({type: 'clickedRow', value: tblBody})}>
                                         <td className="px-6 py-2 whitespace-nowrap text-sm">
                                             <input
                                                 type="checkbox"
                                                 checked={checked?.includes(tblBody.id)}
                                                 onChange={(e) => handleOnchange('tblSelectRow', e, tblBody.id, tblBody.user_id)}
-                                                onClick={(e) => handleOnclick('tickedCheckbox', e, tblBody)}
+                                                onClick={(e) => handleOnClick({type: 'tickedCheckbox', event:e, value:tblBody})}
                                             />
                                         </td>
 
