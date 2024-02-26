@@ -200,6 +200,16 @@ const ClinicalRecord = () => {
         }
     }
 
+    const calculateBMI = (ht, wt) => {
+        if (ht && wt) {
+            const heightInMeters = ht / 100 // assuming height is in centimeters
+            const computedBMI = wt / (heightInMeters * heightInMeters)
+            return computedBMI.toFixed(2)
+        } else {
+            return null
+        }
+    }
+
     const handleOnChange = (data) => {
         switch(data.type) {
             case 'vital_bp':
@@ -217,7 +227,8 @@ const ClinicalRecord = () => {
             case 'cr_chief_complain':
                 setFormData((prev) => ({
                     ...prev,
-                    [data.type]: data.value
+                    [data.type]: data.value,
+                    vital_bmi: calculateBMI(formData?.vital_height, formData?.vital_weight)
                 }))
                 break
             

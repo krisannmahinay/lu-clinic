@@ -516,8 +516,9 @@ const SubModule = () => {
         } else if(data.type === 'closeMenu') {
             setIsDrDrawerOpen(false)
         } else if(data.type === 'closeIpd') {
+            setItemsPerPage(prev => prev + 1)
             setActiveContent("yellow")
-            setProfileData({})
+            setProfileData([])
         } else if(data.type === 'isGreen') {
             setActiveContent("yellow")
             setProfileData({})
@@ -568,7 +569,6 @@ const SubModule = () => {
                 break
             
             case 'clickedTabs':
-                console.log(data.value)
                 refetchPatientData()
                 break
 
@@ -1058,7 +1058,9 @@ const SubModule = () => {
                                         <Button
                                             paddingY="2"
                                             btnIcon="close"
-                                            onClick={() => handleOnClose({type: 'closeIpd',slug:slug})}
+                                            onClick={() => {
+                                                handleOnClose({type: 'closeIpd',slug:slug})
+                                            }}
                                         >
                                             Close
                                         </Button>
@@ -1111,6 +1113,9 @@ const SubModule = () => {
                                             onClick:() => {
                                                 setActiveContent("yellow")
                                                 setRefetchRTK(false)
+                                                tblRef.current.handleResetState()
+                                                setIsOptionDisabled(true)
+                                                setActiveTab('tab1')
                                             }
                                         }}>
                                         <Profile />
@@ -1271,7 +1276,7 @@ const SubModule = () => {
                                             paddingY="2"
                                             btnIcon="close"
                                             onClick={() => {
-                                                setActiveContent("yellow"),
+                                                setActiveContent("yellow")
                                                 setRefetchRTK(false)
                                             }}
                                         >
