@@ -87,6 +87,20 @@ export const settingApi = createApi({
             providesTags: ['BedList']
         }),
 
+        getDesignationList: builder.query({
+            query: () => {
+                const session = Cookies.get('session')
+                return {
+                    url: '/get-designation-list',
+                    method: 'GET',
+                    params: {
+                        slug: 'designation',
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getBedFloorList: builder.query({
             query: () => {
                 const session = Cookies.get('session')
@@ -489,6 +503,7 @@ export const settingApi = createApi({
 
 
 export const { 
+    useGetDesignationListQuery,
     useGetUserListQuery, 
     useGetPermissionListQuery, 
     useGetModuleListQuery,

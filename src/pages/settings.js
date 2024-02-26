@@ -4,7 +4,8 @@ import Head from 'next/head'
 import { 
     useGetUserListQuery, 
     useGetPermissionListQuery, 
-    useGetModuleListQuery
+    useGetModuleListQuery,
+    useGetDesignationListQuery,
 } from '@/service/settingService'
 
 import { 
@@ -70,6 +71,8 @@ const Setting = () => {
     //     isError: permissionErr 
     // } = useGetPermissionListQuery()
 
+    const { data: designationList } = useGetDesignationListQuery()
+    // console.log(designationList)
     const { data: moduleList, isLoading: moduleListLoading} = useGetModuleListQuery()
     const { 
         data: userList, 
@@ -434,7 +437,7 @@ const Setting = () => {
                                     userDetails: userDetails
                                 },
                                 ref: formRef,
-                                initialFields: userRegistration,
+                                initialFields: userRegistration(designationList),
                                 enableAutoSave: false,
                                 enableAddRow:true,
                                 onSuccess: handleRefetch,
