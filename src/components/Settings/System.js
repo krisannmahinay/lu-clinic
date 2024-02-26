@@ -4,6 +4,7 @@ import SearchItemPage from "../SearchItemPage"
 import CustomCKEditor from "../CustomCKEditor"
 import Modal from "../Modal"
 import Table from "../Table"
+import Tabs from "../Tabs"
 
 const renderModalContentByTab = (tab) => {
 
@@ -45,6 +46,22 @@ const System = ({slug}) => {
     const [itemsPerPage, setItemsPerPage] = useState(5)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editorData, setEditorData] = useState("")
+    const [contentHeight, setContentHeight] = useState(0)
+    const [activeContent, setActiveContent] = useState("yellow")
+
+    useEffect(() => {
+        const calculateHeight = () => {
+            const windowHeight = window.innerHeight
+            setContentHeight(windowHeight)
+        }
+        calculateHeight()
+
+        // Recalculate height on window resize
+        window.addEventListener('resize', calculateHeight)
+        return () => {
+            window.removeEventListener('resize', calculateHeight)
+        }
+    }, [])
     
     const handleItemsPerPageChange = (item) => {
         setItemsPerPage(item)
@@ -66,38 +83,68 @@ const System = ({slug}) => {
         setIsModalOpen(false)
     }
 
-    return (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mx-auto sm:w-full">
-            <div className="border rounded-lg">
-                <div className="flex justify-items-center">
-                    <div className="rounded-tl-lg py-3 ml-3">
-                        <button 
-                            onClick={() => setActiveTab('tab1')}
-                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab1' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>home
+    const handleActiveTab = (id) => {
+        // tblRef.current.handleOnClick({type: 'clickedRow', value: userDetailById})
+        setActiveTab(id)
+    }
+
+    const tabsConfig = [
+        {
+            id: 'tab1',
+            label: 'Home',
+            content: () => <></>
+        }, {
+            id: 'tab2',
+            label: 'About Us',
+            content: () => <></>
+        }, {
+            id: 'tab3',
+            label: 'Services',
+            content: () => <></>
+        }, {
+            id: 'tab4',
+            label: 'Doctors',
+            content: () => <></>
+        }, {
+            id: 'tab5',
+            label: 'Contact Us',
+            content: () => <></>
+        }
+    ]
+
+    const renderContent = () => {
+        return (
+            <>
+                <div className={`transition-transform duration-500 ease-in-out ${activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${contentHeight}px`, overflowY: 'auto' }}>
+                    <div className="font-bold text-xl mb-2 text-gray-600">System Configuration</div>
+                    <div className="flex gap-2 py-1">
+                        <button type="button" className="bg-green-500 hover:bg-green-600 flex items-center text-white px-2 gap-2 py-1 rounded text-sm focus:outline-none">
+                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Save</span> 
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('tab2')}
-                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab2' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>about us
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('tab3')}
-                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab3' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>services
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('tab4')}
-                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab4' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>doctors
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('tab5')}
-                            className={`focus:outline-none font-medium uppercase text-sm text-gray-500  ${activeTab === 'tab5' ? 'bg-gray-200 rounded-md p-4':'bg-white rounded-md p-4'}`}>contact us
+
+                        <button className="bg-sky-500 hover:bg-sky-600 flex items-center text-white px-2 gap-2 py-1 rounded text-sm focus:outline-none">
+                            <svg fill="none" stroke="currentColor" className="h-6 w-6" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                            </svg>
+                            <span>Published</span> 
                         </button>
                     </div>
-                </div>
 
-                <div className="tab-content px-3 max-h-[65vh] overflow-y-auto scroll-custom">
-                    {renderTableContentByTab(activeTab)}
+                    <Tabs
+                        tabsConfig={tabsConfig}
+                        onActiveTab={(id) => handleActiveTab(id)}
+                    />
                 </div>
-            </div>
+            </>
+        )
+    }
+
+    return (
+        <div>
+            {renderContent()}
         </div>
     )
 }

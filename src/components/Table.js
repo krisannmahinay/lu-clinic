@@ -175,7 +175,8 @@ const Table = forwardRef(({
 
     // console.log(context)
     useImperativeHandle(context?.ref, () => ({
-        handleOnClick: (data) => handleOnClick(data)
+        handleOnClick: (data) => handleOnClick(data),
+        handleResetState
     }))
 
     useEffect(() => {
@@ -352,6 +353,10 @@ const Table = forwardRef(({
     const handleRemoveRow = (rowIndex, formRowId) => {
         setFormData((prev) => 
             prev.filter((_, index) => index !== rowIndex))
+    }
+
+    const handleResetState = () => {
+        setChecked([])
     }
 
     const handleOnClick = (data) => {
