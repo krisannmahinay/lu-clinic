@@ -35,6 +35,17 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         })
     }
 
+    // const formatAMPM = (date) => {
+    //     const hours = date.getHours()
+    //     const minutes = date.getMinutes()
+    //     const ampm = hours >= 12 ? 'pm' : 'am'
+    //     hours = hours % 12
+    //     hours = hours ? hours : 12 // the hour '0' should be '12'
+    //     minutes = minutes < 10 ? '0'+minutes : minutes
+    //     const strTime = hours + ':' + minutes + ' ' + ampm
+    //     return strTime
+    // }
+
     const handleGeneratePDF = async (data) => {
         // setPdfLink(data.type)
         const pdfArrayBuffer = await blobToArrayBuffer(pdfBlob)
@@ -45,6 +56,10 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         const firstPage = page[0]
         const secondPage = page[1]
         const { height } = firstPage.getSize()
+        const heent = cr_heent.map(item => item.replace(/^"|"$/g, ''))
+        const chest_lungs = cr_chest_lungs.map(item => item.replace(/^"|"$/g, ''))
+        const cvs = cr_cvs.map(item => item.replace(/^"|"$/g, ''))
+        const neurological_exam = cr_neurological_exam.map(item => item.replace(/^"|"$/g, ''))
         switch(data.type) {
             case 'print-phealth-cf1':
                 firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
@@ -123,16 +138,42 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 })
 
                 const admissionDate = new Date(context?.data.profileData.admission_date)
-                const formattedAdmissionDate = admissionDate.toLocaleString('en-US', {
-                    month: 'long', // Displays full month name (e.g., February)
+                const formattedDateTime = admissionDate.toLocaleString('en-US', {
+                    month: '2-digit', 
                     day: 'numeric', 
                     year: 'numeric',
-                    hour: 'numeric', // 12-hour format
+                    hour: '2-digit', // 12-hour format
                     minute: '2-digit', 
-                    hour12: true  // Ensures AM/PM is included
+                    hour12: false  // Ensures AM/PM is included
                 })
+                
+                const [formattedAdmissionDate, formattedAdmissionTime] = formattedDateTime.split(' ')
+                const [hour, minute] = formattedAdmissionTime.split(':')
+                const [mm, dd, yyyy] = formattedAdmissionDate.split('/')
+                const timePeriod = hour >= 12 ? 'PM' : 'AM'
+                
+                firstPage.drawText(`${mm.split('').join(' ') ?? ''}`, {x: 106, y: height - 252, size: 10, font: courierFont})
+                firstPage.drawText(`${dd.split('').join(' ') ?? ''}`, {x: 145, y: height - 252, size: 10, font: courierFont})
+                firstPage.drawText(`${yyyy.split('').join(' ') ?? ''}`, {x: 185, y: height - 252, size: 10, font: courierFont})
+                firstPage.drawText(`${timePeriod === 'AM' ? formattedAdmissionTime : ''}`, {x: 311, y: height - 252, size: 8, font: courierFont})
+                firstPage.drawText(`${timePeriod === 'PM' ? formattedAdmissionTime : ''}`, {x: 362, y: height - 252, size: 8, font: courierFont})
 
-                firstPage.drawText(`${formattedAdmissionDate ?? ''}`, {x: 40, y: height - 225, size: 12, font: courierFont})
+                firstPage.drawText(`${context?.data.profileData.cr_general_survey === 'awake_alert' ? 'Awake and Alert' : 'Altered Sensorium'  ?? ''}`, {x: 106, y: height - 485, size: 10, font: courierFont})
+                firstPage.drawText(`${context?.data.profileData.vital_bp ?? ''}`, {x: 115, y: height - 508, size: 9, font: courierFont})
+                firstPage.drawText(`${context?.data.profileData.vital_temp ?? ''}`, {x: 320, y: height - 508, size: 9, font: courierFont})
+                // abpr cervl dmm ics pconj sunke sunkf
+
+
+                firstPage.drawText(heent.includes('hesn') ? 'Essential Normal,' : '',  { x: 98, y: height - 525, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('abpr') ? 'Abnormal Pupillary Reaction' : '',  { x: 165, y: height - 525, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('cervl') ? 'Cervical Lymphadenopathy,' : '',  { x: 98, y: height - 533, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('dmm') ? 'Dry Mucuos Membrane,' : '',  { x: 190, y: height - 533, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('ics') ? 'Icteric Sclerae' : '',  { x: 265, y: height - 533, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('pconj') ? 'Pale Conjunctiva,' : '',  { x: 98, y: height - 542, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('sunke') ? 'Sunken Eyeball,' : '',  { x: 165, y: height - 542, size: 6, font: courierFont})
+                firstPage.drawText(heent.includes('sunkf') ? 'Sunken Fontanelle' : '',  { x: 225, y: height - 542, size: 6, font: courierFont})
+                
+
                 break
 
             case 'print-phealth-cf4':
@@ -204,11 +245,6 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 firstPage.drawText(`${context?.data.profileData.vital_bp ?? ''}`,  { x: 150, y: height - 840, size: 10})
                 firstPage.drawText(`${context?.data.profileData.vital_hr ?? ''}`,  { x: 250, y: height - 840, size: 10})
                 firstPage.drawText(`${context?.data.profileData.vital_temp ?? ''}`,  { x: 450, y: height - 840, size: 10})
-                
-                const heent = cr_heent.map(item => item.replace(/^"|"$/g, ''))
-                const chest_lungs = cr_chest_lungs.map(item => item.replace(/^"|"$/g, ''))
-                const cvs = cr_cvs.map(item => item.replace(/^"|"$/g, ''))
-                const neurological_exam = cr_neurological_exam.map(item => item.replace(/^"|"$/g, ''))
                 
                 firstPage.drawText(heent.includes('hesn') ? 'H' : '',  { x: 120, y: height - 859, size: 12})
                 firstPage.drawText(heent.includes('hesn') ? 'H' : '',  { x: 121, y: height - 859, size: 12})
