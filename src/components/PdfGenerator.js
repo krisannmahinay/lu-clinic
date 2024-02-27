@@ -61,6 +61,10 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         const cvs = cr_cvs.map(item => item.replace(/^"|"$/g, ''))
         const neurological_exam = cr_neurological_exam.map(item => item.replace(/^"|"$/g, ''))
 
+        function removeNonAnsiChars(text) {
+            return text.replace(/[^\x20-\x7E]/g, '') // Filter out non-ANSI
+        }
+
         function drawWrappedText(text, maxWidth, font, fontSize) {
             const words = text.split(" ")
             const lines = []
@@ -68,7 +72,8 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         
             for (const word of words) {
                 const potentialLine = currentLine + " " + word
-                const width = font.widthOfTextAtSize(potentialLine, fontSize)
+                const filteredLine = removeNonAnsiChars(potentialLine)
+                const width = font.widthOfTextAtSize(filteredLine, fontSize)
         
                 if (width > maxWidth) {
                     lines.push(currentLine)
