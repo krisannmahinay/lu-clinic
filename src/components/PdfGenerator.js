@@ -163,6 +163,22 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                     font: courierFont
                 })
 
+                const chiefComplainCf3 = context?.data.profileData.cr_chief_complain ?? ''
+                const wrappedChiefComplainCf3 = drawWrappedText(chiefComplainCf3, 140, courierFont, 10)
+
+                let currentChiefComplainCf3 = height - 217
+                const lineSpacingChiefComplainCf3 = 11 // Adjust as needed
+
+                for (const line of wrappedChiefComplainCf3) {
+                    firstPage.drawText(line, { 
+                        x: 435, 
+                        y: currentChiefComplainCf3, 
+                        size: 9, 
+                        font: courierFont 
+                    });
+                    currentChiefComplainCf3 -= lineSpacingChiefComplainCf3
+                }
+
                 const admissionDate = new Date(context?.data.profileData.admission_date)
                 const formattedDateTime = admissionDate.toLocaleString('en-US', {
                     month: '2-digit', 
@@ -183,6 +199,22 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 firstPage.drawText(`${yyyy.split('').join(' ') ?? ''}`, {x: 185, y: height - 252, size: 10, font: courierFont})
                 firstPage.drawText(`${timePeriod === 'AM' ? formattedAdmissionTime : ''}`, {x: 311, y: height - 252, size: 8, font: courierFont})
                 firstPage.drawText(`${timePeriod === 'PM' ? formattedAdmissionTime : ''}`, {x: 362, y: height - 252, size: 8, font: courierFont})
+
+                const historyPresentIllCf3 = context?.data.profileData.cr_history_present_ill ?? ''
+                const wrappedHistoryPresentIllCf3 = drawWrappedText(historyPresentIllCf3, 489, courierFont, 10)
+
+                let currentHistoryPresentIllCf3 = height - 334
+                const lineSpacingHistoryPresentIllCf3 = 12 // Adjust as needed
+
+                for (const line of wrappedHistoryPresentIllCf3) {
+                    firstPage.drawText(line, { 
+                        x: 50, 
+                        y: currentHistoryPresentIllCf3, 
+                        size: 10, 
+                        font: courierFont 
+                    });
+                    currentHistoryPresentIllCf3 -= lineSpacingHistoryPresentIllCf3
+                }
 
                 firstPage.drawText(`${context?.data.profileData.cr_general_survey === 'awake_alert' ? 'Awake and Alert' : 'Altered Sensorium'  ?? ''}`, {x: 106, y: height - 485, size: 10, font: courierFont})
                 firstPage.drawText(`${context?.data.profileData.vital_bp ?? ''}`, {x: 115, y: height - 508, size: 9, font: courierFont})
@@ -229,13 +261,21 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                     font: courierFont
                 })
 
-                firstPage.drawText(context?.data.profileData.cr_chief_complain ?? '', {
-                    x: 50,
-                    // y: height - 250,
-                    y: height - 285,
-                    size: 10,
-                    font: courierFont
-                })
+                const chiefComplainCf4 = context?.data.profileData.cr_chief_complain ?? ''
+                const wrappedChiefComplainCf4 = drawWrappedText(chiefComplainCf4, 415, courierFont, 10)
+
+                let currentChiefComplainCf4 = height - 278
+                const lineSpacingChiefComplainCf4 = 8 // Adjust as needed
+
+                for (const line of wrappedChiefComplainCf4) {
+                    firstPage.drawText(line, { 
+                        x: 50, 
+                        y: currentChiefComplainCf4, 
+                        size: 9, 
+                        font: courierFont 
+                    });
+                    currentChiefComplainCf4 -= lineSpacingChiefComplainCf4
+                }
 
                 // console.log(context?.data.profileData.user_data_info?.age)
                 firstPage.drawText(context?.data.profileData.user_data_info?.age.toString() ?? '',  { x: 451, y: height - 265, size: 10})
@@ -253,14 +293,6 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 486, y: height - 283, size: 12})
                 firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 487, y: height - 283, size: 12})
                 firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 488,  y: height - 283, size: 12})
-
-                // firstPage.drawText(`${context?.data.profileData.admission_diagnosis ?? ''}`, {
-                //     x: 50,
-                //     // y: height - 250,
-                //     y: height - 315,
-                //     size: 8,
-                //     font: courierFont
-                // })
 
                 const admissionDiagnosisText = context?.data.profileData.admission_diagnosis ?? ''
                 const wrappedAdmissionDianosis = drawWrappedText(admissionDiagnosisText, 245, courierFont, 10)
@@ -293,6 +325,43 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                     });
                     currentHistoryPresentIll -= lineSpacingHistoryPresentIll
                 }
+
+                const historyPastMedicalHistory = context?.data.profileData.cr_past_med_history ?? ''
+                const wrappedPastMedicalHistory = drawWrappedText(historyPastMedicalHistory, 489, courierFont, 10)
+
+                let currentPastMedicalHistory = height - 506
+                const lineSpacingPastMedicalHistory = 12 // Adjust as needed
+
+                for (const line of wrappedPastMedicalHistory) {
+                    firstPage.drawText(line, { 
+                        x: 50, 
+                        y: currentPastMedicalHistory, 
+                        size: 10, 
+                        font: courierFont 
+                    });
+                    currentPastMedicalHistory -= lineSpacingPastMedicalHistory
+                }
+
+                const admissionDateCf4 = new Date(context?.data.profileData.admission_date)
+                const formattedDateTimeCf4 = admissionDateCf4.toLocaleString('en-US', {
+                    month: '2-digit', 
+                    day: 'numeric', 
+                    year: 'numeric',
+                    hour: '2-digit', // 12-hour format
+                    minute: '2-digit', 
+                    hour12: false  // Ensures AM/PM is included
+                })
+                
+                const [formattedAdmissionDateCf4, formattedAdmissionTimeCf4] = formattedDateTimeCf4.split(' ')
+                const [hourCf4, minuteCf4] = formattedAdmissionTimeCf4.split(':')
+                const [mmCf4, ddCf4, yyyyCf4] = formattedAdmissionDateCf4.split('/')
+                const timePeriodCf4 = hourCf4 >= 12 ? 'PM' : 'AM'
+
+                firstPage.drawText(`${mmCf4.split('').join(' ') ?? ''}`, {x: 124, y: height - 347, size: 10, font: courierFont})
+                firstPage.drawText(`${ddCf4.split('').join(' ') ?? ''}`, {x: 154, y: height - 347, size: 10, font: courierFont})
+                firstPage.drawText(`${yyyyCf4.split('').join(' ') ?? ''}`, {x: 187, y: height - 347, size: 10, font: courierFont})
+                firstPage.drawText(`${timePeriodCf4 === 'AM' ? formattedAdmissionTimeCf4.split('').join(' ') : ''}`, {x: 399, y: height - 347, size: 8, font: courierFont})
+                firstPage.drawText(`${timePeriodCf4 === 'PM' ? formattedAdmissionTimeCf4.split('').join(' ') : ''}`, {x: 399, y: height - 347, size: 8, font: courierFont})
 
 
                 firstPage.drawText(`${context?.data.profileData.cr_general_survey === 'awake_alert' ? 'H' : ''}`,  { x: 120, y: height - 813, size: 12})
@@ -503,6 +572,35 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 secondPage.drawText(neurological_exam.includes('poorcond') ? 'H' : '',  { x: 430, y: height - 338, size: 12})
                 secondPage.drawText(neurological_exam.includes('poorcond') ? 'H' : '',  { x: 431, y: height - 338, size: 12})
                 secondPage.drawText(neurological_exam.includes('poorcond') ? 'H' : '',  { x: 432, y: height - 338, size: 12})
+
+                
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 45,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 46,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 47,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 48,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 49,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'improved' ? 'H' : ''}`,  { x: 50,  y: height - 820, size: 12})
+
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 153,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 154,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 155,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 156,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 157,  y: height - 820, size: 12})
+                secondPage.drawText(`${context?.data.profileData.disposition === 'hama' ? 'H' : ''}`,  { x: 158,  y: height - 820, size: 12})
+
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 153,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 154,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 155,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 156,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 157,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'u48h' ? 'H' : ''}`,  { x: 158,  y: height - 820, size: 12})
+
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 120,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 98,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 99,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 100,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 101,  y: height - 820, size: 12})
+                // secondPage.drawText(`${context?.data.profileData.disposition === 'transferred' ? 'H' : ''}`,  { x: 102,  y: height - 820, size: 12})
 
                 break
             
