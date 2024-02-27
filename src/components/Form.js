@@ -247,13 +247,6 @@ const Form = forwardRef(({
      const renderForm = (row, rowIndex) => {
         return context?.initialFields?.map((field, index) => (
             <div key={field.name}>
-                {field.name === "admission_date" && (
-                    <div>
-                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Patient Information</h3>
-                        <hr className="drop-shadow-md py-6"/>
-                    </div>
-                )}
-
                 {field.name === "soap_subj_symptoms" && field.category === 'with_modal' && (
                     <div>
                         <div className="flex justify-center gap-4 py-6">
@@ -276,289 +269,164 @@ const Form = forwardRef(({
                 )}
 
                 {field.type === "text" && !field.disabled && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className=" text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                onClick={field.category === 'with_modal' ? () => handleOnClick({action:'clickedModal', field:field, modalState: true}) : undefined}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className=" text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            onClick={field.category === 'with_modal' ? () => handleOnClick({action:'clickedModal', field:field, modalState: true}) : undefined}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === "text" && field.disabled && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-                        
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className=" bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
-                                placeholder={field.placeholder}
-                                disabled
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className=" bg-gray-200 px-3 py-2 text-sm focus:outline-none w-full cursor-not-allowed"
+                            placeholder={field.placeholder}
+                            disabled
+                        />
                     </div>
                 )}
 
                 {field.type === 'datetime-local' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-                        
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className=" border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className=" border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === "password" && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-                        
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === 'email' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === 'date' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {field.type === 'checkbox' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-
-                        <div className="w-3/5">
-                            {field.category === 'socserv' ? (
-                                <div  className="flex flex-row mt-2 space-x-3">
-                                {['a', 'b', 'c1', 'c2', 'c3', 'd'].map(service => (
-                                    <div className="flex items-center space-x-1">
-                                        <input
-                                            key={service}
-                                            type={field.type}
-                                            id={field.name}
-                                            name={field.name}
-                                            // checked={}
-                                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                            className="w-5 h-5"
-                                            placeholder={field.placeholder}
-                                            />
-                                        <label className="text-gray-500 font-bold text-xs">{service.toUpperCase()}</label>  
-                                    </div>
-                                ))}
-                                </div>
-                            ) : field.category === 'phic' ? (
-                                <div  className="flex flex-row mt-2 space-x-3">
-                                {['sss', 'sss_dependent', 'gsis', 'gsis_dependent'].map(service => (
-                                    <div className="flex items-center space-x-1">
-                                        <input
-                                            key={service}
-                                            type={field.type}
-                                            id={field.name}
-                                            name={field.name}
-                                            // checked={}
-                                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                            className="w-5 h-5"
-                                            placeholder={field.placeholder}
-                                            />
-                                        <label className="text-gray-500 font-bold text-xs">{service.toUpperCase()}</label>  
-                                    </div>
-                                ))}
-                                </div>
-                            ) : field.category === 'disposition'  ? (
-                                <div  className="flex flex-row mt-2 space-x-3">
-                                    {dispositionArray.map(dispo => (
-                                        <div key={dispo} className={`flex items-center space-x-1 ${dispo.parent ? "ml-16" : ""}`}>
-                                            {(!dispo.parent || field.value === dispo.parent) && (
-                                                <>
-                                                    <input
-                                                        type={field.type}
-                                                        id={field.name}
-                                                        name={field.name}
-                                                        checked={field.value === dispo.name}
-                                                        onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                                        className="w-5 h-5"
-                                                        />
-                                                    <label className="text-gray-500 font-bold text-xs">{dispo.label}</label>
-                                                </>
-                                            )} 
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : ( "" )}
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === 'number' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">
-                                {field.label}
-                            </label>
-                        </div>
-                        <div className="w-3/5">
-                            <input
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}</label>
+                        <input
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
 
                 {field.type === 'dropdown' && (
-                    <div className="flex flex-row items-center z-50">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
-                        </div>
-                        <div className="w-3/5">
-                            <Select 
-                                options={field.options?.map(option => ({ 
-                                    value: option.value,    
-                                    label: option.label,
-                                    isDisabled: option.isDisabled,
-                                    isUser: option.isUser,
-                                }))}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                isSearchable={true}
-                                isClearable={true}
-                                placeholder={`Select ${field.label.toLowerCase()}...`}
-                                classNamePrefix=""
-                                styles={styleDropdown}
-                                value={field.options?.find(option => 
-                                    option.value === row.fields[field.name]
-                                )}
-                                getOptionLabel={(option) => (
-                                    <div className="">
-                                        {option.isDisabled ? (
-                                            <p className="text-sm text-red-500 cursor-not-allowed ">{option.label} (not available)</p>
-                                        ) : (
-                                            option.label
-                                        )}
-                                    </div>
-                                )}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
+                        <Select 
+                            options={field.options?.map(option => ({ 
+                                value: option.value,    
+                                label: option.label,
+                                isDisabled: option.isDisabled,
+                                isUser: option.isUser,
+                            }))}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            isSearchable={true}
+                            isClearable={true}
+                            placeholder={`Select ${field.label.toLowerCase()}...`}
+                            classNamePrefix=""
+                            styles={styleDropdown}
+                            value={field.options?.find(option => 
+                                option.value === row.fields[field.name]
+                            )}
+                            getOptionLabel={(option) => (
+                                <div className="">
+                                    {option.isDisabled ? (
+                                        <p className="text-sm text-red-500 cursor-not-allowed ">{option.label} (not available)</p>
+                                    ) : (
+                                        option.label
+                                    )}
+                                </div>
+                            )}
+                        />
                     </div>
                 )}
 
                 {field.type === 'textarea' && (
-                    <div className="flex flex-row items-center">
-                        <div className="text-right basis-1/4 mr-4">
-                            <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
-                        </div>
-                        <div className="w-3/5">
-                            <textarea
-                                required
-                                type={field.type}
-                                id={field.name}
-                                name={field.name}
-                                value={row.fields[field.name]}
-                                onChange={(e) => handleInputChange(e, rowIndex, field.name)}
-                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
-                                placeholder={field.placeholder}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1">
+                        <label htmlFor={field.name} className="block text-gray-500 font-medium text-sm capitalize">{field.label}:</label>
+                        <textarea
+                            required
+                            type={field.type}
+                            id={field.name}
+                            name={field.name}
+                            value={row.fields[field.name]}
+                            onChange={(e) => handleInputChange(e, rowIndex, field.name)}
+                            className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
+                            placeholder={field.placeholder}
+                        />
                     </div>
                 )}
             </div>
@@ -577,7 +445,7 @@ const Form = forwardRef(({
                                     <div className="md:flex md:flex-col  w-full gap-4">
                                         {context?.state !== null ? (
                                             <div>
-                                                <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-3">{context?.state?.title}</h3>
+                                                <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-3">{context?.title}</h3>
                                                 <hr className="drop-shadow-md pb-5"/>
                                             </div>
                                         ) : ""}

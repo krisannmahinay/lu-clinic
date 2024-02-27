@@ -792,8 +792,6 @@ const SubModule = () => {
                                     setAddedMedicine([])
                                     setAlertMessage("")
                                 }}
-                                dummyData={dummyData}
-                                // onSearchQuery={(data) => handleSearchMedQuery(data)}
                             />
         }, {
             id: 'tab3',
@@ -1232,6 +1230,7 @@ const SubModule = () => {
                                         },
                                         tableHeader: header,
                                         tableData: patientData,
+                                        ref: tblRef,
                                         onChecked:(data) => handleOnChecked(data),
                                         onClick: (data) => handleOnClick(data),
                                         onEdit: (data) => handleOnEdit(data),
