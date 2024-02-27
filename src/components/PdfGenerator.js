@@ -648,7 +648,7 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 context?.data.medication.map((item) => {
                     const text = `${item?.medicine.brand_name}/${item.dose} Sig:${item.form}/${item.frequency}`
                     const textSize = 15 
-                    const textWidth = courierFont.widthOfTextAtSize(text, textSize) // Measure text width
+                    // const textWidth = courierFont.widthOfTextAtSize(text, textSize) // Measure text width
 
                     secondPage.drawText(text, {
                         x: 120,
