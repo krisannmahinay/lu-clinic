@@ -31,13 +31,15 @@ import ProfilePicture from '../ProfilePicture'
 import { debounce } from 'lodash'
 
 import { AppLayoutContext } from '@/components/Layouts/AppLayout'
-import { ComponentContext } from '@/utils/context'
+import { ComponentContext, TableContext, useComponentContext, useTableContext } from '@/utils/context'
 
 // const NEXT_IO = "http://localhost:6001"
 
 const Navigation = () => {
     // props: user, children, moduleId, menuGroup
     const context = useContext(AppLayoutContext)
+    const componentContext = useComponentContext()
+    const tblContext = useTableContext()
     const router = useRouter()
     const dispatch = useDispatch()
     const [open, setOpen] = useState(false)
@@ -56,7 +58,7 @@ const Navigation = () => {
         isError: moduleIsError, 
         refetch: moduleRefetch 
     } = useGetUserModulesQuery({
-        moduleId: context.moduleId
+        moduleId: context?.props.moduleId
     })
 
     const { data: prevNotification } = useGetNotificationQuery()
@@ -166,6 +168,11 @@ const Navigation = () => {
         
     }
 
+    const handleOnClick = () => {
+        componentContext?.onClose()
+        // console.log("it worked")
+    }
+
     const imgSrc = "https://i.imgur.com/bqRsTjB.png"
 
     return (
@@ -188,14 +195,24 @@ const Navigation = () => {
                 <img className="ml-7 top-5 absolute z-50" src="https://i.imgur.com/jCxmwrq.png" width={65} height={0} />
                 <aside className={`transform max-w-xs ease-in-out duration-300 fixed top-0 left-0 z-40 w-64 h-screen pt-[3.5rem] transition-transform bg-white border-r border-gray-200 dark:bg-[#343a40] dark:border-gray-700 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     <div className="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-[#343a40]">
-                        {context.isLoading ? (
+                        {context?.props.isLoading ? (
                             <SkeletonSidebarScreen />
                         ) : (
+                            // <TableContext.Provider value={{
+                            //     state: {
+                            //         module: module,
+                            //         menuGroup: context?.props.menuGroup
+                            //     },
+                            //     onClose: () => {}
+                            // }}>
+                            //     <Module onClick={() => handleOnClick()}/>
+                            // </TableContext.Provider>
                             <ComponentContext.Provider value={{
                                 data: {
                                     module: module,
-                                    menuGroup: context.menuGroup
-                                }
+                                    menuGroup: context?.props.menuGroup
+                                },
+                                onClick: () => handleOnClick()
                             }}>
                                 <Module />
                             </ComponentContext.Provider>
@@ -305,7 +322,7 @@ const Navigation = () => {
 
 
             <div className="sm:ml-64 top-0 bg-gray-100">
-                <main>{context.children}</main>
+                <main>{context?.props.children}</main>
             </div>
         </>
     )

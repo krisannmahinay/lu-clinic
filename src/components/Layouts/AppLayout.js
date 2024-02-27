@@ -8,14 +8,20 @@ import Cookies from 'js-cookie'
 
 // components
 import Navigation from '@/components/Layouts/Navigation'
-export const AppLayoutContext = createContext({})
+export const AppLayoutContext = createContext({
+    props: null,
+    globalRef: null,
+    onClose: () => {}
+})
 const AppLayout = ({ ...props }) => {
     // header, children, moduleId, menuGroup, isLoading,
     
     // return <Navigation menuGroup={menuGroup} isLoading={isLoading} moduleId={moduleId} children={children}/>
     const contextValue = useMemo(() => ({ ...props}), [props])
     return (
-        <AppLayoutContext.Provider value={contextValue}>
+        <AppLayoutContext.Provider value={{
+            props: contextValue
+        }}>
             <Navigation />
         </AppLayoutContext.Provider>
     )

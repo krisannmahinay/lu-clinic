@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useRouter } from 'next/router'
 
 // components
@@ -9,6 +9,7 @@ import { useComponentContext } from "@/utils/context";
 const Module = () => {
     const context = useComponentContext()
     const router = useRouter()
+    const globalRef = useRef(null)
     const [menus, setMenus] = useState([])
     const [isExpanded, setIsExpanded] = useState(false)
 
@@ -34,7 +35,7 @@ const Module = () => {
     }
 
     const handleOnClick = () => {
-        (context?.state ?? {}).module = "isClicked"
+        context?.onClick()
     }
     
     return (
@@ -87,7 +88,7 @@ const Module = () => {
                                                 href={`/settings/${item.module?.module_id}`}>
                                                 
                                                 
-                                                <div className={`${baseClasses} ${isSettingActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
+                                                <div onClick={() => handleOnClick()} className={`${baseClasses} ${isSettingActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
@@ -105,7 +106,7 @@ const Module = () => {
                                                 href={`/inventory/${item.module?.module_id}`}>
                                                 
                                                 
-                                                <div className={`${baseClasses} ${isInventoryActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
+                                                <div onClick={() => handleOnClick()} className={`${baseClasses} ${isInventoryActive ? activeClasses : inactiveClasses} ${subModuleClasses}`}>
                                                     <svg 
                                                         className="" 
                                                         dangerouslySetInnerHTML={{__html: item.module?.icon}} 
