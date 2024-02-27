@@ -60,6 +60,32 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
         const chest_lungs = cr_chest_lungs.map(item => item.replace(/^"|"$/g, ''))
         const cvs = cr_cvs.map(item => item.replace(/^"|"$/g, ''))
         const neurological_exam = cr_neurological_exam.map(item => item.replace(/^"|"$/g, ''))
+
+        function drawWrappedText(text, maxWidth, font, fontSize) {
+            const words = text.split(" ")
+            const lines = []
+            let currentLine = ""
+        
+            for (const word of words) {
+                const potentialLine = currentLine + " " + word
+                const width = font.widthOfTextAtSize(potentialLine, fontSize)
+        
+                if (width > maxWidth) {
+                    lines.push(currentLine)
+                    currentLine = word
+                } else {
+                    currentLine = potentialLine
+                }
+            }
+        
+            // Add the last line
+            if (currentLine) { 
+                lines.push(currentLine)
+            }
+        
+            return lines
+        }
+
         switch(data.type) {
             case 'print-phealth-cf1':
                 firstPage.drawText(context?.data.profileData.user_data_info?.last_name, {
@@ -172,6 +198,24 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 firstPage.drawText(heent.includes('pconj') ? 'Pale Conjunctiva,' : '',  { x: 98, y: height - 542, size: 6, font: courierFont})
                 firstPage.drawText(heent.includes('sunke') ? 'Sunken Eyeball,' : '',  { x: 165, y: height - 542, size: 6, font: courierFont})
                 firstPage.drawText(heent.includes('sunkf') ? 'Sunken Fontanelle' : '',  { x: 225, y: height - 542, size: 6, font: courierFont})
+
+                firstPage.drawText(chest_lungs.includes('chesn') ? 'Essential Normal,' : '',  { x: 98, y: height - 554, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('lochesb') ? 'Lumps over chest/breast,' : '',  { x: 165, y: height - 554, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('asymchex') ? 'Asymmetrical chest expansion,' : '',  { x: 98, y: height - 562, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('rr') ? 'Rales/Ronchi,' : '',  { x: 208, y: height - 562, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('decbs') ? 'Decreased breath sounds' : '',  { x: 258, y: height - 562, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('intrclavr') ? 'Intercostal retractions/clavicular retractions,' : '',  { x: 98, y: height - 570, size: 6, font: courierFont})
+                firstPage.drawText(chest_lungs.includes('whiz') ? 'Wheezes,' : '',  { x: 274, y: height - 570, size: 6, font: courierFont})
+
+                firstPage.drawText(cvs.includes('cvesn') ? 'Essential Normal,' : '',  { x: 98, y: height - 585, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('dabeat') ? 'Displaced apex beat,' : '',  { x: 165, y: height - 585, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('hthrills') ? 'Heaves/thrills,' : '',  { x: 242, y: height - 585, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('pbulge') ? 'Pericardial bulge,' : '',  { x: 98, y: height - 593, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('decmob') ? 'Decreased mobility,' : '',  { x: 165, y: height - 593, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('pnbeds') ? 'Pale nail beds,' : '',  { x: 238, y: height - 593, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('pskint') ? 'Poor Skin turgor,' : '',  { x: 98, y: height - 602, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('rashpet') ? 'Rashes/petechiae,' : '',  { x: 165, y: height - 602, size: 6, font: courierFont})
+                firstPage.drawText(cvs.includes('weakp') ? 'Weak pulses,' : '',  { x: 230, y: height - 602, size: 6, font: courierFont})
                 
 
                 break
@@ -210,21 +254,46 @@ const PdfGenerator = forwardRef(({ category }, ref) => {
                 firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 487, y: height - 283, size: 12})
                 firstPage.drawText(`${context?.data.profileData.user_data_info?.gender === 'female' ? 'H' : ''}`,  { x: 488,  y: height - 283, size: 12})
 
-                firstPage.drawText(`${context?.data.profileData.admission_diagnosis ?? ''}`, {
-                    x: 50,
-                    // y: height - 250,
-                    y: height - 315,
-                    size: 8,
-                    font: courierFont
-                })
+                // firstPage.drawText(`${context?.data.profileData.admission_diagnosis ?? ''}`, {
+                //     x: 50,
+                //     // y: height - 250,
+                //     y: height - 315,
+                //     size: 8,
+                //     font: courierFont
+                // })
 
-                firstPage.drawText(context?.data.profileData.cr_history_present_ill ?? '', {
-                    x: 50,
-                    // y: height - 250,
-                    y: height - 410,
-                    size: 10,
-                    font: courierFont
-                })
+                const admissionDiagnosisText = context?.data.profileData.admission_diagnosis ?? ''
+                const wrappedAdmissionDianosis = drawWrappedText(admissionDiagnosisText, 245, courierFont, 10)
+
+                let currentAdmissionDiagnosis = height - 307
+                const lineSpacingAdmissionDiagnosis = 8 // Adjust as needed
+
+                for (const line of wrappedAdmissionDianosis) {
+                    firstPage.drawText(line, { 
+                        x: 50, 
+                        y: currentAdmissionDiagnosis, 
+                        size: 6, 
+                        font: courierFont 
+                    });
+                    currentAdmissionDiagnosis -= lineSpacingAdmissionDiagnosis
+                }
+
+                const historyPresentIllText = context?.data.profileData.cr_history_present_ill ?? ''
+                const wrappedHistoryPresentIll = drawWrappedText(historyPresentIllText, 489, courierFont, 10)
+
+                let currentHistoryPresentIll = height - 410
+                const lineSpacingHistoryPresentIll = 12 // Adjust as needed
+
+                for (const line of wrappedHistoryPresentIll) {
+                    firstPage.drawText(line, { 
+                        x: 50, 
+                        y: currentHistoryPresentIll, 
+                        size: 10, 
+                        font: courierFont 
+                    });
+                    currentHistoryPresentIll -= lineSpacingHistoryPresentIll
+                }
+
 
                 firstPage.drawText(`${context?.data.profileData.cr_general_survey === 'awake_alert' ? 'H' : ''}`,  { x: 120, y: height - 813, size: 12})
                 firstPage.drawText(`${context?.data.profileData.cr_general_survey === 'awake_alert' ? 'H' : ''}`,  { x: 121,  y: height - 813, size: 12})
