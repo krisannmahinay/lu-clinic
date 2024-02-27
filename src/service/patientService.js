@@ -249,6 +249,26 @@ export const patientApi = createApi({
             }
         }),
 
+        getSymptomList: builder.query({
+            query: (args) => {
+                const session = Cookies.get('session')
+                const { keywords, items, page, tabs } = args
+                return {
+                    url: '/get-symptoms',
+                    method: 'GET',
+                    params: {
+                        q: keywords,
+                        items: items,
+                        page: page,
+                        sort: 'created_at',
+                        slug: 'symptoms',
+                        tabs: tabs,
+                        selectedDB: session
+                    }
+                }
+            }
+        }),
+
         getMedicineList: builder.query({
             query: (args) => {
                 const session = Cookies.get('session')
@@ -373,6 +393,7 @@ export const patientApi = createApi({
 })
 
 export const { 
+    useGetSymptomListQuery,
     useGetDetailByIdQuery,
     useGetErPatientListQuery,
     useGetMedicineFormListQuery,

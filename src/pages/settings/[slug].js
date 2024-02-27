@@ -20,6 +20,7 @@ import {
     useGetMedicineListQuery, 
     useGetPhysicianListQuery,
     useGetFilteredMedicineListQuery,
+    useGetSymptomListQuery,
     useGetMedicineFormListQuery,
     useGetMedicineFrequencyListQuery,
 } from '@/service/patientService'
@@ -75,6 +76,10 @@ const medicineForm = [
 ]
 
 const medicineForm2 = [
+    {name: 'name', type: 'text', label: 'Name', placeholder: 'Type...'},
+]
+
+const symptomsForm = [
     {name: 'name', type: 'text', label: 'Name', placeholder: 'Type...'},
 ]
 
@@ -140,9 +145,31 @@ const SubModule = () => {
         enabled: !!state?.searchQuery && !!state?.activeTab
     })
 
+    const {
+        data: symptomsList
+    } = useGetSymptomListQuery({
+        items: state?.itemsPerPage,
+        page: state?.currentPage,
+        keywords: state?.searchQuery,
+        tabs: state?.activeTab
+    }, {
+        enabled: !!state?.searchQuery && !!state?.activeTab
+    })
+
     const [updateBulk, {isLoading: updateBulkLoading}] = useUpdateBulkMutation()
 
-    
+    const { symptomsData, symptomsPagination, symptomsHeader } = useMemo(() => {
+        const symptomsData = symptomsList?.data ?? []
+        const symptomsPagination = symptomsList?.pagination ?? []
+        const symptomsHeader = symptomsList?.columns ?? []
+
+        return {
+            symptomsData: symptomsData,
+            symptomsPagination: symptomsPagination,
+            symptomsHeader: symptomsHeader
+        }
+    },[symptomsList]) 
+
     const { medicineData, pagination, header } = useMemo(() => {
         const medicine = medicineList?.data ?? []
         const paginationInfo = medicineList?.pagination ?? []
@@ -154,13 +181,6 @@ const SubModule = () => {
             header: headers
         }
     },[medicineList]) 
-
-    // console.log(medicineList)
-    
-    const userDetails = data?.data ?? []
-    // const header = statisticalReport?.data[0] ?? []
-
-    // console.log(userDetails.roles)
     
     const [isModalOpen, setIsModalOpen] = useState(false)
     const formatTitlePages = (str) => {
@@ -277,6 +297,14 @@ const SubModule = () => {
                 }))
                 break
 
+            case 'addSymptoms':
+                setState(prev => ({
+                    ...prev,
+                    activeContent: data.value,
+                    contentType: "addRow"
+                }))
+                break
+
             case 'closeDrawer':
                 setState(prev => ({
                     ...prev,
@@ -314,6 +342,12 @@ const SubModule = () => {
                 }
                 break
 
+            case 'submitSymptom':
+                if(data.value === 'tab1') {
+                    formRef.current.handleSubmit('createSymptom')
+                }
+                break
+
             default:
                 break
         }
@@ -327,6 +361,24 @@ const SubModule = () => {
         setState(prev => ({...prev, alertType: ""}))
         setState(prev => ({...prev, alertMessage: ""}))
     }
+
+    // const symptomsData = []
+    const symptomsTabs = [{
+        id: 'tab1',
+        label: 'Symptoms Type',
+        content: () => (
+            <ComponentContext.Provider value={{
+                state: {
+                    activeTab: state.activeTab,
+                    symptomsData: symptomsData,
+                    header: symptomsHeader
+                },
+                onSubmitData: (data) => handleSubmitButton(data)
+            }}>
+                <Symptoms />
+            </ComponentContext.Provider>
+        )
+    }]
 
     const pharmacyTabs = [{
             id: 'tab1',
@@ -425,7 +477,134 @@ const SubModule = () => {
             case 'symptoms':
                 return (
                     <div>
-                        <Symptoms slug={slug}/>
+                        {/* <Symptoms slug={slug}/> */}
+                        <div className={`transition-transform duration-500 ease-in-out ${state.activeContent === 'yellow' ? 'translate-y-0' : '-translate-x-full'} absolute inset-0 p-8 pt-[5rem]`} style={{ height: `${state.contentHeight}px`, overflowY: 'auto' }}>
+                            <div className="font-bold text-xl mb-2 text-gray-600">Symptoms</div>
+                            <div className="flex justify-between py-1">
+                                <Button
+                                    btnIcon="add"
+                                    onClick={() => handleOnClick({type: "addSymptoms", value: "green"})}>
+                                    Add
+                                </Button>
+
+                                
+                                <SearchExport>
+                                    <div className="flex items-center">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={state.searchQuery}
+                                                onChange={(e) => handleOnChange({type: "search", value: e.target.value})}
+                                                className="border border-gray-300 w-full px-2 py-1 rounded focus:outline-none text-sm flex-grow pl-10"
+                                                placeholder="Search..."
+                                            />
+                                            <svg fill="none" stroke="currentColor" className="mx-2 h-4 w-4 text-gray-600 absolute top-1/2 transform -translate-y-1/2 left-1" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                            </svg>
+                                        </div>
+
+                                        <Dropdown
+                                            align="right"
+                                            width="48"
+                                            trigger={
+                                                <button className="border border-gray-300 bg-white rounded px-2 py-1 ml-1 focus:outline-none" aria-labelledby="Export">
+                                                    <svg fill="none" stroke="currentColor" className="h-5 w-4" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                                    </svg>
+                                                </button>
+                                            }>
+                                            <DropdownExport>
+                                                Export as PDF
+                                            </DropdownExport>
+                                        </Dropdown>
+                                    </div>
+                                </SearchExport>
+                            </div>
+
+                            <Tabs
+                                tabsConfig={symptomsTabs} 
+                                onActiveTab={(id) => handleOnClick({type: "tabClicked", value: id})}
+                            />
+
+                            <div className="flex flex-wrap py-1">
+                                <div className="flex items-center justify-center flex-grow">
+                                    <Pagination 
+                                        currentPage={symptomsPagination.current_page} 
+                                        totalPages={symptomsPagination.total_pages}
+                                        // onPageChange={newPage => setCurrentPage(newPage)}
+                                        onPageChange={(newPage) => handleOnChange({type:"newPage", value:newPage})}
+                                    />
+                                </div>
+
+                                <ItemPerPage className="flex flex-grow">
+                                    <div className="flex items-center justify-end">
+                                        <span className="mr-2 mx-2 text-gray-500 uppercase font-medium text-xs">Per Page:</span>
+                                        <select
+                                            value={state.itemsPerPage}
+                                            onChange={(e) => handleOnChange({type: "itemsPerPageChange", value: e.target.value})}
+                                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none">
+                                            <option value="5">5</option>
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </div>
+                                </ItemPerPage>
+                            </div>
+                        </div>
+                        <div className={`transition-transform duration-500 ease-in-out ${state.activeContent === 'green' ? 'translate-y-0 ' : 'translate-x-full'}  absolute inset-0 pt-[3.5rem]`} style={{ height: `${state.contentHeight}px`, overflowY: 'auto' }}>
+                            {state.contentType === 'addRow' && (
+                                <>
+                                    <div className="font-bold text-lg mb-2 text-gray-600 pt-10 px-4">
+                                        Add {state.activeTab === 'tab1' ? 'Symptoms Type' : ''}
+                                    </div>
+                                    <div className="flex justify-between py-2 px-4">
+                                        <Button
+                                            paddingY="2"
+                                            btnIcon="close"
+                                            onClick={() => handleOnClick({type: "closeDrawer", value: "yellow"})}
+                                        >
+                                            Close
+                                        </Button>
+
+                                        <div className="flex gap-2">
+                                            <Button
+                                                bgColor="indigo"
+                                                btnIcon="add"
+                                                onClick={() => formRef.current.handleAddRow()}
+                                            >
+                                                Add Row
+                                            </Button>
+
+                                            <Button
+                                                bgColor={state.btnSpinner ? 'disable': 'emerald'}
+                                                btnIcon={state.btnSpinner ? 'disable': 'submit'}
+                                                btnLoading={state.btnSpinner}
+                                                onClick={() => handleSubmitButton({type: "submitSymptom", value: state.activeTab})}
+                                            >
+                                                {state.btnSpinner ? '' : 'Submit'}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <FormContext.Provider value={{
+                                        title: state.activeTab === 'tab1' ? 'Symptoms Form' : '',
+                                        ref: formRef,
+                                        initialFields: state.activeTab === 'tab1' ? symptomsForm : '',
+                                        enableAddRow: true,
+                                        onSuccess: handleRefetch,
+                                        onLoading: (data) => setState(prev => ({...prev, btnSpinner: data})),
+                                        onSetAlertType: (data) => setState(prev => ({...prev, alertType: data})),
+                                        onCloseSlider: () => setState(prev => ({...prev, activeContent: "yellow"})),
+                                        onAlert: (data) => {
+                                            setState(prev => ({...prev, alertMessage: data.msg}))
+                                            setState(prev => ({...prev, alertType: data.type}))
+                                        }
+                                    }}>
+                                        <Form />
+                                    </FormContext.Provider>
+                                </>
+                            )}
+                        </div>
                     </div>
                 )
             case 'pharmacy-config':

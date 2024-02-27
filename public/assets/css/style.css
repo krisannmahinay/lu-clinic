@@ -1,4 +1,20 @@
 
+.add-button {
+    /* Style your button as needed */
+}
+
+.search-bar {
+    /* Style your search bar as needed */
+}
+
+.textarea-container:hover .add-button {  /* Make button visible on textarea hover */
+    opacity: 100;
+}
+
+.textarea-container .add-button:active + .search-bar { /* Show search bar on click */
+    display: block;
+}
+
 /* This hides the action icon by default */
 .action-icon {
     display: none;

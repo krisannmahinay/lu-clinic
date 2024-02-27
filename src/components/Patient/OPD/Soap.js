@@ -1,13 +1,12 @@
 import Form from "@/components/Form"
 import { ComponentContext, FormContext } from "@/utils/context"
 import { generateSoapForms } from "@/utils/forms"
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import HighlightWithinTextarea from 'react-highlight-within-textarea'
 import DoctorRequest from "./DoctorRequest"
 
 const Soap = ({
     onClick,
-    dummyData, 
     physiciansOrder, 
 }) => {
     const [formData, setFormData] = useState({
@@ -17,13 +16,14 @@ const Soap = ({
         soap_plan: "",
     })
     const [patientInfo, setPatientInfo] = useState([])
-    const [checkedItem, setCheckedItem] = useState([])
-    const [leftItems, setLeftItems] = useState(dummyData)
+    const [leftItems, setLeftItems] = useState("")
     const [rightItems, setRightItems] = useState([])
-    const [accordionIdOpen, setAccordionIdOpen] = useState(false)
     const [otherRequest, setOtherRequest] = useState({})
     const [othersSelected, setOthersSelected] = useState({})
     const [searchQuery, setSearchQuery] = useState("")
+
+    const textAreaRef = useRef(null)
+    const searchBarRef = useRef(null)
 
     const [subjectiveText, setSubjectiveText] = useState("")
     const [height, setHeight] = useState('')
@@ -67,77 +67,52 @@ const Soap = ({
     const highlightAll = (content) => content
     const labelCss = "ml-2 mb-2 text-gray-500 font-bold uppercase text-xs"
 
+    const handleBlur = () => {
+        searchBarRef.current.style.display = 'block'
+    }
+
+    const handleFocus = () => {
+        searchBarRef.current.style.display = 'none'
+    }
+
     return (
         <div>
-
-            <div className="border-none overflow-hidden disable-selecting-text py-2 px-4">
-                {accordionIdOpen && (
-                <></>
-                )}
-                
-                
-                {physiciansOrder ? (
-                    <div className="mt-2">
-                        <div className="text-medium font-semibold text-center tracking-wide text-white uppercase border-b bg-green-500 px-4 py-4">
-                            <span>Orders</span>
-                        </div>
-
-                        <div className="p-4 space-y-4 sm:ml-[20rem] mr-[20rem] overflow-y-auto scroll-custom">
-                            <div className="flex items-center justify-between">
-                                <label className={labelCss}>Medications: </label>
-                                <input type="text" placeholder="" value="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full max-w-xl"/>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <label className={labelCss}>IV Fluids: </label>
-                                <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full max-w-xl"/>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <label className={labelCss}>Labs and Tests: </label>
-                                <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full max-w-xl"/>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <label className={labelCss}>Imaging: </label>
-                                <input type="text" placeholder="" className="border border-gray-300 px-3 py-2 focus:border-gray-500 focus:outline-none w-full max-w-xl"/>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <label className={labelCss}>Instruction: </label>
-                                <textarea type="text" placeholder="" className="border border-gray-300 px-3 py-2 h-[10rem] focus:border-gray-500 focus:outline-none w-full max-w-xl"/>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    
+            {/* <div className="border-none overflow-hidden disable-selecting-text py-2 px-4"> */}
                 <div>
-                    
-
-                    <div className="xl:pl-[10rem] xl:pr-[10rem] lg:pl-0 lg:pr-0 md:pl-0 md:pr-0 pb-7">
-                        <FormContext.Provider value={{
+                    <div>
+                        <h3 className="text-gray-400 text-center font-bold uppercase text-medium py-5">Doctors' Notes</h3>
+                        <hr className="drop-shadow-md pb-5"/>
+                    </div>
+                    <div className="xl:pl-[23rem] xl:pr-[23rem] lg:pl-0 lg:pr-0 md:pl-0 md:pr-0 pb-7">
+                        <div className="grid grid-cols-1 relative">
+                            <label className=" text-gray-500 font-medium text-sm capitalize">Subjective Symptoms: </label>
+                            <textarea
+                                ref={textAreaRef}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                type="text"
+                                name="soap_subj_symptoms"
+                                className="border border-gray-300 bg-gray-100 text-sm w-full px-3 py-2 focus:outline-none focus:border-gray-500 h-40"
+                                placeholder="Type..."
+                            />
+                            <button className="add-button absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                Add
+                            </button> 
+                            <div ref={searchBarRef}  className="search-bar absolute top-8 right-2 w-64 p-2 border border-gray-300 hidden">
+                                <input type="text" className="w-full" placeholder="Search..." />
+                            </div>
+                        </div>
+                        {/* <FormContext.Provider value={{
                             initialFields: patientInfo,
-                            enableAutoSave:true,
-                            // onClickFAB: handleClickedFAB,
-                            // initialFields={patientInfo}
-                            // enableAutoSave={true}
-                            // onEditForm={(e, rowIndex, fieldName) => handleEditForm(e, rowIndex, fieldName)}
-                            // onSuccess={handleRefetch}
-                            // onCloseSlider={() => setActiveContent("yellow")}
-                            // onLoading={(data) => setBtnSpinner(data)}
-                            // onSetAlertType={(data) => setAlertType(data)}
-                            // onSetAlertMessage={(data) => setAlertMessage(data)}
+                            enableAutoSave:true
                         }}>
                             <Form
                                 onClick={handleOnClick} 
                             />
-                        </FormContext.Provider>
+                        </FormContext.Provider> */}
                     </div>
-                </div>
-                )}
-                
-            </div>
-            
+                </div> 
+            {/* </div> */}
         </div>
     )
 }
